@@ -1,0 +1,17 @@
+.env
+.env.*
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+daily-editor/
+threads-hosted-assets.json
+threads-post-metrics.csv
+approved-thread-chain.txt
+approved-thread-post.txt
+*.png
+
+*.token
+*.secret
+
