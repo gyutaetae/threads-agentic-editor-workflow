@@ -73,6 +73,32 @@ daily-editor/YYYY-MM-DD-candidates.json
 Use $threads-agentic-editor with daily-editor/YYYY-MM-DD-draft-prompt.md and create A/B drafts.
 ```
 
+승인 후 게시 전 확인:
+
+```powershell
+.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5 -DryRun
+```
+
+게시:
+
+```powershell
+.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5
+```
+
+이 명령은 `THREADS_ACCESS_TOKEN`으로 실제 계정 ID를 확인해서 stale `THREADS_USER_ID` 문제를 피하고, 게시 후 `threads-post-metrics.csv`에 기본 행을 기록한다.
+
+게시 전 품질 검사만 따로 실행:
+
+```powershell
+.\scripts\check-approved-chain.ps1
+```
+
+게시 후 metrics 수집:
+
+```powershell
+.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
+```
+
 ## 게시 정책
 
 초반에는 완전 자동 게시 금지.
@@ -93,4 +119,3 @@ auto publish
 - 출처가 말한 사실과 우리의 해석을 분리한다.
 - GitHub stars는 인기도이지 품질 보장이 아니다.
 - 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
-

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Threads Post Publisher"
+  short_description: "Draft-approved Threads publishing workflow"
+  default_prompt: "Use $threads-post-publisher to prepare, validate, and publish an approved @gyu_in_black Threads chain."

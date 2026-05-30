@@ -1,130 +1,119 @@
 # Threads Channel Operating System
 
-This is the always-reference operating guide for `@gyu_in_black`.
+Always-reference guide for `@gyu_in_black`.
 
-## Positioning
+## Core Concept
 
-Concept:
+```text
+프로 개발자의 AI agent 작업법을 훔쳐보는 계정
+```
 
-> 프로 개발자의 AI agent 작업을 훔쳐보는 계정
+We cover harness engineering, AI agents, Codex, Claude Code, Cursor, MCP, subagents, and high-signal GitHub repos. The goal is not AI news. The goal is to turn interesting agent/harness signals into developer workflow insight.
 
-Benchmark blend:
+Reader promise:
 
-- CHOI style: fast, strong opening.
-- AI Trend style: saveable cards.
-- Our edge: developer-practical depth.
+```text
+매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
+```
 
-Core promise:
+## Editorial Thesis
 
-> Codex, Claude Code, subagent, harness engineering, and AI automation을 실제 개발자 워크플로우 관점으로 쉽게 풀어준다.
+Developers are curious about popular AI repos, but they stay for the hidden workflow lesson.
 
-## Default Post Format
+Good post:
 
-Do not write long one-block posts by default.
+```text
+"이 repo가 뜬다" -> "왜 개발자가 봐야 하나" -> "내 workflow에 뭘 복사할까"
+```
 
-Default structure:
+Bad post:
 
-1. Main post: strong hook + one clear idea.
-2. Reply 1: concrete example.
-3. Reply 2: practical checklist or framework.
-4. Reply 3: caveat, source, or next question.
+```text
+"이 repo는 stars가 많다" -> 기능 나열 -> 끝
+```
 
-Use reply chains when:
+Stars are a hook and trend signal, not proof of quality.
 
-- post exceeds 350 Korean characters
-- there are 2+ examples
-- there is a checklist
-- a source/caveat would make the main post less punchy
+## Topic Selection
 
-The main post should be strong enough to stand alone.
+Pick topics that satisfy at least 3 of 5:
 
-## Image Rule
+- reveals a new harness/agent operating pattern
+- uses a popular or fast-moving GitHub repo as evidence
+- changes how a developer asks Codex/Claude Code/Cursor to work
+- creates a useful disagreement or question in comments
+- can become a checklist, teardown, or bad-vs-good example
 
-Use images when they are saveable or explain structure.
+Prefer:
 
-Good images:
+- harness structure over model hype
+- permissions, memory, tools, evals, logs, rollback over generic prompts
+- "what to copy into your workflow" over "what the repo does"
 
-- bad request vs good request
-- agent workflow diagram
-- subagent architecture diagram
-- checklist card
-- GitHub repo teardown card
-- before/after workflow
+## Default Chain
 
-Bad images:
+1. Main: mistake-first hook + one checklist or contrast.
+2. Replies: one idea per reply. If the main has 1-5, explain each item in its own reply.
+3. Final reply: source repos with links only when they help inspection; explain each repo's meaning.
 
-- generic robot
-- abstract AI glow
-- unrelated stock photo
-- decorative image with no takeaway
+The main post must stand alone. Replies should add curiosity, proof, and a reason to comment.
 
-Default image style:
+## First-Line Hook
 
-- vertical 4:5 card
-- high contrast
-- one strong title
-- one framework/checklist
-- no tiny text
-- @gyu_in_black footer
+Default opening:
+
+```text
+만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다.
+```
+
+Use this to name a common developer mistake before explaining the better workflow. The first line should create a small diagnostic shock, not insult the reader.
+
+Examples:
+
+- "AI agent에게 긴 프롬프트만 주고 있다면, agent를 잘못 쓰고 있는 겁니다."
+- "GitHub star부터 보고 있다면, AI repo를 잘못 읽고 있는 겁니다."
+- "Claude Code에게 바로 구현부터 시킨다면, workflow 설계를 건너뛰고 있는 겁니다."
+
+After the hook: explain the missed criterion, give a checklist, then show how to fix it.
+
+## Comment Hooks
+
+End or imply a comment-worthy question when natural:
+
+- "여러분은 agent에게 어디까지 권한을 주나요?"
+- "이 기준에서 제일 자주 빠지는 건 몇 번인가요?"
+- "이 repo에서 복사할 만한 건 기능보다 구조입니다."
+
+Avoid forced engagement bait. The question should help us learn channel direction.
 
 ## Tone
 
-Write like a developer showing real working notes.
+Write like a senior developer showing field notes.
 
-Good:
+Use:
 
-- "잘 쓰는 사람들은 이렇게 쪼갠다"
-- "이건 agent 문제가 아니라 작업 설계 문제다"
-- "실전에서는 여기서 터진다"
+- "실전에서는 여기서 터집니다"
+- "star보다 먼저 볼 건 이겁니다"
+- "이건 prompt 문제가 아니라 harness 문제입니다"
 
 Avoid:
 
-- "미쳤습니다" overuse
 - fake guru tone
-- generic AI summary
-- unverifiable claims
-- investment prediction
+- generic AI summaries
+- unverifiable best/first/revolution claims
+- repo links without a workflow lesson
 
-## Series
+## Formats
 
-1. 프로들은 이렇게 씀
-2. Agent 구조 뜯어보기
-3. AI 퇴근 치트키
-4. GitHub 인기 레포 해부
-5. Karpathy 코멘트 개발자식 번역
+- 프로들은 이렇게 씀
+- GitHub 인기 repo 해부
+- Agent 구조 뜯어보기
+- Bad request vs good request
+- AI 퇴근 치트키
 
-## First Post Standard
+## Automation Guardrails
 
-The first post should introduce the account's angle:
-
-> AI agent 시대의 실력은 프롬프트가 아니라 작업 분해에서 나온다.
-
-Always attach a saveable card when possible.
-
-## Automation Policy
-
-Allowed:
-
-- AI generates candidates
-- human approves
-- script publishes approved post
-- script chains replies
-- script publishes image if a public image URL exists
-
-Not allowed:
-
-- fully automatic unreviewed publishing
-- publishing claims without a source when factual
-- posting local-only image paths to Threads API
-
-## Technical Constraint
-
-Threads API image posts require a public image URL.
-
-Local files like:
-
-```text
-C:\Users\kym70\threads-first-post-card.png
-```
-
-cannot be posted directly via API unless they are uploaded to public HTTPS hosting first.
+- AI may collect, score, draft, check, and prepare.
+- Human approves before publishing.
+- Publishing uses `scripts/publish-approved-chain.ps1`.
+- Metrics and comments should influence future scoring, not blindly chase views.

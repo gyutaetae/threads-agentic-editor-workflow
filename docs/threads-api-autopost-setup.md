@@ -4,10 +4,10 @@ Goal: publish approved AI-agent posts from the local growth console to your exis
 
 Current workflow:
 
-1. Generate candidate posts in `threads-agent-growth-console.html`.
-2. Download `approved-thread-post.txt` from the selected candidate.
-3. Run `threads-publish-approved.ps1 -DryRun`.
-4. If the preview is correct, run `threads-publish-approved.ps1`.
+1. Generate A/B candidates with the daily editor workflow.
+2. Save the approved reply chain to `approved-thread-chain.txt`.
+3. Run `.\scripts\publish-approved-chain.ps1 -DryRun`.
+4. If the preview is correct, run `.\scripts\publish-approved-chain.ps1`.
 
 ## Required Meta Setup
 
@@ -104,6 +104,8 @@ Set:
 $env:THREADS_ACCESS_TOKEN = "LONG_LIVED_ACCESS_TOKEN_FROM_RESPONSE"
 ```
 
+`THREADS_USER_ID` is no longer required for publishing. The publisher verifies the current account through the token before posting.
+
 ## 4. Verify Account
 
 ```powershell
@@ -120,22 +122,22 @@ Confirm the returned `id` and `username` are the intended existing Threads accou
 
 ## 5. Dry Run Approved Post
 
-Use the console to download an approved post as:
+Save the approved thread chain as:
 
 ```text
-C:\Users\kym70\approved-thread-post.txt
+C:\Users\kym70\threads-agentic-editor-workflow\approved-thread-chain.txt
 ```
 
 Then run:
 
 ```powershell
-.\threads-publish-approved.ps1 -DryRun
+.\scripts\publish-approved-chain.ps1 -DryRun
 ```
 
 Python alternative:
 
 ```powershell
-python .\threads_auto_upload.py publish --dry-run
+python .\scripts\threads_auto_upload.py publish-approved-chain --dry-run
 ```
 
 Check:
@@ -148,13 +150,13 @@ Check:
 ## 6. Publish
 
 ```powershell
-.\threads-publish-approved.ps1
+.\scripts\publish-approved-chain.ps1
 ```
 
 Python alternative:
 
 ```powershell
-python .\threads_auto_upload.py publish
+python .\scripts\threads_auto_upload.py publish-approved-chain
 ```
 
 The script uses the two-step Threads publishing flow:

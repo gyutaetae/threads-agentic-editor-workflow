@@ -11,13 +11,27 @@ Codex, Claude Code, Cursor로 일 잘하고 싶은 개발자
 Promise:
 
 ```text
-매일 하나, 프로 개발자의 AI agent 작업법
+매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
 ```
 
 Account concept:
 
 ```text
 프로 개발자의 AI agent 작업법을 훔쳐보는 계정
+```
+
+Decision intent:
+
+```text
+GitHub stars and fast-moving repos are the hook.
+Harness/workflow insight is the value.
+Comments and metrics decide what we repeat.
+```
+
+The channel should make developers think:
+
+```text
+"이 repo 재밌네" -> "내 agent workflow에도 이 구조를 써볼 수 있겠네"
 ```
 
 ## Workflow
@@ -53,6 +67,9 @@ Threads Publish
     ↓
 Metrics
   threads-post-metrics.csv
+    ↓
+Strategy Memory
+  channel-strategy-memory.md
 ```
 
 ## A/B Drafts
@@ -75,12 +92,12 @@ C안 is not needed for now. The "saveable" function should be handled inside the
 
 Generate multiple candidates per day, but only publish one approved post at first.
 
-Default review set:
+Default candidate set:
 
 ```text
-Candidate 1: broad reach
-Candidate 2: developer credibility
-Candidate 3: timely repo/trend hook
+Candidate 1: broad reach hook
+Candidate 2: deep harness insight
+Candidate 3: GitHub repo/trend teardown
 ```
 
 Each candidate should show:
@@ -88,8 +105,27 @@ Each candidate should show:
 ```text
 Source facts
 Our interpretation
+Mistake-first hook
 Risk/caveat
+Why developers will comment
 ```
+
+Hook policy:
+
+```text
+Open by naming a common mistake, then reveal the better criterion.
+"만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다."
+```
+
+This keeps reach tied to the channel concept: the hook exposes a missed workflow/harness decision, not generic outrage.
+
+Prefer candidates that satisfy at least 3:
+
+- reveals harness/agent operating pattern
+- uses popular or fast-moving repo as evidence
+- changes Codex/Claude Code/Cursor usage
+- invites useful disagreement or examples
+- can become checklist/teardown/bad-vs-good
 
 ## Saveable Card
 
@@ -169,10 +205,16 @@ Use:
   -CardUsed true
 ```
 
-After 24 hours, update the row manually or append a follow-up note.
+After publishing, collect snapshots:
+
+```powershell
+.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
+```
+
+Use `reply_rate`, `share_rate`, and `follow_rate` to update `channel-strategy-memory.md`.
 
 ## Open Questions
 
-1. How aggressive should hooks be after the first 10 posts?
-2. Which format wins: A안 reach or B안 trust?
-3. Should metrics be updated manually from Threads UI or later automated through API if available?
+1. Which hook style earns useful comments, not only views?
+2. Which repo teardown formats convert to follows?
+3. Which topics should be repeated or paused in next week's scoring?

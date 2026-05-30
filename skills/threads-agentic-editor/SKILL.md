@@ -1,6 +1,6 @@
 ---
 name: threads-agentic-editor
-description: Use when drafting, scoring, reviewing, or packaging Threads posts for @gyu_in_black about Codex, Claude Code, Cursor, AI coding agents, subagents, MCP, harness engineering, GitHub AI repos, or developer workflow automation. This skill turns fresh technical sources into practical developer-facing Threads posts with strong hooks, fact checks, reply chains, card copy, and approval-ready publishing artifacts.
+description: Use when drafting, scoring, reviewing, packaging, publishing, or analyzing Threads posts for @gyu_in_black about Codex, Claude Code, Cursor, AI coding agents, subagents, MCP, harness engineering, GitHub AI repos, or developer workflow automation. This skill turns fresh technical sources into practical developer-facing Threads posts with stronger hooks, fact checks, reply chains, source/repo explanations, approval-ready publishing artifacts, one-command publishing, and reaction-based channel learning.
 ---
 
 # Threads Agentic Editor
@@ -15,7 +15,13 @@ Positioning:
 
 Promise:
 
-> 매일 하나, 프로 개발자의 AI agent 작업법
+> 매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
+
+Editorial thesis:
+
+> Popular AI repos are the hook. Harness/workflow insight is the value.
+
+Do not stop at "this repo is trending." Explain what the repo reveals about how serious developers structure agent work.
 
 ## Default Workflow
 
@@ -26,11 +32,12 @@ Promise:
    - B: deeper, more technical, stronger for credibility.
 4. For the selected option, produce:
    - main post
-   - 1-2 replies if needed
+   - 1-3 replies if needed
    - card title and 3-5 card bullets
    - source list
    - risk/caveat notes
 5. Do not publish automatically unless the user explicitly approves the final draft.
+6. After approval, publish with the repo's one-command publisher rather than manually assembling Python flags.
 
 ## Editorial Rules
 
@@ -48,13 +55,37 @@ Avoid:
 - investment, market, or product-buying claims without fresh sources
 - posts that only describe a repo without explaining what developers can learn from it
 
+Topic must satisfy at least 3 of 5:
+
+- reveals a new harness/agent operating pattern
+- uses a popular or fast-moving GitHub repo as evidence
+- changes how a developer asks Codex/Claude Code/Cursor to work
+- can trigger useful comments, disagreement, or examples
+- can become a checklist, teardown, or bad-vs-good example
+
+Prefer permissions, memory, tools, evals, logs, rollback, and workflow design over generic prompt advice.
+
 Allowed hook style:
 
+- mistake-first diagnostic: "만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다."
 - strong claim
 - common mistake reversal
 - "bad request vs good request"
 - "프로들은 이렇게 한다"
 - "star보다 먼저 봐야 할 것"
+- concrete diagnostic checklist
+
+Default first-line rule:
+
+1. Name the reader's likely mistake.
+2. Reframe the real criterion.
+3. Then explain the better workflow.
+
+Good:
+
+> AI agent에게 긴 프롬프트만 주고 있다면, agent를 잘못 쓰고 있는 겁니다.
+
+> GitHub star부터 보고 있다면, AI repo를 잘못 읽고 있는 겁니다.
 
 Strong but acceptable:
 
@@ -84,6 +115,7 @@ Core formats:
 2. GitHub 인기 레포 해부
 3. AI agent 설계 노트
 4. AI 퇴근 치트키
+5. Bad request vs good request
 
 ## Reply Chain Rule
 
@@ -97,6 +129,22 @@ Use a reply chain when:
 - sources/caveats would weaken the main hook
 
 Main post must stand alone. Replies add proof, examples, or a reusable checklist.
+
+Preferred structure for repo/workflow posts:
+
+1. Main: create curiosity with a concrete claim and a short checklist.
+2. Replies 1-N: explain one checklist item per reply when the user wants a deeper chain. If the main uses 1-5, prefer five separate replies, each starting with the matching number.
+3. Final reply: list source repos with links only when they help the reader inspect the idea, and explain what each repo demonstrates for the workflow.
+
+Avoid ending at a bare checklist. Add the "why" or the reader has little reason to care.
+
+Add a natural comment hook when useful:
+
+- "여러분은 agent에게 어디까지 권한을 주나요?"
+- "이 기준에서 제일 자주 빠지는 건 몇 번인가요?"
+- "이 repo에서 복사할 만한 건 기능보다 구조입니다."
+
+Do not use forced engagement bait.
 
 ## Card Rule
 
@@ -158,6 +206,51 @@ Use only stable automatic sources by default:
 - official RSS/Atom feeds with stable URLs
 
 Do not automatically scrape unstable webpages unless the user explicitly asks.
+
+## Publishing Rule
+
+When the user approves a chain, write it to:
+
+```text
+approved-thread-chain.txt
+```
+
+Separate thread parts with:
+
+```text
+---
+```
+
+Then use this dry-run command from the repo root:
+
+```powershell
+.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5 -DryRun
+```
+
+After the user confirms, publish with:
+
+```powershell
+.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5
+```
+
+This wrapper checks the approved chain, uses the current `THREADS_ACCESS_TOKEN` to retrieve the correct Threads account ID, publishes the chain in order, and records the first post in `threads-post-metrics.csv`.
+
+Do not ask the user to manually set `THREADS_USER_ID` unless the token verification endpoint is unavailable. A stale user ID causes hard-to-debug `Unsupported post request` errors.
+
+For reaction-based channel direction, use `docs/threads-reaction-learning-architecture.md`.
+For account concept and topic selection, use `docs/threads-channel-operating-system.md`.
+
+To run the quality gate without publishing:
+
+```powershell
+.\scripts\check-approved-chain.ps1
+```
+
+To collect metrics for a published post:
+
+```powershell
+.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
+```
 
 ## Output Shape
 
