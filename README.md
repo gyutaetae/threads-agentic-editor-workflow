@@ -73,6 +73,23 @@ daily-editor/YYYY-MM-DD-candidates.json
 Use $threads-agentic-editor with daily-editor/YYYY-MM-DD-draft-prompt.md and create A/B drafts.
 ```
 
+채널 컨셉과 작성 규칙은 한 파일만 본다.
+
+```text
+docs/threads-channel-playbook.md
+```
+
+현재 우선 포맷:
+
+```text
+Main: 나쁜 요청 / 좋은 요청
+Reply 1: 적용 기준 or workflow modes
+Reply 2: 예시 프롬프트
+Reply 3: 참고해서 볼 만한 것들 + 각 링크의 적용법
+```
+
+글은 짧게 쓴다. 댓글은 최대 3개까지만 허용한다. 이 포맷은 중복 주제가 아니라 새 workflow 문제에 반복 적용한다. 예: PR 리뷰, 테스트 수정, refactor 범위 지정, agent 권한, memory 설정, rollback 설계.
+
 승인 후 게시 전 확인:
 
 ```powershell
@@ -98,6 +115,32 @@ Use $threads-agentic-editor with daily-editor/YYYY-MM-DD-draft-prompt.md and cre
 ```powershell
 .\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
 ```
+
+## GitHub Actions 게시
+
+로컬 터미널 대신 GitHub Actions에서 수동으로 게시할 수 있다.
+
+초기 설정:
+
+1. GitHub repo `Settings -> Secrets and variables -> Actions`로 간다.
+2. `New repository secret`을 누른다.
+3. 이름은 `THREADS_ACCESS_TOKEN`, 값은 Threads long-lived access token으로 저장한다.
+4. 변경사항을 GitHub에 push한다.
+
+게시:
+
+1. GitHub repo `Actions` 탭으로 간다.
+2. `Publish Threads Chain` workflow를 선택한다.
+3. `Run workflow`를 누른다.
+4. `thread_text`에 본문을 붙여넣는다. main/reply 구분은 `---` 한 줄만 사용한다.
+5. 처음에는 `dry_run = true`로 실행해서 미리보기와 품질 검사를 확인한다.
+6. 문제가 없으면 같은 내용으로 `dry_run = false`를 실행한다.
+
+규칙:
+
+- `approved-thread-chain.txt`는 gitignore라서 GitHub Actions 입력창에 매번 붙여넣는다.
+- 게시 전 검사에서 main + 댓글 3개를 넘으면 실패한다.
+- 실행 결과의 artifact에 `approved-thread-chain.txt`와 `threads-post-metrics.csv`가 저장된다.
 
 ## 게시 정책
 

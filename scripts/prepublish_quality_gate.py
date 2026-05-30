@@ -5,6 +5,7 @@ from pathlib import Path
 
 
 MAX_CHARS = 500
+MAX_PARTS = 4
 CHECKLIST_RE = re.compile(r"(?m)^\s*(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
 
@@ -32,6 +33,8 @@ def main() -> int:
 
     if not parts:
         errors.append("No thread parts found.")
+    elif len(parts) > MAX_PARTS:
+        errors.append(f"Thread has {len(parts)} parts; limit is {MAX_PARTS} (main + up to 3 replies).")
 
     for index, part in enumerate(parts, start=1):
         if len(part) > MAX_CHARS:

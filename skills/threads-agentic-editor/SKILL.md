@@ -117,6 +117,17 @@ Core formats:
 4. AI 퇴근 치트키
 5. Bad request vs good request
 
+Current proven format to repeat for practical workflow posts:
+
+```text
+Main: 나쁜 요청 / 좋은 요청
+Reply 1: 적용 기준, workflow modes, or review modes
+Reply 2: 예시 프롬프트
+Reply 3: 참고해서 볼 만한 것들, with links and how to apply each source
+```
+
+Repeat the structure, not the topic. Use it for new workflow problems such as PR review, test fixing, refactor scoping, agent permissions, memory setup, rollback, and verification.
+
 ## Reply Chain Rule
 
 Default to concise main post plus replies when the idea needs examples.
@@ -128,13 +139,14 @@ Use a reply chain when:
 - there are 2+ examples
 - sources/caveats would weaken the main hook
 
-Main post must stand alone. Replies add proof, examples, or a reusable checklist.
+Main post must stand alone. Replies add proof, examples, or a reusable checklist. Never use more than 3 replies. If the idea needs more, split it into a follow-up post.
 
 Preferred structure for repo/workflow posts:
 
-1. Main: create curiosity with a concrete claim and a short checklist.
-2. Replies 1-N: explain one checklist item per reply when the user wants a deeper chain. If the main uses 1-5, prefer five separate replies, each starting with the matching number.
-3. Final reply: list source repos with links only when they help the reader inspect the idea, and explain what each repo demonstrates for the workflow.
+1. Main: create curiosity with a concrete claim and a short checklist or "나쁜 요청 / 좋은 요청" contrast.
+2. Reply: include a copyable "예시 프롬프트" when the post teaches an agent workflow.
+3. Replies 1-N: explain one checklist item or workflow mode per reply when deeper context is needed.
+4. Final reply: list source repos/docs/blogs with links only when they help inspection, and explain how to apply each source.
 
 Avoid ending at a bare checklist. Add the "why" or the reader has little reason to care.
 
@@ -237,8 +249,7 @@ This wrapper checks the approved chain, uses the current `THREADS_ACCESS_TOKEN` 
 
 Do not ask the user to manually set `THREADS_USER_ID` unless the token verification endpoint is unavailable. A stale user ID causes hard-to-debug `Unsupported post request` errors.
 
-For reaction-based channel direction, use `docs/threads-reaction-learning-architecture.md`.
-For account concept and topic selection, use `docs/threads-channel-operating-system.md`.
+For account concept, topic selection, proven formats, length limits, and reaction learning, use `docs/threads-channel-playbook.md`.
 
 To run the quality gate without publishing:
 

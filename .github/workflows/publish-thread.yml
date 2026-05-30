@@ -1,0 +1,75 @@
+name: Publish Threads Chain
+
+on:
+  workflow_dispatch:
+    inputs:
+      thread_text:
+        description: "Thread text. Separate main/replies with a line containing only ---"
+        required: true
+        type: string
+      dry_run:
+        description: "Validate and preview without publishing"
+        required: true
+        default: true
+        type: boolean
+      topic:
+        description: "Metrics topic label"
+        required: true
+        default: "agent workflow"
+        type: string
+      source_count:
+        description: "Number of sources referenced"
+        required: true
+        default: "0"
+        type: string
+      format:
+        description: "Metrics format label"
+        required: true
+        default: "A"
+        type: string
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    env:
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      THREAD_TEXT: ${{ inputs.thread_text }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install requests
+
+      - name: Write approved chain
+        shell: pwsh
+        run: |
+          Set-Content -Path approved-thread-chain.txt -Value $env:THREAD_TEXT -Encoding utf8
+
+      - name: Validate and publish
+        shell: pwsh
+        run: |
+          $sourceCount = [int]"${{ inputs.source_count }}"
+          if ("${{ inputs.dry_run }}" -eq "true") {
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -DryRun
+          } else {
+            if (-not $env:THREADS_ACCESS_TOKEN) {
+              throw "THREADS_ACCESS_TOKEN secret is required when dry_run is false."
+            }
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount
+          }
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thread-publish-run
+          path: |
+            approved-thread-chain.txt
+            threads-post-metrics.csv
+          if-no-files-found: ignore

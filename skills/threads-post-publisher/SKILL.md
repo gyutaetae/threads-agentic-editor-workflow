@@ -19,9 +19,7 @@ C:\Users\kym70\threads-agentic-editor-workflow
 
 Read these repo docs only when relevant:
 
-- `docs/threads-channel-operating-system.md`: account concept, topic fit, first-line hook, reply-chain shape.
-- `docs/threads-agentic-editor-architecture.md`: source-to-draft-to-publish workflow and decision intent.
-- `docs/threads-reaction-learning-architecture.md`: metrics/comments collection and channel learning.
+- `docs/threads-channel-playbook.md`: account concept, topic fit, first-line hook, reply-chain shape, length limits, metrics/comments learning.
 - `docs/threads-api-autopost-setup.md`: API setup or auth troubleshooting.
 
 Use `$threads-agentic-editor` for full drafting/scoring. Use this skill for final packaging, publishing, API debugging, and metrics.
@@ -76,4 +74,4 @@ After publishing, collect snapshots with:
 .\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
 ```
 
-Use reaction docs before suggesting channel direction changes. Optimize for useful replies, shares, follows, and comment quality, not views alone.
+Use the channel playbook before suggesting direction changes. Optimize for useful replies, shares, follows, and comment quality, not views alone.
