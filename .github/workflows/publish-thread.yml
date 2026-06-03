@@ -32,6 +32,8 @@ jobs:
   publish:
     runs-on: windows-latest
     env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
       THREAD_TEXT: ${{ inputs.thread_text }}
     steps:
