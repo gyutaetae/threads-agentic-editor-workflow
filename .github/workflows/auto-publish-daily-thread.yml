@@ -1,0 +1,76 @@
+name: Auto Publish Daily Threads Chain
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish to Threads. false means generate and dry-run only."
+        required: true
+        default: false
+        type: boolean
+  schedule:
+    # 09:00 KST every day.
+    - cron: "0 0 * * *"
+
+jobs:
+  auto-publish:
+    runs-on: windows-latest
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.4-mini' }}
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install requests
+
+      - name: Collect candidates
+        shell: pwsh
+        run: |
+          $date = Get-Date -Format "yyyy-MM-dd"
+          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 4 -PerFeed 4 -ReadmeTop 4 -Date $date
+
+      - name: Generate approved chain
+        shell: pwsh
+        run: |
+          $date = Get-Date -Format "yyyy-MM-dd"
+          python .\scripts\generate_auto_thread.py `
+            --date $date `
+            --candidates-path ".\daily-editor\$date-candidates.json" `
+            --output-path ".\approved-thread-chain.txt" `
+            --metadata-path ".\daily-editor\auto-thread-metadata.json"
+
+      - name: Validate generated chain
+        shell: pwsh
+        run: .\scripts\publish-approved-chain.ps1 -Topic "auto generated" -SourceCount 0 -DryRun
+
+      - name: Publish generated chain
+        if: ${{ github.event_name == 'schedule' || inputs.publish == true }}
+        shell: pwsh
+        run: |
+          $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw | ConvertFrom-Json
+          .\scripts\publish-approved-chain.ps1 `
+            -Topic $metadata.topic `
+            -Format $metadata.format `
+            -SourceCount ([int]$metadata.source_count)
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-thread-run
+          path: |
+            approved-thread-chain.txt
+            threads-post-metrics.csv
+            daily-editor/**
+          if-no-files-found: ignore

@@ -142,6 +142,39 @@ Reply 3: 참고해서 볼 만한 것들 + 각 링크의 적용법
 - 게시 전 검사에서 main + 댓글 3개를 넘으면 실패한다.
 - 실행 결과의 artifact에 `approved-thread-chain.txt`와 `threads-post-metrics.csv`가 저장된다.
 
+## GitHub Actions 완전 자동 게시
+
+`Auto Publish Daily Threads Chain` workflow는 매일 09:00 KST에 후보 수집, OpenAI 초안 생성, 품질 검사, Threads 게시를 자동 실행한다.
+
+필요한 GitHub secret:
+
+```text
+OPENAI_API_KEY
+THREADS_ACCESS_TOKEN
+```
+
+선택 GitHub variable:
+
+```text
+OPENAI_MODEL
+```
+
+기본 모델은 `gpt-5.4-mini`다. OpenAI 문서는 최신 모델을 Responses API와 SDK에서 사용할 수 있다고 설명하며, 복잡한 코딩/전문 작업은 flagship 모델, 비용/지연 최적화는 mini/nano 계열을 고르라고 안내한다.
+
+수동 테스트:
+
+1. GitHub repo `Actions` 탭으로 간다.
+2. `Auto Publish Daily Threads Chain`을 선택한다.
+3. `Run workflow`를 누른다.
+4. `publish = false`로 실행하면 생성 + dry-run만 한다.
+5. `publish = true`로 실행하면 생성 후 실제 게시한다.
+
+주의:
+
+- `schedule` 실행은 승인 없이 바로 게시한다.
+- 자동 글은 main + 댓글 3개, 파트당 500자 제한을 통과해야 한다.
+- 품질이 흔들리면 workflow의 `schedule` 줄을 제거하고 수동 실행만 유지한다.
+
 ## 게시 정책
 
 초반에는 완전 자동 게시 금지.
