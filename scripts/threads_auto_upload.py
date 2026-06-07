@@ -18,8 +18,14 @@ def raise_for_status_with_body(response: requests.Response) -> None:
         response.raise_for_status()
     except requests.HTTPError as exc:
         body = response.text.strip()
+        sanitized_url = response.url
+        if "access_token=" in sanitized_url:
+            sanitized_url = sanitized_url.split("access_token=", 1)[0] + "access_token=<redacted>"
+        access_token = os.environ.get("THREADS_ACCESS_TOKEN", "")
+        if body and access_token:
+            body = body.replace(access_token, "<redacted>")
         if body:
-            raise SystemExit(f"{exc}\nResponse body:\n{body}") from exc
+            raise SystemExit(f"{exc.response.status_code} Client Error for url: {sanitized_url}\nResponse body:\n{body}") from exc
         raise
 
 
@@ -304,6 +310,7 @@ def append_metrics_row(
     format_name: str,
     source_count: int,
     card_used: bool,
+    chain_replies: int = 0,
 ) -> None:
     fields = [
         "date",
@@ -318,6 +325,9 @@ def append_metrics_row(
         "views",
         "likes",
         "replies",
+        "chain_replies",
+        "own_replies",
+        "audience_replies",
         "reposts",
         "quotes",
         "follows_gained",
@@ -343,6 +353,9 @@ def append_metrics_row(
                 "views": 0,
                 "likes": 0,
                 "replies": 0,
+                "chain_replies": chain_replies,
+                "own_replies": 0,
+                "audience_replies": 0,
                 "reposts": 0,
                 "quotes": 0,
                 "follows_gained": 0,
@@ -351,13 +364,51 @@ def append_metrics_row(
         )
 
 
-def update_metrics_row(path: str, post_id: str, metrics: dict[str, int], notes: str = "") -> bool:
+def int_field(row: dict, key: str, default: int = 0) -> int:
+    try:
+        return int(row.get(key) or default)
+    except (TypeError, ValueError):
+        return default
+
+
+def ensure_metrics_fields(fieldnames: list[str]) -> list[str]:
+    desired_order = [
+        "date",
+        "post_id",
+        "thread_url",
+        "format",
+        "topic",
+        "hook",
+        "source_count",
+        "card_used",
+        "posted_at",
+        "views",
+        "likes",
+        "replies",
+        "chain_replies",
+        "own_replies",
+        "audience_replies",
+        "reposts",
+        "quotes",
+        "follows_gained",
+        "notes",
+    ]
+    return desired_order + [field for field in fieldnames if field not in desired_order]
+
+
+def update_metrics_row(
+    path: str,
+    post_id: str,
+    metrics: dict[str, int],
+    notes: str = "",
+    own_replies: int | None = None,
+) -> bool:
     if not os.path.exists(path):
         return False
 
     with open(path, "r", encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
-        fieldnames = list(rows[0].keys()) if rows else []
+        fieldnames = ensure_metrics_fields(list(rows[0].keys()) if rows else [])
 
     if not rows:
         return False
@@ -368,6 +419,12 @@ def update_metrics_row(path: str, post_id: str, metrics: dict[str, int], notes: 
             for key in ["views", "likes", "replies", "reposts", "quotes"]:
                 if key in metrics:
                     row[key] = metrics[key]
+            if own_replies is not None:
+                row["own_replies"] = own_replies
+            chain_replies = int_field(row, "chain_replies")
+            own_reply_count = int_field(row, "own_replies")
+            total_replies = int_field(row, "replies")
+            row["audience_replies"] = max(total_replies - chain_replies - own_reply_count, 0)
             if notes:
                 existing = row.get("notes", "")
                 row["notes"] = " | ".join(part for part in [existing, notes] if part)
@@ -450,6 +507,7 @@ def main() -> int:
     collect.add_argument("--metrics-path", default="threads-post-metrics.csv")
     collect.add_argument("--window", default="manual")
     collect.add_argument("--metrics", default="views,likes,replies,reposts,quotes")
+    collect.add_argument("--own-replies", type=int, default=None)
     collect.add_argument("--no-update-csv", action="store_true")
 
     args = parser.parse_args()
@@ -540,6 +598,7 @@ def main() -> int:
             format_name=args.format,
             source_count=args.source_count,
             card_used=args.card_used,
+            chain_replies=max(len(parts) - 1, 0),
         )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")
@@ -553,7 +612,7 @@ def main() -> int:
         print(metrics)
         if not args.no_update_csv:
             note = f"metrics collected: {args.window}"
-            if update_metrics_row(args.metrics_path, args.post_id, metrics, note):
+            if update_metrics_row(args.metrics_path, args.post_id, metrics, note, args.own_replies):
                 print(f"Updated metrics row in {args.metrics_path}")
             else:
                 print(f"No matching metrics row found in {args.metrics_path}")

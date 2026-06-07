@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "aicommits": "^3.4.0",
+    "aider": "^1.0.1"
+  }
+}

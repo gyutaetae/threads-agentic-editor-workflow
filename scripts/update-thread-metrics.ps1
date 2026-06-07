@@ -5,6 +5,9 @@ param(
     [int]$Views = -1,
     [int]$Likes = -1,
     [int]$Replies = -1,
+    [int]$ChainReplies = -1,
+    [int]$OwnReplies = -1,
+    [int]$AudienceReplies = -1,
     [int]$Reposts = -1,
     [int]$Quotes = -1,
     [int]$FollowsGained = -1,
@@ -40,11 +43,30 @@ if ($targetIndex -lt 0) {
 }
 
 $target = $rows[$targetIndex]
+
+foreach ($row in $rows) {
+    foreach ($name in @("chain_replies", "own_replies", "audience_replies")) {
+        if (-not ($row.PSObject.Properties.Name -contains $name)) {
+            $row | Add-Member -NotePropertyName $name -NotePropertyValue 0
+        }
+    }
+}
+
 if ($PostId) { $target.post_id = $PostId }
 if ($ThreadUrl) { $target.thread_url = $ThreadUrl }
 if ($Views -ge 0) { $target.views = $Views }
 if ($Likes -ge 0) { $target.likes = $Likes }
 if ($Replies -ge 0) { $target.replies = $Replies }
+if ($ChainReplies -ge 0) { $target.chain_replies = $ChainReplies }
+if ($OwnReplies -ge 0) { $target.own_replies = $OwnReplies }
+if ($AudienceReplies -ge 0) {
+    $target.audience_replies = $AudienceReplies
+} else {
+    $totalReplies = if ($target.replies) { [int]$target.replies } else { 0 }
+    $chainReplyCount = if ($target.chain_replies) { [int]$target.chain_replies } else { 0 }
+    $ownReplyCount = if ($target.own_replies) { [int]$target.own_replies } else { 0 }
+    $target.audience_replies = [Math]::Max($totalReplies - $chainReplyCount - $ownReplyCount, 0)
+}
 if ($Reposts -ge 0) { $target.reposts = $Reposts }
 if ($Quotes -ge 0) { $target.quotes = $Quotes }
 if ($FollowsGained -ge 0) { $target.follows_gained = $FollowsGained }

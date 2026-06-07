@@ -116,6 +116,18 @@ Reply 3: 참고해서 볼 만한 것들 + 각 링크의 적용법
 .\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
 ```
 
+내가 직접 단 추가 댓글까지 제외하려면:
+
+```powershell
+.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h" -OwnReplies 1
+```
+
+`threads-post-metrics.csv`의 `replies`는 Threads API가 주는 총 reply 수다. 분석에는 체인으로 단 답글과 내가 직접 단 댓글을 뺀 `audience_replies`를 우선 사용한다.
+
+```text
+audience_replies = replies - chain_replies - own_replies
+```
+
 ## GitHub Actions 게시
 
 로컬 터미널 대신 GitHub Actions에서 수동으로 게시할 수 있다.
