@@ -15,3 +15,4 @@ approved-thread-post.txt
 *.token
 *.secret
 
+node_modules/
