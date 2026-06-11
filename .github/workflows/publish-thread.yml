@@ -27,10 +27,22 @@ on:
         required: true
         default: "A"
         type: string
+      source_name:
+        description: "Source name or repo, used for duplicate prevention"
+        required: false
+        default: ""
+        type: string
+      source_url:
+        description: "Source URL, used for duplicate prevention"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   publish:
     runs-on: windows-latest
+    permissions:
+      contents: write
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
@@ -58,12 +70,27 @@ jobs:
         run: |
           $sourceCount = [int]"${{ inputs.source_count }}"
           if ("${{ inputs.dry_run }}" -eq "true") {
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -DryRun
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -DryRun
           } else {
             if (-not $env:THREADS_ACCESS_TOKEN) {
               throw "THREADS_ACCESS_TOKEN secret is required when dry_run is false."
             }
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}"
+          }
+
+      - name: Commit content history
+        if: ${{ inputs.dry_run == false }}
+        shell: pwsh
+        run: |
+          if (Test-Path ".\content-history.jsonl") {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add content-history.jsonl
+            git diff --cached --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Record published Threads source"
+              git push
+            }
           }
 
       - name: Upload run artifacts
@@ -73,5 +100,6 @@ jobs:
           name: thread-publish-run
           path: |
             approved-thread-chain.txt
+            content-history.jsonl
             threads-post-metrics.csv
           if-no-files-found: ignore

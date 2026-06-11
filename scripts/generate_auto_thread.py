@@ -8,8 +8,8 @@ from pathlib import Path
 import requests
 
 
-RESPONSES_URL = "https://api.openai.com/v1/responses"
-DEFAULT_MODEL = "gpt-5.4-mini"
+RESPONSES_URL = "https://api.groq.com/openai/v1/responses"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
 MAX_PARTS = 4
 MAX_CHARS = 500
 
@@ -85,7 +85,7 @@ def build_prompt(playbook: str, candidates: list[dict]) -> str:
         "Follow the channel playbook exactly.\n\n"
         "Hard constraints:\n"
         "- Return JSON only.\n"
-        "- JSON keys: thread_text, topic, source_count, format.\n"
+        "- JSON keys: thread_text, topic, source_count, format, source_name, source_url.\n"
         "- thread_text must use --- between main and replies.\n"
         "- Maximum 4 parts total: main + up to 3 replies.\n"
         "- Each part must be under 500 Korean characters.\n"
@@ -100,7 +100,7 @@ def build_prompt(playbook: str, candidates: list[dict]) -> str:
     )
 
 
-def call_openai(api_key: str, model: str, prompt: str) -> dict:
+def call_groq(api_key: str, model: str, prompt: str) -> dict:
     response = requests.post(
         RESPONSES_URL,
         headers={
@@ -115,23 +115,23 @@ def call_openai(api_key: str, model: str, prompt: str) -> dict:
         timeout=120,
     )
     if response.status_code >= 400:
-        raise SystemExit(f"OpenAI API error {response.status_code}:\n{response.text}")
+        raise SystemExit(f"Groq API error {response.status_code}:\n{response.text}")
     return response.json()
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate one approved Threads chain with OpenAI.")
+    parser = argparse.ArgumentParser(description="Generate one approved Threads chain with Groq.")
     parser.add_argument("--date", required=True)
     parser.add_argument("--candidates-path", required=True)
     parser.add_argument("--playbook-path", default="docs/threads-channel-playbook.md")
     parser.add_argument("--output-path", default="approved-thread-chain.txt")
     parser.add_argument("--metadata-path", default="daily-editor/auto-thread-metadata.json")
-    parser.add_argument("--model", default=os.environ.get("OPENAI_MODEL", DEFAULT_MODEL))
+    parser.add_argument("--model", default=os.environ.get("GROQ_MODEL", DEFAULT_MODEL))
     args = parser.parse_args()
 
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("GROQ_API_KEY")
     if not api_key:
-        raise SystemExit("OPENAI_API_KEY is required.")
+        raise SystemExit("GROQ_API_KEY is required.")
 
     candidates = read_json(Path(args.candidates_path))
     if not isinstance(candidates, list) or not candidates:
@@ -139,12 +139,16 @@ def main() -> int:
 
     playbook = read_text(Path(args.playbook_path))
     prompt = build_prompt(playbook, candidates)
-    payload = call_openai(api_key, args.model, prompt)
+    payload = call_groq(api_key, args.model, prompt)
     text = extract_text(payload)
     data = extract_json(text)
 
     thread_text = str(data.get("thread_text", "")).strip()
     validate_thread(thread_text)
+
+    candidate_by_url = {item.get("url"): item for item in candidates if item.get("url")}
+    source_url = str(data.get("source_url") or "").strip()
+    source_item = candidate_by_url.get(source_url) or candidates[0]
 
     output_path = Path(args.output_path)
     output_path.write_text(thread_text + "\n", encoding="utf-8")
@@ -155,6 +159,8 @@ def main() -> int:
         "topic": data.get("topic", "agent workflow"),
         "source_count": int(data.get("source_count", 0) or 0),
         "format": data.get("format", "A"),
+        "source_name": data.get("source_name") or source_item.get("name") or source_item.get("title") or "",
+        "source_url": source_url or source_item.get("url") or "",
     }
     metadata_path = Path(args.metadata_path)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)

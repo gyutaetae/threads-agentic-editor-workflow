@@ -156,22 +156,22 @@ audience_replies = replies - chain_replies - own_replies
 
 ## GitHub Actions 완전 자동 게시
 
-`Auto Publish Daily Threads Chain` workflow는 매일 09:00 KST에 후보 수집, OpenAI 초안 생성, 품질 검사, Threads 게시를 자동 실행한다.
+`Auto Publish Daily Threads Chain` workflow는 매일 09:00 KST에 후보 수집, Groq 초안 생성, 품질 검사, Threads 게시를 자동 실행한다.
 
 필요한 GitHub secret:
 
 ```text
-OPENAI_API_KEY
+GROQ_API_KEY
 THREADS_ACCESS_TOKEN
 ```
 
 선택 GitHub variable:
 
 ```text
-OPENAI_MODEL
+GROQ_MODEL
 ```
 
-기본 모델은 `gpt-5.4-mini`다. OpenAI 문서는 최신 모델을 Responses API와 SDK에서 사용할 수 있다고 설명하며, 복잡한 코딩/전문 작업은 flagship 모델, 비용/지연 최적화는 mini/nano 계열을 고르라고 안내한다.
+기본 모델은 `openai/gpt-oss-20b`다. Groq는 OpenAI-compatible endpoint를 제공하므로 자동 초안 생성은 `GROQ_API_KEY`로 실행한다.
 
 수동 테스트:
 
@@ -207,3 +207,4 @@ auto publish
 - 출처가 말한 사실과 우리의 해석을 분리한다.
 - GitHub stars는 인기도이지 품질 보장이 아니다.
 - 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
+- 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 repo를 반복 소재로 쓰지 않는다.

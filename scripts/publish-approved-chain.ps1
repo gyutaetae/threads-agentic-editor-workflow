@@ -3,6 +3,8 @@ param(
     [string]$Topic = "agent repo reading",
     [string]$Format = "A",
     [int]$SourceCount = 0,
+    [string]$SourceName = "",
+    [string]$SourceUrl = "",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -23,7 +25,9 @@ try {
         "--thread-path", $ThreadPath,
         "--topic", $Topic,
         "--format", $Format,
-        "--source-count", $SourceCount
+        "--source-count", $SourceCount,
+        "--source-name", $SourceName,
+        "--source-url", $SourceUrl
     )
 
     if ($CardUsed) {

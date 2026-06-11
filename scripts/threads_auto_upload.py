@@ -1,5 +1,6 @@
 import argparse
 import csv
+import json
 import os
 import sys
 import time
@@ -364,6 +365,35 @@ def append_metrics_row(
         )
 
 
+def append_content_history(
+    path: str,
+    source_name: str,
+    source_url: str,
+    topic: str,
+    hook: str,
+    format_name: str,
+    post_ids: list[str],
+    thread_url: str,
+) -> None:
+    if not source_name and not source_url:
+        return
+
+    now = datetime.now().astimezone()
+    entry = {
+        "date": now.strftime("%Y-%m-%d"),
+        "posted_at": now.isoformat(timespec="seconds"),
+        "source_name": source_name,
+        "source_url": source_url,
+        "topic": topic,
+        "format": format_name,
+        "hook": hook,
+        "post_ids": post_ids,
+        "thread_url": thread_url,
+    }
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
+
+
 def int_field(row: dict, key: str, default: int = 0) -> int:
     try:
         return int(row.get(key) or default)
@@ -494,10 +524,13 @@ def main() -> int:
     approved.add_argument("--image-url", default=os.environ.get("THREADS_IMAGE_URL"))
     approved.add_argument("--alt-text", default=os.environ.get("THREADS_ALT_TEXT"))
     approved.add_argument("--metrics-path", default="threads-post-metrics.csv")
+    approved.add_argument("--history-path", default="content-history.jsonl")
     approved.add_argument("--topic", default="agent repo reading")
     approved.add_argument("--hook", default="")
     approved.add_argument("--format", default="A")
     approved.add_argument("--source-count", type=int, default=0)
+    approved.add_argument("--source-name", default="")
+    approved.add_argument("--source-url", default="")
     approved.add_argument("--card-used", action="store_true")
     approved.add_argument("--dry-run", action="store_true")
 
@@ -600,8 +633,20 @@ def main() -> int:
             card_used=args.card_used,
             chain_replies=max(len(parts) - 1, 0),
         )
+        append_content_history(
+            path=args.history_path,
+            source_name=args.source_name,
+            source_url=args.source_url,
+            topic=args.topic,
+            hook=hook,
+            format_name=args.format,
+            post_ids=[str(item.get("id", "")) for item in published if item.get("id")],
+            thread_url=thread_url,
+        )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")
+        if args.source_name or args.source_url:
+            print(f"Recorded content history row in {args.history_path}")
         return 0
 
     if args.command == "collect-metrics":

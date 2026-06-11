@@ -15,11 +15,13 @@ on:
 jobs:
   auto-publish:
     runs-on: windows-latest
+    permissions:
+      contents: write
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.4-mini' }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-20b' }}
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -62,7 +64,24 @@ jobs:
           .\scripts\publish-approved-chain.ps1 `
             -Topic $metadata.topic `
             -Format $metadata.format `
-            -SourceCount ([int]$metadata.source_count)
+            -SourceCount ([int]$metadata.source_count) `
+            -SourceName $metadata.source_name `
+            -SourceUrl $metadata.source_url
+
+      - name: Commit content history
+        if: ${{ github.event_name == 'schedule' || inputs.publish == true }}
+        shell: pwsh
+        run: |
+          if (Test-Path ".\content-history.jsonl") {
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add content-history.jsonl
+            git diff --cached --quiet
+            if ($LASTEXITCODE -ne 0) {
+              git commit -m "Record published Threads source"
+              git push
+            }
+          }
 
       - name: Upload run artifacts
         if: always()
@@ -71,6 +90,7 @@ jobs:
           name: auto-thread-run
           path: |
             approved-thread-chain.txt
+            content-history.jsonl
             threads-post-metrics.csv
             daily-editor/**
           if-no-files-found: ignore

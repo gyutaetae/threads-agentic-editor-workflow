@@ -109,6 +109,46 @@ REQUIRED_RELEVANCE_TERMS = [
 ]
 
 
+def load_used_sources(history_path: Path) -> tuple[set[str], set[str]]:
+    urls = set()
+    names = set()
+    if not history_path.exists():
+        return urls, names
+
+    for line in history_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            entry = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if entry.get("source_url"):
+            urls.add(str(entry["source_url"]).strip().lower())
+        if entry.get("source_name"):
+            names.add(str(entry["source_name"]).strip().lower())
+    return urls, names
+
+
+def filter_used_sources(candidates: list[dict], history_path: Path) -> list[dict]:
+    used_urls, used_names = load_used_sources(history_path)
+    if not used_urls and not used_names:
+        return candidates
+
+    filtered = []
+    skipped = []
+    for item in candidates:
+        url = str(item.get("url") or "").strip().lower()
+        name = str(item.get("name") or item.get("title") or "").strip().lower()
+        if url in used_urls or name in used_names:
+            skipped.append(item.get("title") or item.get("name") or url)
+            continue
+        filtered.append(item)
+
+    if skipped:
+        print(f"Skipped {len(skipped)} previously used source(s): {', '.join(skipped[:5])}")
+    return filtered
+
+
 def github_headers() -> dict:
     token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or read_gh_token()
     headers = {
@@ -471,10 +511,14 @@ def main() -> int:
     parser.add_argument("--per-feed", type=int, default=5)
     parser.add_argument("--readme-top", type=int, default=5)
     parser.add_argument("--output-dir", default="daily-editor")
+    parser.add_argument("--history-path", default="content-history.jsonl")
     parser.add_argument("--date", default=datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d"))
     args = parser.parse_args()
 
     raw_candidates = collect_github(args.per_query) + collect_official_feeds(args.per_feed)
+    raw_candidates = filter_used_sources(raw_candidates, Path(args.history_path))
+    if not raw_candidates:
+        raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)
     write_outputs(candidates, Path(args.output_dir), args.date)
