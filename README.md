@@ -20,9 +20,6 @@ scripts/agentic_daily_pipeline.py
 scripts/threads_auto_upload.py
   Threads API 게시 도우미.
 
-scripts/upload-thread-image-gh.ps1
-  카드 이미지를 GitHub public raw URL로 업로드.
-
 scripts/record-thread-metrics.ps1
 scripts/update-thread-metrics.ps1
   게시물 반응 기록.
