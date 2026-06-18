@@ -1,17 +1,17 @@
 # Threads Channel Playbook
 
-Always-reference guide for `@gyu_in_black`.
+Compact reference for `@gyu_in_black`. Keep this file short enough to fit into generation prompts.
 
 ## Positioning
 
 ```text
-프로 개발자의 AI agent 작업법을 훔쳐보는 계정
+agent로 논문 읽고, 글 쓰고, 개발하는 23살 대학생 개발자가 직접 실험한 AI 사용법
 ```
 
 Promise:
 
 ```text
-매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
+매일 하나, 개발자가 바로 복사해 쓸 수 있는 agent 작업법
 ```
 
 Target reader:
@@ -25,6 +25,12 @@ Editorial thesis:
 ```text
 Popular AI repos and official releases are hooks.
 Harness/workflow insight is the value.
+```
+
+Voice:
+
+```text
+직접 써본 사람의 짧은 기록. 개인 경험은 1-2줄만 쓰고 바로 실용 예시로 간다.
 ```
 
 Do not stop at "this repo is trending." Explain what a developer can copy into their own agent workflow.
@@ -54,6 +60,52 @@ Avoid:
 - link dumps without a workflow lesson
 - feature announcements that only restate release notes without a concrete usage example
 
+## Human Texture
+
+Use a mix of surfaces so the account does not feel machine-produced.
+
+Target mix:
+
+- 40% bad usage -> better request
+- 20% paper/dev diary: "오늘 논문/코드 작업하면서 느낀 건..."
+- 20% failed request -> fixed request
+- 20% quote/idea/opinion hook
+
+Good personal lines:
+
+- "오늘 논문 정리하다가 느낀 건..."
+- "내가 agent에게 이렇게 시켰더니 결과가 흐렸습니다."
+- "요즘 내가 제일 많이 쓰는 요청은 이겁니다."
+- "23살 대학생 입장에서 제일 체감되는 차이는..."
+
+Rules:
+
+- Personal line is proof of use, not diary content.
+- Add one concrete prompt, checklist, or workflow mode within the same chain.
+- Never pretend to have used a tool, repo, or paper if the source does not support it.
+
+## Quote Rule
+
+Use quotes/idea hooks sparingly: about 20-30% of posts, not every post.
+
+Quote-bank behavior:
+
+- Use `data/quote_bank.json`.
+- Prefer paraphrase unless `quote` is filled and source is verified.
+- Start from the quote/idea, then immediately connect it to a real agent workflow.
+- The famous person is the doorway. The value is the user's own agent practice.
+
+Example:
+
+```text
+Feynman식으로 말하면,
+이해했다는 건 다시 설명하고 재구성할 수 있다는 뜻입니다.
+
+논문을 agent에게 읽힐 때도
+"요약해줘"보다 이렇게 시키는 게 낫습니다:
+...
+```
+
 ## Length And Thread Rules
 
 Posts must stay short.
@@ -68,7 +120,7 @@ Posts must stay short.
 Default chain:
 
 ```text
-Main: hook + useful contrast
+Main: bad usage hook + meaning + better usage examples
 Reply 1: 적용 기준 or workflow modes
 Reply 2: 예시 프롬프트
 Reply 3: 참고해서 볼 만한 것들 + how to apply each source
@@ -80,12 +132,13 @@ Use this often for practical workflow posts:
 
 ```text
 Main:
-AI agent에게 [흔한 넓은 요청]을 시키면 결과가 흐려진다.
+만약
+"[나쁜 사용 예시]"
+라고 사용하고 있다면,
 
-나쁜 요청:
-"..."
+[무엇을 잘못 맡기고 있거나 놓치고 있다는 뜻]입니다.
 
-좋은 요청:
+이런 방식으로 요청해보세요:
 "..."
 "..."
 "..."
@@ -112,7 +165,8 @@ Repeat the structure, not the topic. Use it for new workflow problems such as PR
 
 Why it works:
 
-- "나쁜 요청 / 좋은 요청" makes the mistake immediately visible.
+- The first line puts the bad usage inside the hook instead of labeling it as a draft section.
+- "이런 방식으로 요청해보세요" gives readers the better phrasing immediately.
 - "예시 프롬프트" gives readers something they can reuse today.
 - "참고해서 볼 만한 것들" adds credibility without turning the main post into a link dump.
 - Every source link must include an application note.
@@ -127,10 +181,13 @@ Main:
 중요한 건 기능 이름이 아니라
 [어떤 workflow가 바뀌는지]입니다.
 
-나쁜 사용:
-"..."
+만약
+"[나쁜 사용 예시]"
+라고 사용하고 있다면,
 
-좋은 사용:
+[기능을 도구 이름으로만 쓰고 workflow를 바꾸지 못한다는 뜻]입니다.
+
+이런 방식으로 요청해보세요:
 "..."
 "..."
 
@@ -164,7 +221,11 @@ Rules:
 Default first line:
 
 ```text
-만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다.
+만약
+"[나쁜 사용 예시]"
+라고 사용하고 있다면,
+
+[무엇을 잘못 맡기고 있거나 놓치고 있다는 뜻]입니다.
 ```
 
 Other acceptable hooks:
@@ -172,8 +233,20 @@ Other acceptable hooks:
 - "AI agent 잘 쓰는 사람은 프롬프트보다 작업 단위를 먼저 설계한다."
 - "GitHub star부터 보고 있다면, AI repo를 잘못 읽고 있는 겁니다."
 - "AI에게 코드 리뷰를 시킬 때 '이 PR 리뷰해줘'라고 하면 대부분 평범한 말만 돌아옵니다."
+- "오늘 논문 정리하다가 agent에게 절대 한 번에 맡기면 안 되는 일을 배웠습니다."
+- "내가 agent에게 이렇게 시켰더니 결과가 흐렸습니다."
+- "[Famous person]의 [idea]를 agent 작업에 적용하면 기준이 달라집니다."
 
-Name a common mistake, reframe the real criterion, then show the better workflow.
+Name a common mistake through an exact bad usage example, reframe what it means, then show the better workflow with "이런 방식으로 요청해보세요:".
+
+## Format Diversity
+
+Avoid factory feel.
+
+- Do not reuse the same opening pattern for 3 consecutive published posts.
+- If the last 3 hooks use the same pattern, the next generated option should be penalized.
+- Vary first-person proof, quote/idea hook, failed request, and direct diagnostic.
+- Keep the reusable structure under the surface: mistake, criterion, example, source.
 
 ## Source Rules
 
@@ -247,7 +320,7 @@ Turn repeated signals into decisions:
 
 - `asks_for_example` -> show a concrete workflow next.
 - `asks_for_template` -> make the next post a checklist or prompt template.
-- `saves_bad_good_format` -> reuse "나쁜 요청 / 좋은 요청" with a new workflow problem.
+- `saves_bad_good_format` -> reuse the "만약 [나쁜 사용]이라고 사용하고 있다면 / 이런 방식으로 요청해보세요" format with a new workflow problem.
 - `clicks_reference_links` -> keep final replies as source links with application notes.
 - `wants_deeper_technical` -> make a technical teardown, but split long ideas across days.
 - `confused` -> simplify terms or add before/after.
@@ -264,3 +337,4 @@ Formats to repeat
 Formats to pause
 Next scoring adjustments
 ```
+

@@ -1,0 +1,44 @@
+name: Collect Threads Metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Collect reaction windows after daily posting slots. Runs at 10:30 and 22:30 KST.
+    - cron: "30 1,13 * * *"
+
+jobs:
+  collect-metrics:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install requests
+
+      - name: Collect due metrics
+        shell: pwsh
+        run: python .\scripts\collect_due_metrics.py --metrics-path ".\threads-post-metrics.csv"
+
+      - name: Commit metrics updates
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add threads-post-metrics.csv
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Collect Threads metrics"
+            git push
+          }

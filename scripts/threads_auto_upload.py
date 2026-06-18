@@ -2,6 +2,7 @@ import argparse
 import csv
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime
@@ -12,6 +13,8 @@ import requests
 
 GRAPH_BASE = "https://graph.threads.net"
 API_VERSION = "v1.0"
+SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
+SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 
 
 def raise_for_status_with_body(response: requests.Response) -> None:
@@ -33,6 +36,26 @@ def raise_for_status_with_body(response: requests.Response) -> None:
 def read_text(path: str) -> str:
     with open(path, "r", encoding="utf-8") as handle:
         return handle.read().strip()
+
+
+def strip_section_label(text: str) -> str:
+    lines = text.strip().splitlines()
+    while lines and SECTION_LABEL_RE.fullmatch(lines[0].strip()):
+        lines.pop(0)
+    if lines:
+        lines[0] = SECTION_LABEL_RE.sub("", lines[0], count=1)
+    return "\n".join(lines).strip()
+
+
+def normalize_part(part: str) -> str:
+    part = strip_section_label(part)
+    text = "\n".join(line.rstrip() for line in part.splitlines()).strip()
+    return re.sub(r"\n{3,}", "\n\n", text)
+
+
+def normalize_thread_text(raw: str) -> str:
+    parts = [normalize_part(part) for part in SEPARATOR_RE.split(raw.strip()) if part.strip()]
+    return "\n---\n".join(part for part in parts if part)
 
 
 def build_auth_url(app_id: str, redirect_uri: str, scopes: str, state: str) -> str:
@@ -253,8 +276,8 @@ def publish_post(
 
 
 def read_thread_parts(path: str) -> list[str]:
-    raw = read_text(path)
-    return [part.strip() for part in raw.split("\n---\n") if part.strip()]
+    raw = normalize_thread_text(read_text(path))
+    return [part.strip() for part in SEPARATOR_RE.split(raw) if part.strip()]
 
 
 def validate_thread_parts(parts: list[str]) -> None:
@@ -262,6 +285,10 @@ def validate_thread_parts(parts: list[str]) -> None:
     if too_long:
         detail = ", ".join(f"part {index}: {length} chars" for index, length in too_long)
         raise SystemExit(f"Threads text posts should be 500 characters or less. Too long: {detail}")
+    labeled = [index for index, part in enumerate(parts, start=1) if SECTION_LABEL_RE.match(part)]
+    if labeled:
+        detail = ", ".join(f"part {index}" for index in labeled)
+        raise SystemExit(f"Remove drafting labels such as Main: or Reply n: before publishing: {detail}")
 
 
 def print_thread_dry_run(parts: list[str], image_url: str | None = None) -> None:
@@ -312,15 +339,37 @@ def append_metrics_row(
     source_count: int,
     card_used: bool,
     chain_replies: int = 0,
+    source_type: str = "",
+    source_url: str = "",
+    content_axis: str = "",
+    format_type: str = "",
+    post_goal: str = "",
+    final_candidate_score: str | int | float = "",
+    quality_score: str | int | float = "",
+    post_slot: str = "",
+    experiment_group: str = "",
+    model: str = "",
+    main_text: str = "",
 ) -> None:
     fields = [
         "date",
         "post_id",
         "thread_url",
         "format",
+        "format_type",
+        "content_axis",
+        "post_goal",
         "topic",
         "hook",
+        "main_text",
         "source_count",
+        "source_type",
+        "source_url",
+        "final_candidate_score",
+        "quality_score",
+        "post_slot",
+        "experiment_group",
+        "model",
         "card_used",
         "posted_at",
         "views",
@@ -331,10 +380,14 @@ def append_metrics_row(
         "audience_replies",
         "reposts",
         "quotes",
+        "saves",
+        "profile_visits",
         "follows_gained",
         "notes",
     ]
     exists = os.path.exists(path)
+    if exists:
+        ensure_csv_columns(path, fields)
     now = datetime.now().astimezone()
     with open(path, "a", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
@@ -346,9 +399,20 @@ def append_metrics_row(
                 "post_id": post_id,
                 "thread_url": thread_url,
                 "format": format_name,
+                "format_type": format_type,
+                "content_axis": content_axis,
+                "post_goal": post_goal,
                 "topic": topic,
                 "hook": hook,
+                "main_text": main_text,
                 "source_count": source_count,
+                "source_type": source_type,
+                "source_url": source_url,
+                "final_candidate_score": final_candidate_score,
+                "quality_score": quality_score,
+                "post_slot": post_slot,
+                "experiment_group": experiment_group,
+                "model": model,
                 "card_used": str(card_used).lower(),
                 "posted_at": now.isoformat(timespec="seconds"),
                 "views": 0,
@@ -359,10 +423,29 @@ def append_metrics_row(
                 "audience_replies": 0,
                 "reposts": 0,
                 "quotes": 0,
+                "saves": "",
+                "profile_visits": "",
                 "follows_gained": 0,
                 "notes": "auto-recorded after publish",
             }
         )
+
+
+def ensure_csv_columns(path: str, fieldnames: list[str]) -> None:
+    with open(path, "r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        existing = list(reader.fieldnames or [])
+
+    if not existing or all(field in existing for field in fieldnames):
+        return
+
+    merged = fieldnames + [field for field in existing if field not in fieldnames]
+    with open(path, "w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=merged)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
 
 
 def append_content_history(
@@ -407,9 +490,20 @@ def ensure_metrics_fields(fieldnames: list[str]) -> list[str]:
         "post_id",
         "thread_url",
         "format",
+        "format_type",
+        "content_axis",
+        "post_goal",
         "topic",
         "hook",
+        "main_text",
         "source_count",
+        "source_type",
+        "source_url",
+        "final_candidate_score",
+        "quality_score",
+        "post_slot",
+        "experiment_group",
+        "model",
         "card_used",
         "posted_at",
         "views",
@@ -420,6 +514,8 @@ def ensure_metrics_fields(fieldnames: list[str]) -> list[str]:
         "audience_replies",
         "reposts",
         "quotes",
+        "saves",
+        "profile_visits",
         "follows_gained",
         "notes",
     ]
@@ -446,7 +542,7 @@ def update_metrics_row(
     updated = False
     for row in reversed(rows):
         if row.get("post_id") == post_id:
-            for key in ["views", "likes", "replies", "reposts", "quotes"]:
+            for key in ["views", "likes", "replies", "reposts", "quotes", "saves", "profile_visits"]:
                 if key in metrics:
                     row[key] = metrics[key]
             if own_replies is not None:
@@ -528,6 +624,15 @@ def main() -> int:
     approved.add_argument("--topic", default="agent repo reading")
     approved.add_argument("--hook", default="")
     approved.add_argument("--format", default="A")
+    approved.add_argument("--content-axis", default="")
+    approved.add_argument("--format-type", default="")
+    approved.add_argument("--post-goal", default="")
+    approved.add_argument("--final-candidate-score", default="")
+    approved.add_argument("--quality-score", default="")
+    approved.add_argument("--post-slot", default="")
+    approved.add_argument("--experiment-group", default="")
+    approved.add_argument("--model", default="")
+    approved.add_argument("--source-type", default="")
     approved.add_argument("--source-count", type=int, default=0)
     approved.add_argument("--source-name", default="")
     approved.add_argument("--source-url", default="")
@@ -622,6 +727,7 @@ def main() -> int:
         post_id = published[0].get("id", "")
         thread_url = f"https://www.threads.net/@{username}/post/{post_id}" if username and post_id else ""
         hook = args.hook or parts[0].splitlines()[0]
+        main_text = parts[0]
         append_metrics_row(
             path=args.metrics_path,
             post_id=post_id,
@@ -632,6 +738,17 @@ def main() -> int:
             source_count=args.source_count,
             card_used=args.card_used,
             chain_replies=max(len(parts) - 1, 0),
+            source_type=args.source_type,
+            source_url=args.source_url,
+            content_axis=args.content_axis,
+            format_type=args.format_type,
+            post_goal=args.post_goal,
+            final_candidate_score=args.final_candidate_score,
+            quality_score=args.quality_score,
+            post_slot=args.post_slot,
+            experiment_group=args.experiment_group,
+            model=args.model,
+            main_text=main_text,
         )
         append_content_history(
             path=args.history_path,

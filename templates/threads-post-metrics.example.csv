@@ -1,1 +1,1 @@
-date,post_id,thread_url,format,topic,hook,source_count,card_used,posted_at,views,likes,replies,chain_replies,own_replies,audience_replies,reposts,quotes,follows_gained,notes
+date,post_id,thread_url,format,format_type,content_axis,post_goal,topic,hook,main_text,source_count,source_type,source_url,final_candidate_score,quality_score,post_slot,experiment_group,model,card_used,posted_at,views,likes,replies,chain_replies,own_replies,audience_replies,reposts,quotes,saves,profile_visits,follows_gained,notes

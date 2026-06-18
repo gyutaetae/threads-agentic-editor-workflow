@@ -92,6 +92,91 @@ KEYWORDS = {
     "harness": 4,
 }
 
+CONTENT_AXES = {
+    "prompt_habit",
+    "workflow_mode",
+    "repo_teardown",
+    "failure_prevention",
+    "checklist",
+    "official_update",
+    "opinion",
+}
+
+FORMAT_TYPES = {
+    "bad_to_better",
+    "senior_first_move",
+    "workflow_mode",
+    "repo_lesson",
+    "failure_case",
+    "copy_checklist",
+    "update_to_action",
+    "short_opinion",
+}
+
+POST_GOALS = {
+    "save",
+    "comment",
+    "share",
+    "follow",
+    "profile_visit",
+}
+
+SCORING_WEIGHTS = {
+    "actionability_score": 0.22,
+    "copyability_score": 0.18,
+    "senior_insight_score": 0.18,
+    "source_grounding_score": 0.14,
+    "format_fit_score": 0.10,
+    "reuse_value_score": 0.08,
+    "risk_reduction_score": 0.06,
+    "hook_strength_score": 0.04,
+}
+
+PRACTICAL_TERMS = [
+    "test",
+    "tests",
+    "eval",
+    "hook",
+    "memory",
+    "skill",
+    "mcp",
+    "rollback",
+    "review",
+    "pr",
+    "workflow",
+    "agent",
+    "cursor",
+    "codex",
+    "claude",
+]
+
+RISK_TERMS = [
+    "safe",
+    "safety",
+    "rollback",
+    "review",
+    "test",
+    "tests",
+    "eval",
+    "permission",
+    "sandbox",
+    "observability",
+    "failure",
+    "error",
+]
+
+MODE_TERMS = [
+    "mode",
+    "workflow",
+    "review",
+    "plan",
+    "debug",
+    "test",
+    "eval",
+    "rollback",
+    "automation",
+]
+
 REQUIRED_RELEVANCE_TERMS = [
     "agent",
     "agentic",
@@ -107,6 +192,147 @@ REQUIRED_RELEVANCE_TERMS = [
     "automation",
     "harness",
 ]
+
+
+def clamp_score(value: int | float, lower: int = 0, upper: int = 100) -> int:
+    return max(lower, min(upper, int(round(value))))
+
+
+def item_text(item: dict) -> str:
+    return " ".join(
+        [
+            item.get("name") or "",
+            item.get("title") or "",
+            item.get("description") or "",
+            item.get("readme_summary") or "",
+            " ".join(item.get("topics") or []),
+            item.get("category") or "",
+            item.get("our_angle") or "",
+        ]
+    ).lower()
+
+
+def count_terms(text: str, terms: list[str]) -> int:
+    return sum(1 for term in terms if term in text)
+
+
+def select_content_format(item: dict) -> tuple[str, str, str, str]:
+    text = item_text(item)
+    source_type = item.get("source_type", "")
+    topics = " ".join(item.get("topics") or []).lower()
+
+    if source_type == "official_feed":
+        return (
+            "official_update",
+            "update_to_action",
+            "share",
+            "Official update needs a practical translation from release fact to developer action.",
+        )
+    if any(term in text for term in ["mistake", "failure", "error", "unsafe", "rollback", "broken", "scope"]):
+        return (
+            "failure_prevention",
+            "failure_case",
+            "save",
+            "Candidate exposes a common agent failure that can become a prevention rule.",
+        )
+    if any(term in text for term in ["mode", "workflow", "review", "debug", "test", "eval", "rollback"]):
+        return (
+            "workflow_mode",
+            "workflow_mode",
+            "save",
+            "Candidate naturally maps to repeatable agent work modes.",
+        )
+    if source_type == "github_repo" and any(term in text for term in ["example", "examples", "docs", "config", "tests", "template", "readme"]):
+        return (
+            "repo_teardown",
+            "repo_lesson",
+            "profile_visit",
+            "Repo contains artifacts that can be converted into a practical lesson.",
+        )
+    if any(term in text for term in ["checklist", "criteria", "rule", "template", "prompt"]):
+        return (
+            "checklist",
+            "copy_checklist",
+            "save",
+            "Candidate can be reduced into reusable criteria or a copyable template.",
+        )
+    if any(term in text for term in ["prompt", "ask", "instruction", "request"]):
+        return (
+            "prompt_habit",
+            "bad_to_better",
+            "save",
+            "Candidate can show a clear bad usage to better usage transformation.",
+        )
+    if any(term in text for term in ["senior", "architecture", "harness", "agentic"]):
+        return (
+            "workflow_mode",
+            "senior_first_move",
+            "follow",
+            "Candidate reveals how experienced developers structure work before implementation.",
+        )
+    if any(term in topics for term in ["ai", "llm", "agent"]):
+        return (
+            "opinion",
+            "short_opinion",
+            "comment",
+            "Candidate is useful as an account-level viewpoint but has no stronger format fit.",
+        )
+    return (
+        "opinion",
+        "short_opinion",
+        "comment",
+        "Fallback format for a useful but weakly structured candidate.",
+    )
+
+
+def score_routed_candidate(item: dict) -> dict:
+    text = item_text(item)
+    stars = int(item.get("stars") or 0)
+    source_type = item.get("source_type", "")
+    readme_present = bool(item.get("readme_summary"))
+
+    content_axis, format_type, post_goal, format_reason = select_content_format(item)
+    practical_hits = count_terms(text, PRACTICAL_TERMS)
+    risk_hits = count_terms(text, RISK_TERMS)
+    mode_hits = count_terms(text, MODE_TERMS)
+
+    actionability = clamp_score(35 + practical_hits * 8 + (12 if readme_present else 0))
+    copyability = clamp_score(25 + count_terms(text, ["prompt", "template", "checklist", "example", "criteria", "rule"]) * 12)
+    senior_insight = clamp_score(30 + count_terms(text, ["harness", "workflow", "architecture", "agentic", "review", "eval"]) * 10)
+    source_grounding = clamp_score(55 if source_type == "official_feed" else 45 + (20 if readme_present else 0) + min(stars // 2000, 15))
+    hook_strength = clamp_score(30 + count_terms(text, ["mistake", "failure", "wrong", "bad", "before", "review", "rollback", "test"]) * 9 + practical_hits * 2)
+    format_fit = clamp_score(45 + mode_hits * 7 + (15 if format_type in {"repo_lesson", "update_to_action"} else 0))
+    reuse_value = clamp_score(35 + count_terms(text, ["workflow", "template", "checklist", "criteria", "memory", "skill", "eval"]) * 9)
+    risk_reduction = clamp_score(25 + risk_hits * 10)
+
+    weighted = (
+        actionability * SCORING_WEIGHTS["actionability_score"]
+        + copyability * SCORING_WEIGHTS["copyability_score"]
+        + senior_insight * SCORING_WEIGHTS["senior_insight_score"]
+        + source_grounding * SCORING_WEIGHTS["source_grounding_score"]
+        + format_fit * SCORING_WEIGHTS["format_fit_score"]
+        + reuse_value * SCORING_WEIGHTS["reuse_value_score"]
+        + risk_reduction * SCORING_WEIGHTS["risk_reduction_score"]
+        + hook_strength * SCORING_WEIGHTS["hook_strength_score"]
+    )
+
+    item["content_axis"] = content_axis
+    item["format_type"] = format_type
+    item["post_goal"] = post_goal
+    item["format_reason"] = format_reason
+    item["score"] = {
+        "total": clamp_score(weighted),
+        "final_score": round(weighted, 2),
+        "actionability_score": actionability,
+        "copyability_score": copyability,
+        "senior_insight_score": senior_insight,
+        "source_grounding_score": source_grounding,
+        "hook_strength_score": hook_strength,
+        "format_fit_score": format_fit,
+        "reuse_value_score": reuse_value,
+        "risk_reduction_score": risk_reduction,
+    }
+    return item
 
 
 def load_used_sources(history_path: Path) -> tuple[set[str], set[str]]:
@@ -400,6 +626,10 @@ def score_candidate(item: dict) -> dict:
     return item
 
 
+def route_and_score_candidates(candidates: list[dict]) -> list[dict]:
+    return [score_routed_candidate(item) for item in candidates]
+
+
 def make_broad_angle(item: dict) -> str:
     if item.get("source_type") == "official_feed":
         return "공식 업데이트를 그냥 요약하지 말고, 개발자가 내일 작업 방식에서 바꿀 점으로 번역한다."
@@ -446,7 +676,11 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
             [
                 f"### {index}. {item['title']}",
                 "",
-                f"- Score: {score['total']} (trend {score['trend']}, utility {score['utility']}, novelty {score['novelty']}, authority {score['authority']}, angle {score['our_angle']}, virality {score['virality']})",
+                f"- Final score: {score['total']} (actionability {score['actionability_score']}, copyability {score['copyability_score']}, senior insight {score['senior_insight_score']}, source grounding {score['source_grounding_score']}, format fit {score['format_fit_score']}, reuse {score['reuse_value_score']}, risk reduction {score['risk_reduction_score']}, hook {score['hook_strength_score']})",
+                f"- Content axis: {item.get('content_axis', 'unknown')}",
+                f"- Format type: {item.get('format_type', 'unknown')}",
+                f"- Post goal: {item.get('post_goal', 'unknown')}",
+                f"- Format reason: {item.get('format_reason', '')}",
                 f"- Category: {item['category']}",
                 f"- Stars: {item['stars']}",
                 f"- Language: {item.get('language') or 'Unknown'}",
@@ -492,6 +726,10 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
                 f"{index}. {item['title']}",
                 f"   URL: {item['url']}",
                 f"   Score: {item['score']['total']}",
+                f"   Content axis: {item.get('content_axis', 'unknown')}",
+                f"   Format type: {item.get('format_type', 'unknown')}",
+                f"   Post goal: {item.get('post_goal', 'unknown')}",
+                f"   Format reason: {item.get('format_reason', '')}",
                 f"   Description: {item.get('description') or ''}",
                 f"   README: {item.get('readme_summary') or 'Not collected'}",
                 f"   A angle: {item['draft_angles']['A_broad']}",
@@ -521,6 +759,7 @@ def main() -> int:
         raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)
+    candidates = route_and_score_candidates(candidates)
     write_outputs(candidates, Path(args.output_dir), args.date)
     return 0
 

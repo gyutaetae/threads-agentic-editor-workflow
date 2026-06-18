@@ -11,15 +11,15 @@ Create one useful Threads post per day for developers who want to work better wi
 
 Positioning:
 
-> 프로 개발자의 AI agent 작업법을 훔쳐보는 계정
+> agent로 논문 읽고, 글 쓰고, 개발하는 23살 대학생 개발자가 직접 실험한 AI 사용법
 
 Promise:
 
-> 매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
+> 매일 하나, 개발자가 바로 복사해 쓸 수 있는 agent 작업법
 
 Editorial thesis:
 
-> Popular AI repos are the hook. Harness/workflow insight is the value.
+> Popular AI repos, official updates, quote/idea hooks, and paper/dev diary moments are hooks. Harness/workflow insight is the value.
 
 Do not stop at "this repo is trending." Explain what the repo reveals about how serious developers structure agent work.
 
@@ -63,11 +63,20 @@ Topic must satisfy at least 3 of 5:
 - can trigger useful comments, disagreement, or examples
 - can become a checklist, teardown, or bad-vs-good example
 
-Prefer permissions, memory, tools, evals, logs, rollback, and workflow design over generic prompt advice.
+Prefer permissions, memory, tools, evals, logs, rollback, paper reading/writing workflows, and workflow design over generic prompt advice.
+
+Add human texture without making it a diary:
+
+- 1-2 lines of personal proof from paper/dev work
+- failed request -> fixed request
+- occasional famous-person quote/idea hook from `data/quote_bank.json`
+- direct diagnostic claim
+
+Then move quickly to a copyable prompt, checklist, or workflow mode.
 
 Allowed hook style:
 
-- mistake-first diagnostic: "만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다."
+- bad-usage diagnostic: "만약 \"[나쁜 사용 예시]\"라고 사용하고 있다면, [무엇을 잘못 맡기거나 놓친다는 뜻]입니다."
 - strong claim
 - common mistake reversal
 - "bad request vs good request"
@@ -83,9 +92,9 @@ Default first-line rule:
 
 Good:
 
-> AI agent에게 긴 프롬프트만 주고 있다면, agent를 잘못 쓰고 있는 겁니다.
+> 만약 "이 repo 스타일 기억해서 잘 고쳐줘"라고 사용하고 있다면, 기억해야 할 걸 사람 머리에 맡긴다는 겁니다.
 
-> GitHub star부터 보고 있다면, AI repo를 잘못 읽고 있는 겁니다.
+> 만약 "star 많은 repo니까 좋은 거 정리해줘"라고 사용하고 있다면, 인기도와 작업 구조를 구분하지 못한다는 겁니다.
 
 Strong but acceptable:
 
@@ -120,7 +129,7 @@ Core formats:
 Current proven format to repeat for practical workflow posts:
 
 ```text
-Main: 나쁜 요청 / 좋은 요청
+Main: 만약 [나쁜 사용]이라고 사용하고 있다면 / [무엇을 잘못 맡긴다는 뜻] / 이런 방식으로 요청해보세요
 Reply 1: 적용 기준, workflow modes, or review modes
 Reply 2: 예시 프롬프트
 Reply 3: 참고해서 볼 만한 것들, with links and how to apply each source
@@ -143,7 +152,7 @@ Main post must stand alone. Replies add proof, examples, or a reusable checklist
 
 Preferred structure for repo/workflow posts:
 
-1. Main: create curiosity with a concrete claim and a short checklist or "나쁜 요청 / 좋은 요청" contrast.
+1. Main: start with "만약 [나쁜 사용]이라고 사용하고 있다면", explain what that mistake means, then add "이런 방식으로 요청해보세요" with better examples.
 2. Reply: include a copyable "예시 프롬프트" when the post teaches an agent workflow.
 3. Replies 1-N: explain one checklist item or workflow mode per reply when deeper context is needed.
 4. Final reply: list source repos/docs/blogs with links only when they help inspection, and explain how to apply each source.
@@ -304,3 +313,4 @@ Separate thread parts with:
 ```
 
 For detailed examples, see `references/examples.md`.
+

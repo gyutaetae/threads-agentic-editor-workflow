@@ -8,11 +8,28 @@ MAX_CHARS = 500
 MAX_PARTS = 4
 CHECKLIST_RE = re.compile(r"(?m)^\s*(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
+SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
+SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
+
+
+def strip_section_label(text: str) -> str:
+    lines = text.strip().splitlines()
+    while lines and SECTION_LABEL_RE.fullmatch(lines[0].strip()):
+        lines.pop(0)
+    if lines:
+        lines[0] = SECTION_LABEL_RE.sub("", lines[0], count=1)
+    return "\n".join(lines).strip()
+
+
+def normalize_part(part: str) -> str:
+    part = strip_section_label(part)
+    text = "\n".join(line.rstrip() for line in part.splitlines()).strip()
+    return re.sub(r"\n{3,}", "\n\n", text)
 
 
 def read_parts(path: Path) -> list[str]:
     raw = path.read_text(encoding="utf-8").strip()
-    return [part.strip() for part in raw.split("\n---\n") if part.strip()]
+    return [normalize_part(part) for part in SEPARATOR_RE.split(raw) if part.strip()]
 
 
 def has_explanation_for(parts: list[str], number: str) -> bool:
@@ -37,6 +54,8 @@ def main() -> int:
         errors.append(f"Thread has {len(parts)} parts; limit is {MAX_PARTS} (main + up to 3 replies).")
 
     for index, part in enumerate(parts, start=1):
+        if SECTION_LABEL_RE.match(part):
+            errors.append(f"Part {index} starts with a drafting label such as Main: or Reply n:.")
         if len(part) > MAX_CHARS:
             errors.append(f"Part {index} is {len(part)} chars; limit is {MAX_CHARS}.")
         if len(part) < 40:

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "feynman-understanding",
+    "speaker": "Richard Feynman",
+    "quote": "",
+    "idea_summary": "이해했다는 것은 스스로 설명하고 재구성할 수 있다는 뜻이다.",
+    "source_url": "https://archives.caltech.edu/pictures/1.10-29.jpg",
+    "tags": ["paper_reading", "explanation", "verification"],
+    "use_as": "paraphrase",
+    "angle": "논문을 agent에게 요약시키기보다 주장, 근거, 반례 가능성으로 재구성하게 만든다."
+  },
+  {
+    "id": "karpathy-software-2",
+    "speaker": "Andrej Karpathy",
+    "quote": "",
+    "idea_summary": "Software 2.0 관점에서는 모델과 데이터가 새로운 종류의 프로그램처럼 작동한다.",
+    "source_url": "https://karpathy.medium.com/software-2-0-a64152b37c35",
+    "tags": ["ai_coding", "workflow", "systems"],
+    "use_as": "paraphrase",
+    "angle": "agent 사용법도 프롬프트 문장이 아니라 입력, 도구, 검증 환경을 설계하는 문제로 본다."
+  },
+  {
+    "id": "paul-graham-writing",
+    "speaker": "Paul Graham",
+    "quote": "",
+    "idea_summary": "글쓰기는 생각을 명확하게 만드는 작업이다.",
+    "source_url": "https://paulgraham.com/words.html",
+    "tags": ["writing", "clarity", "paper_writing"],
+    "use_as": "paraphrase",
+    "angle": "agent에게 글을 맡길 때 문장을 예쁘게 고치기보다 생각의 빈틈을 찾게 만든다."
+  },
+  {
+    "id": "andrew-ng-iteration",
+    "speaker": "Andrew Ng",
+    "quote": "",
+    "idea_summary": "AI 프로젝트는 한 번에 완성하기보다 데이터와 평가를 보며 반복 개선해야 한다.",
+    "source_url": "https://www.deeplearning.ai/the-batch/",
+    "tags": ["evaluation", "iteration", "quality"],
+    "use_as": "paraphrase",
+    "angle": "agent 결과도 한 번에 믿지 말고 평가 기준과 재시도 루프를 먼저 만든다."
+  },
+  {
+    "id": "altman-tools",
+    "speaker": "Sam Altman",
+    "quote": "",
+    "idea_summary": "강한 도구는 사람이 더 큰 일을 할 수 있게 만든다.",
+    "source_url": "https://blog.samaltman.com/",
+    "tags": ["tool_use", "agency", "productivity"],
+    "use_as": "paraphrase",
+    "angle": "AI agent를 답변기보다 작업 환경을 다루는 도구로 쓸 때 생산성이 오른다."
+  }
+]
