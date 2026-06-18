@@ -1,227 +1,127 @@
 ---
 name: threads-agentic-editor
-description: Use when drafting, scoring, reviewing, packaging, publishing, or analyzing Threads posts for @gyu_in_black about Codex, Claude Code, Cursor, AI coding agents, subagents, MCP, harness engineering, GitHub AI repos, or developer workflow automation. This skill turns fresh technical sources into practical developer-facing Threads posts with stronger hooks, fact checks, reply chains, source/repo explanations, approval-ready publishing artifacts, one-command publishing, and reaction-based channel learning.
+description: "Use when drafting, scoring, reviewing, or analyzing @gyu_in_black Threads posts about AI-assisted research workflows: paper reading, literature review, evidence matrices, paper drafts, citation checks, reviewer critique, and research agent architecture."
 ---
 
 # Threads Agentic Editor
 
 ## Mission
 
-Create one useful Threads post per day for developers who want to work better with Codex, Claude Code, and Cursor.
+Create useful Threads chains for researchers and students who want to use AI to read, summarize, draft, cite, and verify papers better.
 
 Positioning:
 
-> 프로 개발자의 AI agent 작업법을 훔쳐보는 계정
+> 자체구축 AI 에이전트로 논문을 읽고 쓰는 대학생 개발자
 
 Promise:
 
-> 매일 하나, 개발자가 바로 훔쳐 쓸 수 있는 AI agent 작업법
+> 연구자와 대학생을 위한 AI 논문 작업법. 프롬프트가 아니라 읽기, 요약, 레퍼런스, 초안, 검증 흐름을 설계한다.
 
-Editorial thesis:
+Use `docs/threads-channel-playbook.md` as the source of truth for account concept, topic fit, exact chain shape, forbidden labels, source rules, and reaction learning. Do not duplicate or override that file here.
 
-> Popular AI repos are the hook. Harness/workflow insight is the value.
+## Workflow
 
-Do not stop at "this repo is trending." Explain what the repo reveals about how serious developers structure agent work.
+1. Read `docs/threads-channel-playbook.md`.
+2. Check recent post history before choosing a topic. Avoid repeating the same failure mode and solution pattern.
+3. Collect credible sources from official docs/blogs, papers, named researcher writing, and useful research-tool repos.
+4. Score candidates by research utility, source authority, workflow clarity, novelty, likely save value, and topic novelty.
+5. Draft two options:
+   - A: broad and immediately useful.
+   - B: deeper and more technical.
+6. For the selected option, produce exactly 4 publishable parts: main + 3 replies.
+7. Do not publish automatically. Use `$threads-post-publisher` only after the user approves the final chain.
 
-## Default Workflow
-
-1. Collect sources from GitHub, official blogs/docs, and credible technical discussions.
-2. Score candidates by trend, utility, novelty, authority, our angle, and virality.
-3. Draft two options:
-   - A: broader, punchier, easier to share.
-   - B: deeper, more technical, stronger for credibility.
-4. For the selected option, produce:
-   - main post
-   - 1-3 replies if needed
-   - card title and 3-5 card bullets
-   - source list
-   - risk/caveat notes
-5. Do not publish automatically unless the user explicitly approves the final draft.
-6. After approval, publish with the repo's one-command publisher rather than manually assembling Python flags.
-
-## Editorial Rules
+## Topic Fit
 
 Write for:
 
-- developers using or evaluating Codex, Claude Code, Cursor, Copilot, Windsurf, or similar coding agents
-- developers who want practical agent workflows, not generic AI news
-- solo builders and working engineers who want reusable operating patterns
+- 대학생, 대학원생, and junior researchers using AI for papers
+- readers who need paper summaries, literature reviews, drafts, references, and critique
+- technical readers who care about source-grounded workflows
+
+Prefer:
+
+- paper reading
+- literature review
+- evidence matrix
+- related work structure
+- draft writing
+- citation/reference checks
+- reviewer critique
+- reader/synthesizer/reviewer/editor agent architecture
 
 Avoid:
 
 - generic AI news summaries
 - fake guru tone
-- unverifiable "1등", "최고", "무조건", "혁명" claims
-- investment, market, or product-buying claims without fresh sources
-- posts that only describe a repo without explaining what developers can learn from it
+- unverifiable "최고", "무조건", "혁명" claims
+- AI가 논문을 대신 써준다는 식의 과장
+- source names without full URLs
+- tool reviews without workflow lessons
+- repeats of the old `"서론 써줘"` drafting angle unless the new solution is clearly different
 
-Topic must satisfy at least 3 of 5:
+## Series And Novelty
 
-- reveals a new harness/agent operating pattern
-- uses a popular or fast-moving GitHub repo as evidence
-- changes how a developer asks Codex/Claude Code/Cursor to work
-- can trigger useful comments, disagreement, or examples
-- can become a checklist, teardown, or bad-vs-good example
-
-Prefer permissions, memory, tools, evals, logs, rollback, and workflow design over generic prompt advice.
-
-Allowed hook style:
-
-- mistake-first diagnostic: "만약 [흔한 행동]하고 있다면, [진짜 기준]을 잘못 쓰고 있는 겁니다."
-- strong claim
-- common mistake reversal
-- "bad request vs good request"
-- "프로들은 이렇게 한다"
-- "star보다 먼저 봐야 할 것"
-- concrete diagnostic checklist
-
-Default first-line rule:
-
-1. Name the reader's likely mistake.
-2. Reframe the real criterion.
-3. Then explain the better workflow.
-
-Good:
-
-> AI agent에게 긴 프롬프트만 주고 있다면, agent를 잘못 쓰고 있는 겁니다.
-
-> GitHub star부터 보고 있다면, AI repo를 잘못 읽고 있는 겁니다.
-
-Strong but acceptable:
-
-> AI agent 잘 쓰는 사람은 프롬프트보다 작업 단위를 먼저 설계한다.
-
-Too vague:
-
-> 요즘 AI agent가 정말 중요합니다.
-
-Too risky:
-
-> 이 툴 모르면 개발자로 끝입니다.
-
-## Content Mix
-
-Start with:
-
-- 70% practical workflow
-- 20% GitHub repo or trend teardown
-- 10% famous-person insight or official release interpretation
-
-Adjust based on tracked engagement.
-
-Core formats:
-
-1. 프로들은 이렇게 시킨다
-2. GitHub 인기 레포 해부
-3. AI agent 설계 노트
-4. AI 퇴근 치트키
-5. Bad request vs good request
-
-Current proven format to repeat for practical workflow posts:
+Default internal series:
 
 ```text
-Main: 나쁜 요청 / 좋은 요청
-Reply 1: 적용 기준, workflow modes, or review modes
-Reply 2: 예시 프롬프트
-Reply 3: 참고해서 볼 만한 것들, with links and how to apply each source
+AI로 논문 쓰는 법
 ```
 
-Repeat the structure, not the topic. Use it for new workflow problems such as PR review, test fixing, refactor scoping, agent permissions, memory setup, rollback, and verification.
+Default first arc:
 
-## Reply Chain Rule
+1. 논문 요약 자동화
+2. Related Work 자동화
+3. Evidence Matrix 만들기
+4. AI로 논문 초안 쓰기
+5. Citation 검증 자동화
+6. 연구자를 위한 AI Agent
 
-Default to concise main post plus replies when the idea needs examples.
+Before drafting, identify:
 
-Use a reply chain when:
+- `series`
+- `series_part`
+- `public_theme`
+- `topic_pillar`
+- `workflow_stage`
+- `failure_mode`
+- `solution_pattern`
+- `bad_request`
 
-- the post exceeds 350 Korean characters
-- there is a checklist
-- there are 2+ examples
-- sources/caveats would weaken the main hook
+Block the draft if the recent history has the same `failure_mode` and `solution_pattern`. Same broad pillar is allowed only when the workflow stage or practical fix is different.
 
-Main post must stand alone. Replies add proof, examples, or a reusable checklist. Never use more than 3 replies. If the idea needs more, split it into a follow-up post.
+## Draft Rules
 
-Preferred structure for repo/workflow posts:
+Follow the current playbook. The stable constraints are:
 
-1. Main: create curiosity with a concrete claim and a short checklist or "나쁜 요청 / 좋은 요청" contrast.
-2. Reply: include a copyable "예시 프롬프트" when the post teaches an agent workflow.
-3. Replies 1-N: explain one checklist item or workflow mode per reply when deeper context is needed.
-4. Final reply: list source repos/docs/blogs with links only when they help inspection, and explain how to apply each source.
-
-Avoid ending at a bare checklist. Add the "why" or the reader has little reason to care.
-
-Add a natural comment hook when useful:
-
-- "여러분은 agent에게 어디까지 권한을 주나요?"
-- "이 기준에서 제일 자주 빠지는 건 몇 번인가요?"
-- "이 repo에서 복사할 만한 건 기능보다 구조입니다."
-
-Do not use forced engagement bait.
-
-## Card Rule
-
-"저장용" means the image is useful enough that a reader may save/bookmark it for later.
-
-Good card content:
-
-- checklist
-- decision table
-- bad request vs good request
-- mini workflow
-- repo teardown framework
-
-Bad card content:
-
-- decorative robot image
-- generic AI slogan
-- dense article summary
-- tiny text
-
-Default card structure:
-
-- vertical 4:5
-- one strong title
-- 3-5 bullets
-- high contrast
-- @gyu_in_black footer
+- Exactly 4 parts: main + 3 replies.
+- Each part under 500 characters.
+- Main uses a natural or `만약...` hook, one bad request, four good request examples, and a plain principle.
+- Good request section includes at least four quoted constraints.
+- The third part starts with `예시 프롬프트:`.
+- The fourth part starts with `참고해서 볼 만한 것들:` and includes full `https://...` URLs plus `- 적용:`.
+- Do not put `Reply 1:`, `Reply 2:`, `Reply 3:`, `[한 줄 원칙:]`, `한 줄 원칙:`, or `[초안 작성 모드]` inside publishable text.
+- Do not use JSON or fenced code blocks for prompt examples.
 
 ## Source And Fact Rules
 
-Use primary sources when possible:
+Use primary or credible sources:
 
-- official docs/blogs
-- GitHub repos/releases
-- arXiv or research papers
-- original talks/posts by named people
-
-Use community sources only for "people are reacting to this" signals, not as factual proof.
-
-Every factual trend claim should have a source. If the evidence is weak, say it as an inference.
+- official docs/blogs from OpenAI, Anthropic, Google, tool makers
+- arXiv or published papers
+- original writing by named researchers
+- official docs for research tools such as NotebookLM, Elicit, Zotero, Semantic Scholar
 
 Always separate:
 
-- Source facts: what the source directly says or exposes.
-- Our interpretation: what this means for developer workflow.
+- Source facts: what the source directly says.
+- Our interpretation: how to turn it into a research workflow.
 
-Good:
+Use short quotes only, link the original, and avoid uncited expert claims.
 
-> 이 repo의 README는 skills, hooks, memory, MCP 설정을 묶은 harness라고 설명한다. 내 해석은 이렇다. 앞으로 AI 코딩툴 실력은 프롬프트보다 작업 환경을 agent에게 어떻게 넘기는지에서 갈릴 가능성이 크다.
+## Handoff To Publisher
 
-Bad:
-
-> 이 repo가 미래 개발의 정답이다.
-
-Use only stable automatic sources by default:
-
-- GitHub Search/REST API
-- GitHub repo README
-- official RSS/Atom feeds with stable URLs
-
-Do not automatically scrape unstable webpages unless the user explicitly asks.
-
-## Publishing Rule
-
-When the user approves a chain, write it to:
+When the user approves a chain, hand off the exact approved text to `$threads-post-publisher` or write it to:
 
 ```text
 approved-thread-chain.txt
@@ -233,39 +133,27 @@ Separate thread parts with:
 ---
 ```
 
-Then use this dry-run command from the repo root:
+Dry run from the repo root:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5 -DryRun
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -DryRun
 ```
 
-After the user confirms, publish with:
+Publish after confirmation:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3
 ```
 
-This wrapper checks the approved chain, uses the current `THREADS_ACCESS_TOKEN` to retrieve the correct Threads account ID, publishes the chain in order, and records the first post in `threads-post-metrics.csv`.
-
-Do not ask the user to manually set `THREADS_USER_ID` unless the token verification endpoint is unavailable. A stale user ID causes hard-to-debug `Unsupported post request` errors.
-
-For account concept, topic selection, proven formats, length limits, and reaction learning, use `docs/threads-channel-playbook.md`.
-
-To run the quality gate without publishing:
+Quality gate only:
 
 ```powershell
 .\scripts\check-approved-chain.ps1
 ```
 
-To collect metrics for a published post:
-
-```powershell
-.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
-```
-
 ## Output Shape
 
-When asked to produce a daily draft, output:
+When asked to produce or compare drafts, keep metadata outside the publishable blocks:
 
 ```text
 Recommended: A or B
@@ -277,30 +165,30 @@ Our Interpretation:
 - ...
 
 A안: 대중형
-Main:
+Publishable chain:
+```text
 ...
-Reply 1:
+---
 ...
-Card:
-- title
-- bullets
+---
+...
+---
+...
+```
 Sources:
 Risk:
+Fingerprint:
+- series:
+- series_part:
+- public_theme:
+- topic_pillar:
+- workflow_stage:
+- failure_mode:
+- solution_pattern:
+- bad_request:
 
 B안: 전문형
 ...
 ```
 
-When creating files, write the approved chain to:
-
-```text
-approved-thread-chain.txt
-```
-
-Separate thread parts with:
-
-```text
----
-```
-
-For detailed examples, see `references/examples.md`.
+Do not include reply labels inside the publishable chain block. Labels are acceptable only outside the block when explaining the draft to the user.

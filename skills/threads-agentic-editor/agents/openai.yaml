@@ -1,4 +1,4 @@
 interface:
   display_name: "Threads Agentic Editor"
-  short_description: "Drafts practical AI agent Threads posts"
-  default_prompt: "Use $threads-agentic-editor to turn today's AI agent trend into an approved Threads draft."
+  short_description: "Drafts AI research workflow Threads posts"
+  default_prompt: "Use $threads-agentic-editor to turn today's AI research workflow idea into an approved Threads draft."

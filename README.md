@@ -1,11 +1,11 @@
-# Threads Agentic Editor Workflow
+# Threads Research AI Editor Workflow
 
-Codex, Claude Code, Cursor로 일 잘하고 싶은 개발자를 위한 Threads 운영 워크플로우.
+AI로 논문을 읽고 쓰고 검증하는 연구자를 위한 Threads 운영 워크플로우.
 
 목표:
 
 ```text
-매일 하나, 프로 개발자의 AI agent 작업법
+매일 하나, 연구자가 바로 써먹는 AI 논문 작업법
 ```
 
 ## 구성
@@ -16,6 +16,7 @@ skills/threads-agentic-editor
 
 scripts/agentic_daily_pipeline.py
   GitHub API, repo README, 안정적인 공식 RSS/Atom feed 수집 및 점수화.
+  후보는 논문 요약, literature review, citation 검증, research agent 중심으로 고른다.
 
 scripts/threads_auto_upload.py
   Threads API 게시 도우미.
@@ -79,24 +80,37 @@ docs/threads-channel-playbook.md
 현재 우선 포맷:
 
 ```text
-Main: 나쁜 요청 / 좋은 요청
-Reply 1: 적용 기준 or workflow modes
+Main: 만약형 or 자연형 hook + 나쁜 요청 1개 + 좋은 요청 4개 + 원칙 문장
+Reply 1: research workflow 기준/checklist
 Reply 2: 예시 프롬프트
-Reply 3: 참고해서 볼 만한 것들 + 각 링크의 적용법
+Reply 3: 참고해서 볼 만한 것들 + 전체 URL + 각 링크의 적용법
 ```
 
-글은 짧게 쓴다. 댓글은 최대 3개까지만 허용한다. 이 포맷은 중복 주제가 아니라 새 workflow 문제에 반복 적용한다. 예: PR 리뷰, 테스트 수정, refactor 범위 지정, agent 권한, memory 설정, rollback 설계.
+글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 이 포맷은 중복 주제가 아니라 새 연구 workflow 문제에 반복 적용한다. 예: 논문 요약, literature review, evidence matrix, 초안 작성, citation 검증, reviewer critique.
+
+자동 게시에서 금지하는 표현:
+
+```text
+Reply 1:
+Reply 2:
+Reply 3:
+[한 줄 원칙:]
+한 줄 원칙:
+[초안 작성 모드]
+JSON/code block 예시 프롬프트
+URL 없는 참고 링크
+```
 
 승인 후 게시 전 확인:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5 -DryRun
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -DryRun
 ```
 
 게시:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3
 ```
 
 이 명령은 `THREADS_ACCESS_TOKEN`으로 실제 계정 ID를 확인해서 stale `THREADS_USER_ID` 문제를 피하고, 게시 후 `threads-post-metrics.csv`에 기본 행을 기록한다.
@@ -181,7 +195,7 @@ GROQ_MODEL
 주의:
 
 - `schedule` 실행은 승인 없이 바로 게시한다.
-- 자동 글은 main + 댓글 3개, 파트당 500자 제한을 통과해야 한다.
+- 자동 글은 main + 댓글 3개, 파트당 500자, 좋은 요청 4개, 전체 URL 참고 링크 기준을 통과해야 한다.
 - 품질이 흔들리면 workflow의 `schedule` 줄을 제거하고 수동 실행만 유지한다.
 
 ## 게시 정책
@@ -203,5 +217,6 @@ auto publish
 - 안정적인 소스만 자동 수집한다.
 - 출처가 말한 사실과 우리의 해석을 분리한다.
 - GitHub stars는 인기도이지 품질 보장이 아니다.
+- AI가 만든 citation/reference는 원문에서 다시 확인한다.
 - 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
-- 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 repo를 반복 소재로 쓰지 않는다.
+- 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 논문/문서/도구만 반복 소재로 쓰지 않는다.

@@ -374,8 +374,16 @@ def append_content_history(
     format_name: str,
     post_ids: list[str],
     thread_url: str,
+    series: str = "",
+    series_part: str = "",
+    public_theme: str = "",
+    topic_pillar: str = "",
+    workflow_stage: str = "",
+    failure_mode: str = "",
+    solution_pattern: str = "",
+    bad_request: str = "",
 ) -> None:
-    if not source_name and not source_url:
+    if not any([source_name, source_url, series, public_theme, topic_pillar, failure_mode, solution_pattern, bad_request]):
         return
 
     now = datetime.now().astimezone()
@@ -389,6 +397,14 @@ def append_content_history(
         "hook": hook,
         "post_ids": post_ids,
         "thread_url": thread_url,
+        "series": series,
+        "series_part": series_part,
+        "public_theme": public_theme,
+        "topic_pillar": topic_pillar,
+        "workflow_stage": workflow_stage,
+        "failure_mode": failure_mode,
+        "solution_pattern": solution_pattern,
+        "bad_request": bad_request,
     }
     with open(path, "a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
@@ -525,12 +541,20 @@ def main() -> int:
     approved.add_argument("--alt-text", default=os.environ.get("THREADS_ALT_TEXT"))
     approved.add_argument("--metrics-path", default="threads-post-metrics.csv")
     approved.add_argument("--history-path", default="content-history.jsonl")
-    approved.add_argument("--topic", default="agent repo reading")
+    approved.add_argument("--topic", default="research ai workflow")
     approved.add_argument("--hook", default="")
     approved.add_argument("--format", default="A")
     approved.add_argument("--source-count", type=int, default=0)
     approved.add_argument("--source-name", default="")
     approved.add_argument("--source-url", default="")
+    approved.add_argument("--series", default="")
+    approved.add_argument("--series-part", default="")
+    approved.add_argument("--public-theme", default="")
+    approved.add_argument("--topic-pillar", default="")
+    approved.add_argument("--workflow-stage", default="")
+    approved.add_argument("--failure-mode", default="")
+    approved.add_argument("--solution-pattern", default="")
+    approved.add_argument("--bad-request", default="")
     approved.add_argument("--card-used", action="store_true")
     approved.add_argument("--dry-run", action="store_true")
 
@@ -642,6 +666,14 @@ def main() -> int:
             format_name=args.format,
             post_ids=[str(item.get("id", "")) for item in published if item.get("id")],
             thread_url=thread_url,
+            series=args.series,
+            series_part=args.series_part,
+            public_theme=args.public_theme,
+            topic_pillar=args.topic_pillar,
+            workflow_stage=args.workflow_stage,
+            failure_mode=args.failure_mode,
+            solution_pattern=args.solution_pattern,
+            bad_request=args.bad_request,
         )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")

@@ -1,10 +1,18 @@
 param(
     [string]$ThreadPath = ".\approved-thread-chain.txt",
-    [string]$Topic = "agent repo reading",
+    [string]$Topic = "research ai workflow",
     [string]$Format = "A",
     [int]$SourceCount = 0,
     [string]$SourceName = "",
     [string]$SourceUrl = "",
+    [string]$Series = "",
+    [string]$SeriesPart = "",
+    [string]$PublicTheme = "",
+    [string]$TopicPillar = "",
+    [string]$WorkflowStage = "",
+    [string]$FailureMode = "",
+    [string]$SolutionPattern = "",
+    [string]$BadRequest = "",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -27,7 +35,15 @@ try {
         "--format", $Format,
         "--source-count", $SourceCount,
         "--source-name", $SourceName,
-        "--source-url", $SourceUrl
+        "--source-url", $SourceUrl,
+        "--series", $Series,
+        "--series-part", $SeriesPart,
+        "--public-theme", $PublicTheme,
+        "--topic-pillar", $TopicPillar,
+        "--workflow-stage", $WorkflowStage,
+        "--failure-mode", $FailureMode,
+        "--solution-pattern", $SolutionPattern,
+        "--bad-request", $BadRequest
     )
 
     if ($CardUsed) {
