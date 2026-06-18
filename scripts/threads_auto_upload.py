@@ -382,8 +382,25 @@ def append_content_history(
     failure_mode: str = "",
     solution_pattern: str = "",
     bad_request: str = "",
+    quote_used: bool = False,
+    quote_id: str = "",
+    quote_speaker: str = "",
+    quote_source_url: str = "",
 ) -> None:
-    if not any([source_name, source_url, series, public_theme, topic_pillar, failure_mode, solution_pattern, bad_request]):
+    if not any(
+        [
+            source_name,
+            source_url,
+            series,
+            public_theme,
+            topic_pillar,
+            failure_mode,
+            solution_pattern,
+            bad_request,
+            quote_used,
+            quote_id,
+        ]
+    ):
         return
 
     now = datetime.now().astimezone()
@@ -405,6 +422,10 @@ def append_content_history(
         "failure_mode": failure_mode,
         "solution_pattern": solution_pattern,
         "bad_request": bad_request,
+        "quote_used": quote_used,
+        "quote_id": quote_id,
+        "quote_speaker": quote_speaker,
+        "quote_source_url": quote_source_url,
     }
     with open(path, "a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
@@ -555,6 +576,10 @@ def main() -> int:
     approved.add_argument("--failure-mode", default="")
     approved.add_argument("--solution-pattern", default="")
     approved.add_argument("--bad-request", default="")
+    approved.add_argument("--quote-used", action="store_true")
+    approved.add_argument("--quote-id", default="")
+    approved.add_argument("--quote-speaker", default="")
+    approved.add_argument("--quote-source-url", default="")
     approved.add_argument("--card-used", action="store_true")
     approved.add_argument("--dry-run", action="store_true")
 
@@ -674,6 +699,10 @@ def main() -> int:
             failure_mode=args.failure_mode,
             solution_pattern=args.solution_pattern,
             bad_request=args.bad_request,
+            quote_used=args.quote_used,
+            quote_id=args.quote_id,
+            quote_speaker=args.quote_speaker,
+            quote_source_url=args.quote_source_url,
         )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")

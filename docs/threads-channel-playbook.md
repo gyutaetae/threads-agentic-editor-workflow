@@ -165,9 +165,9 @@ Default chain:
 
 ```text
 Main: natural or 만약형 hook + 나쁜 요청 1개 + 좋은 요청 4개 + plain principle
-Reply 1: research workflow 기준/checklist
-Reply 2: 예시 프롬프트
-Reply 3: 참고해서 볼 만한 것들 + full URL + 적용법
+Reply 1: 좋은 요청 4개가 각각 좋은 이유 + 실제 활용 시점
+Reply 2: 좋은 요청 4개에 대응하는 복사 가능한 예시 프롬프트
+Reply 3: 오늘 주제와 직접 연결되는 한국어 기술 블로그/GitHub 사례 + full URL + 볼 부분
 ```
 
 Do not publish these labels:
@@ -194,30 +194,37 @@ AI에게 논문 요약을 맡길 때
 "이 논문 요약해줘"
 
 좋은 요청:
-"이 논문의 contribution을 3줄로 분리해줘"
-"method가 무엇을 새로 바꿨는지 설명해줘"
-"결과를 뒷받침하는 evidence만 따로 뽑아줘"
-"저자가 인정한 limitation과 내가 의심해야 할 부분을 나눠줘"
+"1. 이 논문의 핵심 기여를 3개로 분리해줘"
+"2. 기존 방법과 비교해 무엇을 바꿨는지 설명해줘"
+"3. 주장을 뒷받침하는 표·그림·실험을 연결해줘"
+"4. 저자가 밝힌 한계와 추가로 의심할 점을 나눠줘"
 
-논문 요약에서 AI는 압축기가 아니라
-주장과 근거를 분리하는 독해 보조자여야 합니다.
+좋은 요약은 짧은 글이 아니라
+주장·근거·한계를 다시 확인할 수 있는 연구 노트입니다.
 ---
-실전에서는 논문 요약을 4칸으로 나눕니다.
-1. Contribution: 무엇을 주장했나
-2. Method: 어떻게 증명하려 했나
-3. Evidence: 어떤 실험/표/그림이 받치나
-4. Limitation: 어디까지 믿어야 하나
+왜 좋은 요청일까요?
+1. 핵심 기여를 분리하면 배경 설명과 저자의 새 주장을 혼동하지 않습니다.
+- 활용: 읽을 논문 선별, related work 후보 정리
+2. 기존 방법과의 차이를 물으면 실제 변화점을 찾습니다.
+- 활용: 구현 범위와 재현 포인트 확인
+3. 주장과 표·그림·실험을 연결하면 원문에서 검증할 수 있습니다.
+- 활용: 발표 자료와 인용 전 사실 확인
+4. 명시된 한계와 추가 의문을 나누면 사실과 AI의 해석이 섞이지 않습니다.
+- 활용: 후속 연구 질문과 리뷰 의견 만들기
 ---
 예시 프롬프트:
-"이 논문을 요약하기 전에
-contribution, method, evidence, limitation을 표로 나눠줘.
-각 evidence는 논문의 figure, table, experiment 이름과 연결해줘.
-마지막에 초록만 읽고는 알 수 없는 핵심을 따로 적어줘."
+"핵심 기여 3개를 문제-제안-효과 형식으로 써줘. 각 항목의 근거 위치도 표시해줘."
+"기존 방법과 제안 방법을 입력, 구조, 학습, 비용 기준으로 비교표로 만들어줘."
+"주요 주장마다 근거가 되는 Figure, Table, Experiment와 핵심 수치를 연결해줘."
+"저자가 밝힌 한계와 실험 설계상 추가로 의심할 점을 분리하고, 후자는 AI의 해석이라고 표시해줘."
 ---
 참고해서 볼 만한 것들:
-Google NotebookLM
-https://notebooklm.google/
-- 적용: source-grounded 답변처럼, 요약도 원문 근거와 함께 요구하기
+AI 논문 요약의 맹점과 도구별 결과 비교
+https://blog.naver.com/crazibiza/223976153740
+- 볼 부분: 요약에서 누락된 분석과 후속 질문을 비교하는 방식
+딥러닝 논문 리뷰·요약·코드 실습 저장소
+https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
+- 볼 부분: 원문을 리뷰, 요약 PDF, 코드 실습으로 이어가는 기록 구조
 ```
 
 ## Hook Rules
@@ -248,18 +255,39 @@ Separate:
 - Source facts: what the source directly says.
 - Our interpretation: how to turn it into a research workflow.
 
-Use short quotes only, link the original, and always add `- 적용:`.
+Use short quotes only and link the original. For the final reply, prefer an actual
+Korean article or GitHub repository that demonstrates today's workflow. Add
+`- 볼 부분:` so the reader knows what to inspect and reuse. Do not substitute a
+generic product homepage for an example.
+
+## Optional Quote Policy
+
+Famous-person quotes are optional. The post must remain complete when the quote is removed.
+
+Use a quote only when:
+
+- it is present in `data/verified-quotes.json`
+- its relevance score is at least 8
+- the exact Korean text and verified primary-source URL are available
+- no quote was used in the previous 3 published posts
+- it directly strengthens the workflow lesson rather than decorating the hook
+
+Use no more than one quote per chain. Keep Korean technical blogs and GitHub repositories
+as the practical references. If a verified quote is used, add its non-Korean primary
+source separately under `인용 원문:`.
+
+Default to no quote when the fit is ambiguous.
 
 Useful sources to mine:
 
+- Korean technical blogs that show a paper review or research workflow
+- Korean GitHub repositories that connect the original paper to notes, summaries, or code
 - Andrej Karpathy, A Survival Guide to a PhD
   https://karpathy.github.io/2016/09/07/phd/
 - OpenAI Deep Research guide
   https://developers.openai.com/api/docs/guides/deep-research
 - Anthropic context engineering
   https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-- Google NotebookLM
-  https://notebooklm.google/
 - Elicit
   https://elicit.com/
 

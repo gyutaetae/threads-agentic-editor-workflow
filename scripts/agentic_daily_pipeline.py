@@ -12,6 +12,11 @@ from urllib.parse import urlencode
 
 import requests
 
+try:
+    from quote_matcher import attach_quote_suggestions, load_catalog
+except ImportError:
+    from scripts.quote_matcher import attach_quote_suggestions, load_catalog
+
 
 GITHUB_SEARCH_URL = "https://api.github.com/search/repositories"
 
@@ -464,6 +469,14 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
                 f"- A안: {item['draft_angles']['A_broad']}",
                 f"- B안: {item['draft_angles']['B_deep']}",
                 f"- Risk: {item['risk']}",
+                (
+                    "- Optional verified quote: "
+                    f"{item['quote_suggestion']['speaker']} / "
+                    f"{item['quote_suggestion']['source_url']} / "
+                    f"score {item['quote_suggestion']['score']['total']}"
+                    if item.get("quote_suggestion")
+                    else "- Optional verified quote: none"
+                ),
                 "",
             ]
         )
@@ -503,6 +516,11 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
                 f"   B angle: {item['draft_angles']['B_deep']}",
                 f"   Facts vs interpretation: {item.get('fact_boundary', 'Separate source facts from our angle.')}",
                 f"   Risk: {item['risk']}",
+                (
+                    f"   Optional quote: {json.dumps(item['quote_suggestion'], ensure_ascii=False)}"
+                    if item.get("quote_suggestion")
+                    else "   Optional quote: none"
+                ),
                 "",
             ]
         )
@@ -517,6 +535,9 @@ def main() -> int:
     parser.add_argument("--readme-top", type=int, default=5)
     parser.add_argument("--output-dir", default="daily-editor")
     parser.add_argument("--history-path", default="content-history.jsonl")
+    parser.add_argument("--quote-catalog-path", default="data/verified-quotes.json")
+    parser.add_argument("--quote-threshold", type=int, default=8)
+    parser.add_argument("--skip-quote-url-verification", action="store_true")
     parser.add_argument("--date", default=datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d"))
     args = parser.parse_args()
 
@@ -526,6 +547,13 @@ def main() -> int:
         raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)
+    candidates = attach_quote_suggestions(
+        candidates,
+        load_catalog(Path(args.quote_catalog_path)),
+        Path(args.history_path),
+        threshold=args.quote_threshold,
+        verify_urls=not args.skip_quote_url_verification,
+    )
     write_outputs(candidates, Path(args.output_dir), args.date)
     return 0
 

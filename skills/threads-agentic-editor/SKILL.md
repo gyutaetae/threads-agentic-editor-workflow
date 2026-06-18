@@ -97,9 +97,14 @@ Follow the current playbook. The stable constraints are:
 - Exactly 4 parts: main + 3 replies.
 - Each part under 500 characters.
 - Main uses a natural or `만약...` hook, one bad request, four good request examples, and a plain principle.
-- Good request section includes at least four quoted constraints.
-- The third part starts with `예시 프롬프트:`.
-- The fourth part starts with `참고해서 볼 만한 것들:` and includes full `https://...` URLs plus `- 적용:`.
+- Good request section includes four numbered quoted constraints.
+- The second part explains why each request is good and includes one `- 활용:` line per request.
+- The third part starts with `예시 프롬프트:` and includes four quoted prompts corresponding to the four requests.
+- The fourth part starts with `참고해서 볼 만한 것들:` and links actual Korean technical blog posts or GitHub repositories, followed by `- 볼 부분:`.
+- Do not use a generic product homepage as the final reference.
+- Famous-person quotes are optional and may only come from the candidate's `optional_verified_quote`.
+- Use at most one quote, only when it directly supports the workflow lesson. Otherwise omit it.
+- When used, preserve the cataloged Korean quote exactly and add the verified source under `인용 원문:`.
 - Do not put `Reply 1:`, `Reply 2:`, `Reply 3:`, `[한 줄 원칙:]`, `한 줄 원칙:`, or `[초안 작성 모드]` inside publishable text.
 - Do not use JSON or fenced code blocks for prompt examples.
 

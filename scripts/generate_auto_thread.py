@@ -62,6 +62,9 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
                 "hook": entry.get("hook"),
                 "source_name": entry.get("source_name"),
                 "source_url": entry.get("source_url"),
+                "quote_used": entry.get("quote_used", False),
+                "quote_id": entry.get("quote_id"),
+                "quote_speaker": entry.get("quote_speaker"),
             }
         )
     return entries[-limit:]
@@ -114,13 +117,51 @@ def validate_thread(thread_text: str) -> None:
     quoted_good_lines = QUOTE_LINE_RE.findall(good_request)
     if len(quoted_good_lines) < 4:
         raise SystemExit("Generated main post must include at least four quoted good-request lines.")
-    if len(parts) >= 3 and "예시 프롬프트" not in thread_text:
-        raise SystemExit("Generated thread is missing an example prompt.")
+    explanation_part = parts[1]
+    for number in ("1", "2", "3", "4"):
+        if f"{number}." not in explanation_part:
+            raise SystemExit(f"Generated explanation reply is missing good request {number}.")
+    if explanation_part.count("- 활용:") < 4:
+        raise SystemExit("Generated explanation reply must include four '- 활용:' lines.")
+    if not parts[2].startswith("예시 프롬프트:"):
+        raise SystemExit("Generated third part must start with '예시 프롬프트:'.")
+    if len(QUOTE_LINE_RE.findall(parts[2])) < 4:
+        raise SystemExit("Generated prompt reply must include four quoted prompt examples.")
     reference_part = parts[-1]
-    if "참고해서 볼 만한 것들" not in reference_part:
-        raise SystemExit("Generated final reply must contain '참고해서 볼 만한 것들'.")
+    if not reference_part.startswith("참고해서 볼 만한 것들:"):
+        raise SystemExit("Generated final reply must start with '참고해서 볼 만한 것들:'.")
     if not URL_RE.search(reference_part):
         raise SystemExit("Generated reference reply must include at least one full clickable URL.")
+    if "notebooklm.google" in reference_part.lower():
+        raise SystemExit("Generated reference reply must link an actual example, not the NotebookLM homepage.")
+    if "- 볼 부분:" not in reference_part:
+        raise SystemExit("Generated reference reply must explain what to inspect in each source.")
+
+
+def validate_quote_selection(thread_text: str, data: dict, source_item: dict) -> dict | None:
+    quote_used = data.get("quote_used") is True
+    quote_id = str(data.get("quote_id") or "").strip()
+    if not quote_used:
+        if quote_id:
+            raise SystemExit("Generated quote_id must be empty when quote_used is false.")
+        return None
+
+    quote_suggestion = source_item.get("quote_suggestion")
+    if not quote_suggestion:
+        raise SystemExit("Generated thread used a quote, but the selected source has no verified quote suggestion.")
+    if quote_id != quote_suggestion["id"]:
+        raise SystemExit("Generated quote_id does not match the selected source's verified quote suggestion.")
+
+    required_quote_text = [
+        quote_suggestion["speaker_ko"],
+        quote_suggestion["quote_ko"],
+        quote_suggestion["source_url"],
+        "인용 원문:",
+    ]
+    missing = [value for value in required_quote_text if value not in thread_text]
+    if missing:
+        raise SystemExit(f"Generated quoted thread is missing verified quote fields: {missing}")
+    return quote_suggestion
 
 
 def build_prompt(playbook: str, candidates: list[dict], recent_history: list[dict]) -> str:
@@ -137,6 +178,7 @@ def build_prompt(playbook: str, candidates: list[dict], recent_history: list[dic
                 "score": item.get("score", {}).get("total"),
                 "risk": item.get("risk"),
                 "facts_vs_interpretation": item.get("fact_boundary"),
+                "optional_verified_quote": item.get("quote_suggestion"),
             }
         )
 
@@ -145,7 +187,7 @@ def build_prompt(playbook: str, candidates: list[dict], recent_history: list[dic
         "Follow the channel playbook exactly.\n\n"
         "Hard constraints:\n"
         "- Return JSON only.\n"
-        "- JSON keys: thread_text, topic, source_count, format, source_name, source_url.\n"
+        "- JSON keys: thread_text, topic, source_count, format, source_name, source_url, quote_used, quote_id.\n"
         "- Also return fingerprint keys: series, series_part, public_theme, topic_pillar, workflow_stage, failure_mode, solution_pattern, bad_request.\n"
         "- thread_text must use --- between main and replies.\n"
         "- Exactly 4 parts total: main + 3 replies.\n"
@@ -155,10 +197,16 @@ def build_prompt(playbook: str, candidates: list[dict], recent_history: list[dic
         "- Main post must then include '나쁜 요청:' with one quoted bad request.\n"
         "- Main post must include '좋은 요청:' with at least four short quoted good-request lines.\n"
         "- End the main post with a plain closing principle sentence. Do not write '[한 줄 원칙:]' or '한 줄 원칙:'.\n"
-        "- Reply 1 must be a natural explanation or checklist. Do not include the text 'Reply 1:', 'Reply 2:', or 'Reply 3:'.\n"
-        "- Reply 2 must start with '예시 프롬프트:' and then a natural quoted Korean prompt, not JSON and not a code block.\n"
-        "- Reply 3 must start with '참고해서 볼 만한 것들:' and include full clickable URLs beginning with https://.\n"
-        "- Source lines must be formatted as source title, newline URL, newline '- 적용: ...'.\n"
+        "- Number the four good requests 1 through 4 inside the quoted lines so later explanations map to them.\n"
+        "- Reply 1 must explain why each of the four requests is good and include a concrete '- 활용:' line for each. Do not include the text 'Reply 1:', 'Reply 2:', or 'Reply 3:'.\n"
+        "- Reply 2 must start with '예시 프롬프트:' and include four natural quoted Korean prompts corresponding to requests 1 through 4, not JSON and not a code block.\n"
+        "- Reply 3 must start with '참고해서 볼 만한 것들:' and include only Korean-language technical blog posts or GitHub repositories directly related to today's topic. Link to the actual article or repository, never a product homepage.\n"
+        "- Reference lines must be formatted as source title, newline full clickable URL beginning with https://, newline '- 볼 부분: ...'.\n"
+        "- A candidate may include optional_verified_quote. It is optional, never mandatory. Use at most one quote only when it directly strengthens today's core workflow lesson.\n"
+        "- Do not use a quote merely because a famous speaker is available. Prefer quote_used=false when the connection would feel decorative or needs a long explanation.\n"
+        "- If using a quote, copy speaker_ko and quote_ko exactly, set quote_used=true and quote_id to the supplied id, and include the supplied source_url under '인용 원문:' in the final reply.\n"
+        "- Practical reference links must remain Korean-language technical blog posts or GitHub repositories. A non-Korean URL is allowed only as the verified primary source under '인용 원문:'.\n"
+        "- If no supplied optional_verified_quote is used, set quote_used=false and quote_id=\"\".\n"
         "- Do not use markdown code fences. Do not use bracketed mode labels such as '[초안 작성 모드]'.\n"
         "- If using a new feature topic, include official source links and concrete usage.\n"
         "- Do not invent facts. Use only the candidates below as factual sources.\n"
@@ -182,19 +230,26 @@ def build_prompt(playbook: str, candidates: list[dict], recent_history: list[dic
         "\"...\"\n\n"
         "[plain principle sentence without label]\n"
         "---\n"
-        "실전에서는 ...\n"
-        "1. ...\n"
-        "2. ...\n"
-        "3. ...\n"
-        "4. ...\n"
+        "왜 좋은 요청일까요?\n"
+        "1. [why request 1 is good]\n"
+        "- 활용: [when/how to use it]\n"
+        "2. [why request 2 is good]\n"
+        "- 활용: [when/how to use it]\n"
+        "3. [why request 3 is good]\n"
+        "- 활용: [when/how to use it]\n"
+        "4. [why request 4 is good]\n"
+        "- 활용: [when/how to use it]\n"
         "---\n"
         "예시 프롬프트:\n"
-        "\"...\"\n"
+        "\"[prompt for request 1]\"\n"
+        "\"[prompt for request 2]\"\n"
+        "\"[prompt for request 3]\"\n"
+        "\"[prompt for request 4]\"\n"
         "---\n"
         "참고해서 볼 만한 것들:\n"
         "[source title]\n"
         "https://...\n"
-        "- 적용: ...\n\n"
+        "- 볼 부분: ...\n\n"
         "Channel playbook:\n"
         f"{playbook}\n\n"
         "Recent post history to avoid or intentionally continue:\n"
@@ -255,6 +310,9 @@ def main() -> int:
     candidate_by_url = {item.get("url"): item for item in candidates if item.get("url")}
     source_url = str(data.get("source_url") or "").strip()
     source_item = candidate_by_url.get(source_url) or candidates[0]
+    quote_used = data.get("quote_used") is True
+    quote_id = str(data.get("quote_id") or "").strip()
+    quote_suggestion = validate_quote_selection(thread_text, data, source_item)
 
     output_path = Path(args.output_path)
     output_path.write_text(thread_text + "\n", encoding="utf-8")
@@ -275,6 +333,10 @@ def main() -> int:
         "failure_mode": data.get("failure_mode", ""),
         "solution_pattern": data.get("solution_pattern", ""),
         "bad_request": data.get("bad_request", ""),
+        "quote_used": quote_used,
+        "quote_id": quote_id,
+        "quote_speaker": quote_suggestion.get("speaker", "") if quote_suggestion else "",
+        "quote_source_url": quote_suggestion.get("source_url", "") if quote_suggestion else "",
     }
     metadata_path = Path(args.metadata_path)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)

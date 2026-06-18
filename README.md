@@ -18,6 +18,13 @@ scripts/agentic_daily_pipeline.py
   GitHub API, repo README, 안정적인 공식 RSS/Atom feed 수집 및 점수화.
   후보는 논문 요약, literature review, citation 검증, research agent 중심으로 고른다.
 
+scripts/quote_matcher.py
+  검증된 유명인 인용을 오늘 주제와 매칭한다. 관련성 기준을 넘고 최근 3개 글에서
+  인용을 쓰지 않았을 때만 선택 후보로 전달한다.
+
+data/verified-quotes.json
+  발언 원문, 한국어 번역, 1차 출처 URL, 주제 태그를 관리하는 검증 카탈로그.
+
 scripts/threads_auto_upload.py
   Threads API 게시 도우미.
 
@@ -81,12 +88,18 @@ docs/threads-channel-playbook.md
 
 ```text
 Main: 만약형 or 자연형 hook + 나쁜 요청 1개 + 좋은 요청 4개 + 원칙 문장
-Reply 1: research workflow 기준/checklist
-Reply 2: 예시 프롬프트
-Reply 3: 참고해서 볼 만한 것들 + 전체 URL + 각 링크의 적용법
+Reply 1: 좋은 요청 4개가 좋은 이유 + 각각의 활용 시점
+Reply 2: 좋은 요청 4개에 대응하는 실제 프롬프트
+Reply 3: 주제에 맞는 한국어 기술 블로그/GitHub 사례 + 전체 URL + 볼 부분
 ```
 
 글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 이 포맷은 중복 주제가 아니라 새 연구 workflow 문제에 반복 적용한다. 예: 논문 요약, literature review, evidence matrix, 초안 작성, citation 검증, reviewer critique.
+
+유명인 인용은 기본 구성 요소가 아니다. 카탈로그의 관련성 점수가 8점 이상이고
+최근 3개 게시물에서 인용을 사용하지 않았을 때만 생성기에 선택지로 전달한다.
+생성기는 인용 없이도 완결된 글을 우선하며, 사용할 경우 한 게시물에 1개만 넣는다.
+실전 참고 링크는 계속 한국어 기술 블로그/GitHub를 사용하고, 영문 링크는
+`인용 원문:` 아래의 검증된 1차 출처에만 허용한다.
 
 자동 게시에서 금지하는 표현:
 
@@ -220,3 +233,6 @@ auto publish
 - AI가 만든 citation/reference는 원문에서 다시 확인한다.
 - 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
 - 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 논문/문서/도구만 반복 소재로 쓰지 않는다.
+- 유명인 인용은 `data/verified-quotes.json`에 원문과 출처가 등록된 경우만 사용한다.
+- 인용은 주제 관련성, 실천 연결성, 출처 신뢰도 합계가 8점 이상일 때만 후보가 된다.
+- 인용 사용 여부와 ID는 `content-history.jsonl`에 기록해 최소 3개 글의 간격을 둔다.

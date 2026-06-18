@@ -1,4 +1,5 @@
 import argparse
+import json
 import re
 import sys
 from pathlib import Path
@@ -36,6 +37,7 @@ def has_explanation_for(parts: list[str], number: str) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check an approved Threads chain before publishing.")
     parser.add_argument("--thread-path", default="approved-thread-chain.txt")
+    parser.add_argument("--quote-catalog-path", default="data/verified-quotes.json")
     parser.add_argument("--strict", action="store_true")
     args = parser.parse_args()
 
@@ -85,12 +87,38 @@ def main() -> int:
 
     if len(parts) >= 3 and not parts[2].startswith("예시 프롬프트:"):
         errors.append("Part 3 must start with '예시 프롬프트:'.")
+    elif len(parts) >= 3 and len(QUOTE_LINE_RE.findall(parts[2])) < 4:
+        errors.append("Part 3 must include four quoted prompt examples matching the four good requests.")
+
+    if len(parts) >= 2:
+        for number in ("1", "2", "3", "4"):
+            if f"{number}." not in parts[1]:
+                errors.append(f"Part 2 must explain why good request {number} is useful.")
+        if parts[1].count("- 활용:") < 4:
+            errors.append("Part 2 must include a '- 활용:' line for each of the four good requests.")
 
     if len(parts) >= 4:
         if not parts[3].startswith("참고해서 볼 만한 것들:"):
             errors.append("Part 4 must start with '참고해서 볼 만한 것들:'.")
         if not URL_RE.search(parts[3]):
             errors.append("Reference reply must include at least one full clickable URL starting with https://.")
+        if "notebooklm.google" in parts[3].lower():
+            errors.append("Reference reply must link to an actual Korean example, not the NotebookLM product homepage.")
+        if "- 볼 부분:" not in parts[3]:
+            errors.append("Reference reply must explain what readers should inspect in each linked example.")
+
+    catalog_path = Path(args.quote_catalog_path)
+    if catalog_path.exists():
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        for quote in catalog:
+            speaker_names = [quote.get("speaker", ""), quote.get("speaker_ko", "")]
+            if any(name and name in joined for name in speaker_names):
+                if quote.get("quote_ko") not in joined:
+                    errors.append(f"Quote attributed to {quote.get('speaker')} must use the cataloged Korean text.")
+                if quote.get("source_url") not in joined:
+                    errors.append(f"Quote attributed to {quote.get('speaker')} must include its verified source URL.")
+                if "인용 원문:" not in joined:
+                    errors.append("A famous-person quote must label its primary source with '인용 원문:'.")
 
     if not any(marker in main for marker in ["흐려", "애매", "흔들", "놓치", "실패", "위험", "잘못", "검증", "근거"]):
         warnings.append("Main hook may be flat; consider a sharper diagnostic consequence.")

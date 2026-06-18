@@ -66,7 +66,19 @@ jobs:
             -Format $metadata.format `
             -SourceCount ([int]$metadata.source_count) `
             -SourceName $metadata.source_name `
-            -SourceUrl $metadata.source_url
+            -SourceUrl $metadata.source_url `
+            -Series $metadata.series `
+            -SeriesPart $metadata.series_part `
+            -PublicTheme $metadata.public_theme `
+            -TopicPillar $metadata.topic_pillar `
+            -WorkflowStage $metadata.workflow_stage `
+            -FailureMode $metadata.failure_mode `
+            -SolutionPattern $metadata.solution_pattern `
+            -BadRequest $metadata.bad_request `
+            -QuoteUsed:([bool]$metadata.quote_used) `
+            -QuoteId $metadata.quote_id `
+            -QuoteSpeaker $metadata.quote_speaker `
+            -QuoteSourceUrl $metadata.quote_source_url
 
       - name: Commit content history
         if: ${{ github.event_name == 'schedule' || inputs.publish == true }}

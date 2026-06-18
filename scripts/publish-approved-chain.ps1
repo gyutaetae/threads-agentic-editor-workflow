@@ -13,6 +13,10 @@ param(
     [string]$FailureMode = "",
     [string]$SolutionPattern = "",
     [string]$BadRequest = "",
+    [switch]$QuoteUsed,
+    [string]$QuoteId = "",
+    [string]$QuoteSpeaker = "",
+    [string]$QuoteSourceUrl = "",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -43,11 +47,18 @@ try {
         "--workflow-stage", $WorkflowStage,
         "--failure-mode", $FailureMode,
         "--solution-pattern", $SolutionPattern,
-        "--bad-request", $BadRequest
+        "--bad-request", $BadRequest,
+        "--quote-id", $QuoteId,
+        "--quote-speaker", $QuoteSpeaker,
+        "--quote-source-url", $QuoteSourceUrl
     )
 
     if ($CardUsed) {
         $argsList += "--card-used"
+    }
+
+    if ($QuoteUsed) {
+        $argsList += "--quote-used"
     }
 
     if ($DryRun) {
