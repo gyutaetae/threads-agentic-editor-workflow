@@ -15,7 +15,7 @@ on:
       topic:
         description: "Metrics topic label"
         required: true
-        default: "agent workflow"
+        default: "research ai workflow"
         type: string
       source_count:
         description: "Number of sources referenced"

@@ -12,6 +12,11 @@ from urllib.parse import urlencode
 
 import requests
 
+try:
+    from quote_matcher import attach_quote_suggestions, load_catalog
+except ImportError:
+    from scripts.quote_matcher import attach_quote_suggestions, load_catalog
+
 
 GITHUB_SEARCH_URL = "https://api.github.com/search/repositories"
 
@@ -19,77 +24,80 @@ OFFICIAL_FEEDS = [
     {
         "source": "OpenAI Developers",
         "url": "https://developers.openai.com/rss.xml",
-        "our_angle": "OpenAI 개발자 업데이트를 Codex/API/agent workflow 관점으로 번역",
+        "our_angle": "OpenAI 업데이트를 논문 읽기, 요약, 출처 검증 workflow 관점으로 번역",
     },
     {
-        "source": "GitHub Changelog",
-        "url": "https://github.blog/changelog/feed/",
-        "our_angle": "GitHub 기능 변화를 agentic development workflow 관점으로 해석",
+        "source": "arXiv cs.CL",
+        "url": "https://export.arxiv.org/rss/cs.CL",
+        "our_angle": "새 NLP/LLM 논문을 연구자가 따라 쓸 수 있는 읽기/검증 workflow로 번역",
     },
     {
         "source": "GitHub AI & ML",
         "url": "https://github.blog/ai-and-ml/feed/",
-        "our_angle": "GitHub AI/ML 흐름을 개발자 작업법과 repo 선택 기준으로 번역",
+        "our_angle": "AI/ML 도구 흐름을 research agent와 논문 작업 자동화 관점으로 해석",
     },
 ]
 
 SOURCE_POLICY = {
     "github_repo": {
         "reliability": "stable",
-        "fact_boundary": "Facts: repo name, URL, stars, language, description, README text. Interpretation: why it matters and what workflow lesson to draw.",
+        "fact_boundary": "Facts: repo name, URL, stars, language, description, README text. Interpretation: how it changes research reading, drafting, citation, or review workflow.",
     },
     "official_feed": {
         "reliability": "stable",
-        "fact_boundary": "Facts: official post title, URL, summary, published date. Interpretation: developer workflow impact and account angle.",
+        "fact_boundary": "Facts: official post title, URL, summary, published date. Interpretation: research workflow impact and account angle.",
     },
 }
 
 QUERIES = [
     {
-        "category": "Codex workflow",
-        "query": 'Codex agent workflow in:readme,description stars:>20',
-        "our_angle": "Codex를 큰 요청이 아니라 검증 가능한 작업 단위로 쓰는 법",
+        "category": "Paper summarization",
+        "query": 'paper summarization LLM research assistant in:readme,description stars:>20',
+        "our_angle": "논문 요약을 초록 재작성보다 contribution/evidence/limitation 추출로 바꾸는 법",
     },
     {
-        "category": "Claude Code workflow",
-        "query": '"Claude Code" agent workflow in:readme,description stars:>20',
-        "our_angle": "Claude Code를 terminal-native agent로 운영하는 실전 패턴",
+        "category": "Literature review",
+        "query": '"literature review" LLM AI research in:readme,description stars:>20',
+        "our_angle": "related work를 논문 나열이 아니라 evidence matrix로 만드는 법",
     },
     {
-        "category": "Cursor agent workflow",
-        "query": 'Cursor agent workflow AI coding in:readme,description stars:>20',
-        "our_angle": "IDE-first agent workflow와 CLI agent workflow의 차이",
+        "category": "Research assistant",
+        "query": '"research assistant" LLM papers in:readme,description stars:>20',
+        "our_angle": "AI research assistant를 검색 도구가 아니라 읽기/비교/검증 workflow로 쓰는 법",
     },
     {
-        "category": "MCP tools",
-        "query": 'MCP server Claude Code Cursor agent in:readme,description stars:>50',
-        "our_angle": "MCP를 툴 연결이 아니라 작업 환경을 agent에게 넘기는 방식으로 해석",
+        "category": "Citation verification",
+        "query": 'citation verification reference checker LLM in:readme,description stars:>10',
+        "our_angle": "AI가 만든 reference를 원문 metadata와 citation claim으로 검증하는 법",
     },
     {
-        "category": "Subagent architecture",
-        "query": 'subagent multi-agent architecture LLM in:readme,description stars:>20',
-        "our_angle": "subagent를 역할보다 권한 경계로 설계하는 법",
+        "category": "Research agent architecture",
+        "query": 'multi-agent research paper LLM in:readme,description stars:>20',
+        "our_angle": "reader, synthesizer, reviewer, editor agent를 분리해 논문 작업을 안정화하는 법",
     },
     {
-        "category": "Agent eval observability",
-        "query": 'AI agent eval observability harness LLM in:readme,description stars:>20',
-        "our_angle": "agent를 믿기 전에 로그, 평가, 되돌리기를 설계하는 법",
+        "category": "Academic writing",
+        "query": 'academic writing LLM papers citation in:readme,description stars:>20',
+        "our_angle": "AI 초안을 문장 생성이 아니라 주장-근거-인용 구조로 검수하는 법",
     },
 ]
 
 KEYWORDS = {
-    "codex": 6,
-    "claude": 6,
-    "cursor": 5,
-    "mcp": 5,
+    "paper": 6,
+    "papers": 6,
+    "research": 6,
+    "literature review": 7,
+    "citation": 6,
+    "reference": 5,
+    "summarization": 5,
+    "summary": 4,
+    "academic": 5,
+    "arxiv": 5,
+    "evidence": 5,
+    "reviewer": 4,
     "agent": 4,
-    "subagent": 5,
-    "multi-agent": 4,
     "workflow": 4,
-    "automation": 3,
-    "eval": 3,
-    "observability": 3,
-    "harness": 4,
+    "llm": 3,
 }
 
 CONTENT_AXES = {
@@ -178,19 +186,19 @@ MODE_TERMS = [
 ]
 
 REQUIRED_RELEVANCE_TERMS = [
-    "agent",
-    "agentic",
-    "llm",
-    "mcp",
-    "claude",
-    "codex",
-    "cursor",
-    "subagent",
-    "multi-agent",
-    "multiagent",
-    "ai coding",
-    "automation",
-    "harness",
+    "paper",
+    "papers",
+    "research",
+    "literature",
+    "citation",
+    "reference",
+    "summarization",
+    "summary",
+    "academic",
+    "arxiv",
+    "evidence",
+    "writing",
+    "scholar",
 ]
 
 
@@ -483,7 +491,7 @@ def collect_official_feeds(per_feed: int) -> list[dict]:
         entries = parse_feed_entries(root)[:per_feed]
         for entry in entries:
             visible_text = f"{entry['title']} {entry['summary']}".lower()
-            if not any(term in visible_text for term in REQUIRED_RELEVANCE_TERMS + ["developer", "github", "openai", "model"]):
+            if not any(term in visible_text for term in REQUIRED_RELEVANCE_TERMS):
                 continue
             collected.append(
                 {
@@ -598,11 +606,11 @@ def score_candidate(item: dict) -> dict:
 
     is_official = item.get("source_type") == "official_feed"
     trend = 14 if is_official else min(20, stars // 1000 + forks // 200)
-    utility = min(20, keyword_score + (4 if "workflow" in text or "tool" in text else 0))
-    novelty = min(15, 9 + (4 if "mcp" in text or "subagent" in text else 0))
+    utility = min(20, keyword_score + (4 if "workflow" in text or "tool" in text or "matrix" in text else 0))
+    novelty = min(15, 9 + (4 if "citation" in text or "literature review" in text or "multi-agent" in text else 0))
     authority = 15 if is_official else min(15, 8 + min(7, stars // 5000))
     our_angle = min(20, 10 + keyword_score // 2)
-    virality = min(10, 4 + (3 if any(k in text for k in ["codex", "claude", "cursor"]) else 0))
+    virality = min(10, 4 + (3 if any(k in text for k in ["paper", "citation", "literature", "academic"]) else 0))
 
     total = trend + utility + novelty + authority + our_angle + virality
 
@@ -620,9 +628,9 @@ def score_candidate(item: dict) -> dict:
         "B_deep": make_deep_angle(item),
     }
     if item.get("source_type") == "official_feed":
-        item["risk"] = "Official updates are authoritative, but the developer workflow angle is our interpretation. Avoid overstating product impact."
+        item["risk"] = "Official updates are authoritative, but the research workflow angle is our interpretation. Avoid overstating product impact."
     else:
-        item["risk"] = "GitHub stars show popularity, not quality. Verify README/release details before making factual claims."
+        item["risk"] = "GitHub stars show popularity, not research quality. Verify README/release details before making factual claims."
     return item
 
 
@@ -632,24 +640,26 @@ def route_and_score_candidates(candidates: list[dict]) -> list[dict]:
 
 def make_broad_angle(item: dict) -> str:
     if item.get("source_type") == "official_feed":
-        return "공식 업데이트를 그냥 요약하지 말고, 개발자가 내일 작업 방식에서 바꿀 점으로 번역한다."
+        return "공식 업데이트를 그냥 요약하지 말고, 연구자가 내일 논문 작업에서 바꿀 점으로 번역한다."
     category = item.get("category", "")
-    if "MCP" in category:
-        return "요즘 개발자들이 MCP에 꽂히는 이유는 툴 연결보다 agent에게 작업 환경을 넘기기 위해서다."
-    if "Codex" in category or "Claude" in category or "Cursor" in category:
-        return "AI 코딩툴 잘 쓰는 사람은 프롬프트보다 작업 단위를 먼저 설계한다."
-    return "GitHub에서 뜨는 agent repo를 볼 때 star보다 먼저 봐야 할 것은 권한, 로그, 검증 구조다."
+    if "Literature" in category:
+        return "AI에게 related work를 맡길 때 핵심은 문장 생성보다 논문 간 차이를 표로 고정하는 것이다."
+    if "Citation" in category:
+        return "AI가 만든 reference는 글감이 아니라 검증 대상이다."
+    if "Paper" in category:
+        return "논문 요약은 초록 재작성보다 주장, 근거, 한계 추출이 먼저다."
+    return "AI 연구 도구를 볼 때 기능보다 먼저 봐야 할 것은 출처, 근거, 검증 흐름이다."
 
 
 def make_deep_angle(item: dict) -> str:
     if item.get("source_type") == "official_feed":
-        return f"{item.get('title')}에서 봐야 할 것은 새 기능 자체보다 agent workflow에 어떤 권한/도구 경계를 추가하는지다."
+        return f"{item.get('title')}에서 봐야 할 것은 새 기능 자체보다 논문 읽기/쓰기 workflow에 어떤 검증 구조를 추가하는지다."
     category = item.get("category", "")
-    if "Subagent" in category:
-        return "subagent는 역할 분담보다 실패 범위와 권한 경계를 줄이기 위해 설계해야 한다."
-    if "eval" in category.lower() or "observability" in category.lower():
-        return "agent를 프로덕션에 넣는 순간 핵심은 모델 성능보다 관찰 가능성과 되돌리기다."
-    return f"{item.get('name')}에서 볼 것은 기능 목록보다 agent workflow를 어떻게 구조화했는지다."
+    if "Research agent" in category:
+        return "research agent는 reader, synthesizer, reviewer, editor를 분리해야 citation과 주장 검증이 쉬워진다."
+    if "Academic writing" in category:
+        return "AI 초안의 품질은 문체보다 problem-gap-contribution과 citation alignment에서 갈린다."
+    return f"{item.get('name')}에서 볼 것은 기능 목록보다 논문 작업을 어떻게 읽기, 비교, 쓰기, 검증으로 나누는지다."
 
 
 def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
@@ -662,7 +672,7 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
     json_path.write_text(json.dumps(ranked, ensure_ascii=False, indent=2), encoding="utf-8")
 
     lines = [
-        f"# Daily Agentic Editor Brief: {date}",
+        f"# Daily Research AI Editor Brief: {date}",
         "",
         "Use this with `$threads-agentic-editor` to draft A/B Threads options.",
         "",
@@ -693,6 +703,14 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
                 f"- A안: {item['draft_angles']['A_broad']}",
                 f"- B안: {item['draft_angles']['B_deep']}",
                 f"- Risk: {item['risk']}",
+                (
+                    "- Optional verified quote: "
+                    f"{item['quote_suggestion']['speaker']} / "
+                    f"{item['quote_suggestion']['source_url']} / "
+                    f"score {item['quote_suggestion']['score']['total']}"
+                    if item.get("quote_suggestion")
+                    else "- Optional verified quote: none"
+                ),
                 "",
             ]
         )
@@ -736,6 +754,11 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
                 f"   B angle: {item['draft_angles']['B_deep']}",
                 f"   Facts vs interpretation: {item.get('fact_boundary', 'Separate source facts from our angle.')}",
                 f"   Risk: {item['risk']}",
+                (
+                    f"   Optional quote: {json.dumps(item['quote_suggestion'], ensure_ascii=False)}"
+                    if item.get("quote_suggestion")
+                    else "   Optional quote: none"
+                ),
                 "",
             ]
         )
@@ -744,12 +767,15 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Collect and score daily AI agent Threads candidates.")
+    parser = argparse.ArgumentParser(description="Collect and score daily research AI Threads candidates.")
     parser.add_argument("--per-query", type=int, default=5)
     parser.add_argument("--per-feed", type=int, default=5)
     parser.add_argument("--readme-top", type=int, default=5)
     parser.add_argument("--output-dir", default="daily-editor")
     parser.add_argument("--history-path", default="content-history.jsonl")
+    parser.add_argument("--quote-catalog-path", default="data/verified-quotes.json")
+    parser.add_argument("--quote-threshold", type=int, default=8)
+    parser.add_argument("--skip-quote-url-verification", action="store_true")
     parser.add_argument("--date", default=datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d"))
     args = parser.parse_args()
 
@@ -759,7 +785,17 @@ def main() -> int:
         raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)
+<<<<<<< HEAD
     candidates = route_and_score_candidates(candidates)
+=======
+    candidates = attach_quote_suggestions(
+        candidates,
+        load_catalog(Path(args.quote_catalog_path)),
+        Path(args.history_path),
+        threshold=args.quote_threshold,
+        verify_urls=not args.skip_quote_url_verification,
+    )
+>>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e
     write_outputs(candidates, Path(args.output_dir), args.date)
     return 0
 

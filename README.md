@@ -1,11 +1,11 @@
-# Threads Agentic Editor Workflow
+# Threads Research AI Editor Workflow
 
-Codex, Claude Code, Cursor로 일 잘하고 싶은 개발자를 위한 Threads 운영 워크플로우.
+AI로 논문을 읽고 쓰고 검증하는 연구자를 위한 Threads 운영 워크플로우.
 
 목표:
 
 ```text
-매일 하나, 프로 개발자의 AI agent 작업법
+매일 하나, 연구자가 바로 써먹는 AI 논문 작업법
 ```
 
 ## 구성
@@ -15,10 +15,22 @@ skills/threads-agentic-editor
   Codex 스킬. 글 톤, 훅, 사실/해석 분리, A/B 초안 기준.
 
 scripts/agentic_daily_pipeline.py
+<<<<<<< HEAD
   GitHub API, repo README, 안정적인 공식 RSS/Atom feed 수집, content router, 점수화.
 
 scripts/generate_auto_thread.py
   Groq 초안 생성, format selection, quality gate, draft/discard 분기.
+=======
+  GitHub API, repo README, 안정적인 공식 RSS/Atom feed 수집 및 점수화.
+  후보는 논문 요약, literature review, citation 검증, research agent 중심으로 고른다.
+
+scripts/quote_matcher.py
+  검증된 유명인 인용을 오늘 주제와 매칭한다. 관련성 기준을 넘고 최근 3개 글에서
+  인용을 쓰지 않았을 때만 선택 후보로 전달한다.
+
+data/verified-quotes.json
+  발언 원문, 한국어 번역, 1차 출처 URL, 주제 태그를 관리하는 검증 카탈로그.
+>>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e
 
 scripts/threads_auto_upload.py
   Threads API 게시 도우미.
@@ -82,24 +94,50 @@ docs/threads-channel-playbook.md
 현재 우선 포맷:
 
 ```text
+<<<<<<< HEAD
 Main: 만약 [나쁜 사용]이라고 사용하고 있다면 / [무엇을 잘못 맡긴다는 뜻] / 이런 방식으로 요청해보세요
 Reply 1: 적용 기준 or workflow modes
 Reply 2: 예시 프롬프트
 Reply 3: 참고해서 볼 만한 것들 + 각 링크의 적용법
+=======
+Main: 만약형 or 자연형 hook + 나쁜 요청 1개 + 좋은 요청 4개 + 원칙 문장
+Reply 1: 좋은 요청 4개가 좋은 이유 + 각각의 활용 시점
+Reply 2: 좋은 요청 4개에 대응하는 실제 프롬프트
+Reply 3: 주제에 맞는 한국어 기술 블로그/GitHub 사례 + 전체 URL + 볼 부분
+>>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e
 ```
 
-글은 짧게 쓴다. 댓글은 최대 3개까지만 허용한다. 이 포맷은 중복 주제가 아니라 새 workflow 문제에 반복 적용한다. 예: PR 리뷰, 테스트 수정, refactor 범위 지정, agent 권한, memory 설정, rollback 설계.
+글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 이 포맷은 중복 주제가 아니라 새 연구 workflow 문제에 반복 적용한다. 예: 논문 요약, literature review, evidence matrix, 초안 작성, citation 검증, reviewer critique.
+
+유명인 인용은 기본 구성 요소가 아니다. 카탈로그의 관련성 점수가 8점 이상이고
+최근 3개 게시물에서 인용을 사용하지 않았을 때만 생성기에 선택지로 전달한다.
+생성기는 인용 없이도 완결된 글을 우선하며, 사용할 경우 한 게시물에 1개만 넣는다.
+실전 참고 링크는 계속 한국어 기술 블로그/GitHub를 사용하고, 영문 링크는
+`인용 원문:` 아래의 검증된 1차 출처에만 허용한다.
+
+자동 게시에서 금지하는 표현:
+
+```text
+Reply 1:
+Reply 2:
+Reply 3:
+[한 줄 원칙:]
+한 줄 원칙:
+[초안 작성 모드]
+JSON/code block 예시 프롬프트
+URL 없는 참고 링크
+```
 
 승인 후 게시 전 확인:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5 -DryRun
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -DryRun
 ```
 
 게시:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "agent repo reading" -SourceCount 5
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3
 ```
 
 이 명령은 `THREADS_ACCESS_TOKEN`으로 실제 계정 ID를 확인해서 stale `THREADS_USER_ID` 문제를 피하고, 게시 후 `threads-post-metrics.csv`에 기본 행을 기록한다.
@@ -205,7 +243,7 @@ GENERATION_CANDIDATES
 주의:
 
 - `schedule` 실행은 승인 없이 바로 게시한다.
-- 자동 글은 main + 댓글 3개, 파트당 500자 제한을 통과해야 한다.
+- 자동 글은 main + 댓글 3개, 파트당 500자, 좋은 요청 4개, 전체 URL 참고 링크 기준을 통과해야 한다.
 - 품질이 흔들리면 workflow의 `schedule` 줄을 제거하고 수동 실행만 유지한다.
 - `quality_score < 85`이면 자동 게시하지 않고 `daily-editor/review`에 draft/rejected 파일로 남긴다.
 - 게시 기록에는 `post_slot`, `experiment_group`, `model`, `quality_score`, `format_type`, `content_axis`를 남긴다.
@@ -280,7 +318,9 @@ auto publish
 - 안정적인 소스만 자동 수집한다.
 - 출처가 말한 사실과 우리의 해석을 분리한다.
 - GitHub stars는 인기도이지 품질 보장이 아니다.
+- AI가 만든 citation/reference는 원문에서 다시 확인한다.
 - 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
+<<<<<<< HEAD
 - 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 repo를 반복 소재로 쓰지 않는다.
 
 ## Content Router
@@ -320,3 +360,9 @@ python .\scripts\generate_auto_thread.py --date (Get-Date -Format "yyyy-MM-dd") 
 .\scripts\publish-approved-chain.ps1 -DryRun
 ```
 
+=======
+- 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 논문/문서/도구만 반복 소재로 쓰지 않는다.
+- 유명인 인용은 `data/verified-quotes.json`에 원문과 출처가 등록된 경우만 사용한다.
+- 인용은 주제 관련성, 실천 연결성, 출처 신뢰도 합계가 8점 이상일 때만 후보가 된다.
+- 인용 사용 여부와 ID는 `content-history.jsonl`에 기록해 최소 3개 글의 간격을 둔다.
+>>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e

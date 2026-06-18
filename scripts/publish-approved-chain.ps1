@@ -1,6 +1,6 @@
 param(
     [string]$ThreadPath = ".\approved-thread-chain.txt",
-    [string]$Topic = "agent repo reading",
+    [string]$Topic = "research ai workflow",
     [string]$Format = "A",
     [string]$ContentAxis = "",
     [string]$FormatType = "",
@@ -14,6 +14,18 @@ param(
     [int]$SourceCount = 0,
     [string]$SourceName = "",
     [string]$SourceUrl = "",
+    [string]$Series = "",
+    [string]$SeriesPart = "",
+    [string]$PublicTheme = "",
+    [string]$TopicPillar = "",
+    [string]$WorkflowStage = "",
+    [string]$FailureMode = "",
+    [string]$SolutionPattern = "",
+    [string]$BadRequest = "",
+    [switch]$QuoteUsed,
+    [string]$QuoteId = "",
+    [string]$QuoteSpeaker = "",
+    [string]$QuoteSourceUrl = "",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -45,11 +57,26 @@ try {
         "--model", $Model,
         "--source-count", $SourceCount,
         "--source-name", $SourceName,
-        "--source-url", $SourceUrl
+        "--source-url", $SourceUrl,
+        "--series", $Series,
+        "--series-part", $SeriesPart,
+        "--public-theme", $PublicTheme,
+        "--topic-pillar", $TopicPillar,
+        "--workflow-stage", $WorkflowStage,
+        "--failure-mode", $FailureMode,
+        "--solution-pattern", $SolutionPattern,
+        "--bad-request", $BadRequest,
+        "--quote-id", $QuoteId,
+        "--quote-speaker", $QuoteSpeaker,
+        "--quote-source-url", $QuoteSourceUrl
     )
 
     if ($CardUsed) {
         $argsList += "--card-used"
+    }
+
+    if ($QuoteUsed) {
+        $argsList += "--quote-used"
     }
 
     if ($DryRun) {

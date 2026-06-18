@@ -1,0 +1,99 @@
+[
+  {
+    "id": "karpathy-predict-before-absorbing",
+    "speaker": "Andrej Karpathy",
+    "speaker_ko": "안드레이 카파시",
+    "quote_original": "Ideally never absorb information without predicting it first.",
+    "quote_ko": "정보를 받아들이기 전에 먼저 예측해보는 것이 이상적입니다.",
+    "source_url": "https://karpathy.ai/tweets.html",
+    "source_type": "author_archive",
+    "verified": true,
+    "actionability": 3,
+    "authority": 2,
+    "topic_terms": [
+      "paper reading",
+      "paper summarization",
+      "critical reading",
+      "hypothesis",
+      "prediction",
+      "논문 읽기",
+      "논문 요약",
+      "가설",
+      "예측",
+      "비판적 독해"
+    ]
+  },
+  {
+    "id": "altman-clear-thinking-clear-writing",
+    "speaker": "Sam Altman",
+    "speaker_ko": "샘 올트먼",
+    "quote_original": "My best advice for communicating clearly is to first make sure your thinking is clear and then use plain, concise language.",
+    "quote_ko": "명확한 소통을 위한 최고의 조언은 먼저 생각을 분명히 하고 평이하고 간결한 언어를 사용하는 것입니다.",
+    "source_url": "https://blog.samaltman.com/how-to-be-successful",
+    "source_type": "personal_blog",
+    "verified": true,
+    "actionability": 3,
+    "authority": 2,
+    "topic_terms": [
+      "academic writing",
+      "draft",
+      "writing",
+      "claim",
+      "argument",
+      "논문 작성",
+      "초안",
+      "주장",
+      "글쓰기",
+      "명료성"
+    ]
+  },
+  {
+    "id": "huang-direct-manage-evaluate-ai",
+    "speaker": "Jensen Huang",
+    "speaker_ko": "젠슨 황",
+    "quote_original": "It is very clear that it is essential to learn how to use AI — how to direct it, manage it, guardrail it, evaluate it",
+    "quote_ko": "AI를 사용하고 지시하고 관리하고 가드레일을 두고 평가하는 법을 배우는 것은 필수적입니다.",
+    "source_url": "https://blogs.nvidia.com/blog/davos-wef-blackrock-ceo-larry-fink-jensen-huang/",
+    "source_type": "official_company_blog",
+    "verified": true,
+    "actionability": 3,
+    "authority": 2,
+    "topic_terms": [
+      "evaluation",
+      "guardrail",
+      "verification",
+      "reviewer",
+      "agent",
+      "citation verification",
+      "평가",
+      "검증",
+      "가드레일",
+      "에이전트",
+      "인용 검증"
+    ]
+  },
+  {
+    "id": "altman-test-ideas-real-world",
+    "speaker": "Sam Altman",
+    "speaker_ko": "샘 올트먼",
+    "quote_original": "The next step is to find easy, fast ways to test these ideas in the real world.",
+    "quote_ko": "다음 단계는 아이디어를 현실에서 쉽고 빠르게 시험할 방법을 찾는 것입니다.",
+    "source_url": "https://blog.samaltman.com/how-to-be-successful",
+    "source_type": "personal_blog",
+    "verified": true,
+    "actionability": 3,
+    "authority": 2,
+    "topic_terms": [
+      "experiment",
+      "reproducibility",
+      "implementation",
+      "prototype",
+      "code practice",
+      "실험",
+      "재현",
+      "구현",
+      "프로토타입",
+      "코드 실습"
+    ]
+  }
+]
