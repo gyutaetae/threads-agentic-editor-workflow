@@ -785,9 +785,7 @@ def main() -> int:
         raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)
-<<<<<<< HEAD
     candidates = route_and_score_candidates(candidates)
-=======
     candidates = attach_quote_suggestions(
         candidates,
         load_catalog(Path(args.quote_catalog_path)),
@@ -795,7 +793,6 @@ def main() -> int:
         threshold=args.quote_threshold,
         verify_urls=not args.skip_quote_url_verification,
     )
->>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e
     write_outputs(candidates, Path(args.output_dir), args.date)
     return 0
 

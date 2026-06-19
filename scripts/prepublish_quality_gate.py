@@ -9,9 +9,21 @@ MAX_CHARS = 500
 MAX_PARTS = 4
 CHECKLIST_RE = re.compile(r"(?m)^\s*(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
-<<<<<<< HEAD
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
+QUOTE_LINE_RE = re.compile(r"(?m)^\s*[\"“][^\"”]+[\"”]\s*$")
+FORBIDDEN_TEXT = [
+    "[한 줄 원칙",
+    "한 줄 원칙:",
+    "Reply 1:",
+    "Reply 2:",
+    "Reply 3:",
+    "Reply 1",
+    "Reply 2",
+    "Reply 3",
+    "[초안 작성 모드]",
+    "초안 작성 모드",
+]
 
 
 def strip_section_label(text: str) -> str:
@@ -27,21 +39,6 @@ def normalize_part(part: str) -> str:
     part = strip_section_label(part)
     text = "\n".join(line.rstrip() for line in part.splitlines()).strip()
     return re.sub(r"\n{3,}", "\n\n", text)
-=======
-QUOTE_LINE_RE = re.compile(r"(?m)^\s*[\"“][^\"”]+[\"”]\s*$")
-FORBIDDEN_TEXT = [
-    "[한 줄 원칙",
-    "한 줄 원칙:",
-    "Reply 1:",
-    "Reply 2:",
-    "Reply 3:",
-    "Reply 1",
-    "Reply 2",
-    "Reply 3",
-    "[초안 작성 모드]",
-    "초안 작성 모드",
-]
->>>>>>> 08a23dce14fca394f7683f5c58cbf9ac8ba5600e
 
 
 def read_parts(path: Path) -> list[str]:
