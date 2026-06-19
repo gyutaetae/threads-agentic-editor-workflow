@@ -45,6 +45,8 @@ jobs:
       POSTS_PER_DAY: ${{ inputs.posts_per_day || vars.POSTS_PER_DAY || '1' }}
       POST_SLOT: ${{ inputs.post_slot || 'morning' }}
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      THREADS_IMAGE_URL: ${{ vars.THREADS_IMAGE_URL || '' }}
+      THREADS_ALT_TEXT: ${{ vars.THREADS_ALT_TEXT || '' }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out repo
@@ -130,7 +132,8 @@ jobs:
             -QuoteUsed:([bool]$metadata.quote_used) `
             -QuoteId $metadata.quote_id `
             -QuoteSpeaker $metadata.quote_speaker `
-            -QuoteSourceUrl $metadata.quote_source_url
+            -QuoteSourceUrl $metadata.quote_source_url `
+            -CardUsed:([bool]$env:THREADS_IMAGE_URL)
 
       - name: Commit content history
         if: ${{ github.event_name == 'schedule' || inputs.publish == true }}

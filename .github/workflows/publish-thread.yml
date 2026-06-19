@@ -37,6 +37,21 @@ on:
         required: false
         default: ""
         type: string
+      image_url:
+        description: "Optional image URL for the main post"
+        required: false
+        default: ""
+        type: string
+      alt_text:
+        description: "Optional alt text for the main image"
+        required: false
+        default: ""
+        type: string
+      card_used:
+        description: "Record whether the main post used an image/card"
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   publish:
@@ -47,6 +62,8 @@ jobs:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+      THREADS_IMAGE_URL: ${{ inputs.image_url }}
+      THREADS_ALT_TEXT: ${{ inputs.alt_text }}
       THREAD_TEXT: ${{ inputs.thread_text }}
     steps:
       - name: Check out repo
@@ -69,13 +86,14 @@ jobs:
         shell: pwsh
         run: |
           $sourceCount = [int]"${{ inputs.source_count }}"
+          $cardUsed = "${{ inputs.card_used }}" -eq "true"
           if ("${{ inputs.dry_run }}" -eq "true") {
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -DryRun
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -CardUsed:$cardUsed -DryRun
           } else {
             if (-not $env:THREADS_ACCESS_TOKEN) {
               throw "THREADS_ACCESS_TOKEN secret is required when dry_run is false."
             }
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}"
+            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -CardUsed:$cardUsed
           }
 
       - name: Commit content history
