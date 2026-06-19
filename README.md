@@ -1,11 +1,11 @@
-# Threads Research AI Editor Workflow
+# @arxiv.ai Threads Workflow
 
-AI로 논문을 읽고 쓰고 검증하는 연구자를 위한 Threads 운영 워크플로우.
+AI로 논문을 읽고, 요약하고, 초안을 만들고, citation을 검증하는 `@arxiv.ai` 운영 워크플로우.
 
 목표:
 
 ```text
-매일 하나, 연구자가 바로 써먹는 AI 논문 작업법
+매일 하나, 논문 작업을 덜 막막하게 만드는 AI research workflow
 ```
 
 ## 구성
@@ -78,7 +78,7 @@ daily-editor/YYYY-MM-DD-candidates.json
 Use $threads-agentic-editor with daily-editor/YYYY-MM-DD-draft-prompt.md and create A/B drafts.
 ```
 
-채널 컨셉과 작성 규칙은 한 파일만 본다.
+계정 컨셉과 작성 규칙은 한 파일만 본다.
 
 ```text
 docs/threads-channel-playbook.md
@@ -87,13 +87,13 @@ docs/threads-channel-playbook.md
 현재 우선 포맷:
 
 ```text
-Main: 만약형 or 자연형 hook + 나쁜 요청 1개 + 좋은 요청 4개 + 원칙 문장
-Reply 1: 좋은 요청 4개가 좋은 이유 + 각각의 활용 시점
-Reply 2: 좋은 요청 4개에 대응하는 실제 프롬프트
-Reply 3: 주제에 맞는 한국어 기술 블로그/GitHub 사례 + 전체 URL + 볼 부분
+Main: 강한 hook + 나쁜 요청 1개 + 번호 없는 좋은 요청 4개 + 원칙 문장
+Reply 1: [핵심 한 줄] + "실전에서는 ..." + 4-item framework
+Reply 2: [핵심 한 줄] + 예시 프롬프트 4개
+Reply 3: [핵심 한 줄] + 참고 링크 + 볼 부분
 ```
 
-글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 이 포맷은 중복 주제가 아니라 새 연구 workflow 문제에 반복 적용한다. 예: 논문 요약, literature review, evidence matrix, 초안 작성, citation 검증, reviewer critique.
+글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 본문은 scroll-stopper 역할을 하고, 댓글은 각자 `[핵심 한 줄]`로 시작한다. technical/academic term은 의미가 흐려질 때만 English로 둔다.
 
 유명인 인용은 기본 구성 요소가 아니다. 카탈로그의 관련성 점수가 8점 이상이고
 최근 3개 게시물에서 인용을 사용하지 않았을 때만 생성기에 선택지로 전달한다.
@@ -169,8 +169,9 @@ audience_replies = replies - chain_replies - own_replies
 2. `Publish Threads Chain` workflow를 선택한다.
 3. `Run workflow`를 누른다.
 4. `thread_text`에 본문을 붙여넣는다. main/reply 구분은 `---` 한 줄만 사용한다.
-5. 처음에는 `dry_run = true`로 실행해서 미리보기와 품질 검사를 확인한다.
-6. 문제가 없으면 같은 내용으로 `dry_run = false`를 실행한다.
+5. 이미지가 있으면 `image_url`, `alt_text`, `card_used = true`를 함께 넣는다.
+6. 처음에는 `dry_run = true`로 실행해서 미리보기와 품질 검사를 확인한다.
+7. 문제가 없으면 같은 내용으로 `dry_run = false`를 실행한다.
 
 규칙:
 
@@ -193,6 +194,8 @@ THREADS_ACCESS_TOKEN
 
 ```text
 GROQ_MODEL
+THREADS_IMAGE_URL
+THREADS_ALT_TEXT
 ```
 
 기본 모델은 `openai/gpt-oss-20b`다. Groq는 OpenAI-compatible endpoint를 제공하므로 자동 초안 생성은 `GROQ_API_KEY`로 실행한다.
@@ -208,21 +211,20 @@ GROQ_MODEL
 주의:
 
 - `schedule` 실행은 승인 없이 바로 게시한다.
-- 자동 글은 main + 댓글 3개, 파트당 500자, 좋은 요청 4개, 전체 URL 참고 링크 기준을 통과해야 한다.
+- 자동 글은 main + 댓글 3개, 파트당 500자, 번호 없는 좋은 요청 4개, `[핵심 한 줄]` 댓글, 전체 URL 참고 링크 기준을 통과해야 한다.
 - 품질이 흔들리면 workflow의 `schedule` 줄을 제거하고 수동 실행만 유지한다.
 
 ## 게시 정책
 
-초반에는 완전 자동 게시 금지.
+자동 게시도 수동 게시와 같은 품질 게이트를 통과해야 한다.
 
 ```text
 auto collect
 auto score
 auto draft
-auto card
-auto upload
-human approve
+quality gate
 auto publish
+record history
 ```
 
 ## 중요한 규칙
@@ -231,7 +233,7 @@ auto publish
 - 출처가 말한 사실과 우리의 해석을 분리한다.
 - GitHub stars는 인기도이지 품질 보장이 아니다.
 - AI가 만든 citation/reference는 원문에서 다시 확인한다.
-- 강한 훅은 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
+- 강한 훅과 상징 인물 이미지는 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
 - 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 논문/문서/도구만 반복 소재로 쓰지 않는다.
 - 유명인 인용은 `data/verified-quotes.json`에 원문과 출처가 등록된 경우만 사용한다.
 - 인용은 주제 관련성, 실천 연결성, 출처 신뢰도 합계가 8점 이상일 때만 후보가 된다.

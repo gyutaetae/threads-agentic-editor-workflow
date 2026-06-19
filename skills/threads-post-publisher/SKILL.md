@@ -1,105 +1,95 @@
 ---
 name: threads-post-publisher
-description: "Prepare, validate, publish, and record approved Threads reply chains for @gyu_in_black. Use when Codex is asked to upload/post/publish a Threads chain, revise an approved chain for publishing, run the prepublish quality gate, fix Threads API publish errors, or collect post metrics for the AI-assisted research workflow channel."
+description: "Prepare, validate, publish, and record approved Threads reply chains for @arxiv.ai. Use when Codex is asked to upload/post/publish a Threads chain, revise an approved chain for publishing, run the prepublish quality gate, fix Threads API publish errors, or collect post metrics for the AI research workflow account."
 ---
 
 # Threads Post Publisher
 
 ## Scope
 
-Prepare, validate, publish, and record only approval-ready Threads chains for `@gyu_in_black`. Keep this skill operational: use repo docs for editorial context, repo scripts for execution, and avoid restating the channel strategy here.
+Prepare, validate, publish, and record approval-ready Threads chains for `@arxiv.ai`.
 
 Default repo:
 
 ```text
-C:\Users\user\Desktop\threads-agentic-editor-workflow
+C:\Users\kym70\threads-agentic-editor-workflow
 ```
 
-## Load Only What Is Needed
-
-Read these repo docs only when relevant:
-
-- `docs/threads-channel-playbook.md`: account concept, topic fit, first-line hook, reply-chain shape, length limits, metrics/comments learning.
-- `docs/threads-api-autopost-setup.md`: API setup or auth troubleshooting.
-
-Use `$threads-agentic-editor` for full drafting/scoring. Use this skill for final packaging, publishing, API debugging, and metrics.
+Use `docs/threads-channel-playbook.md` for editorial rules. Use this skill for packaging, validation, publishing, API debugging, and metrics. Use `$threads-agentic-editor` for full drafting/scoring.
 
 ## Prepublish Flow
 
 1. Work from the repo root.
-2. Read `docs/threads-channel-playbook.md` before revising, packaging, or validating any chain.
-3. If drafting or revising, preserve the current channel pivot: AI-assisted paper reading, literature review, paper drafting, citation verification, and research-agent architecture.
-4. Keep publishable text clean:
+2. Read `docs/threads-channel-playbook.md` before revising or validating any chain.
+3. Keep publishable text clean:
    - exactly 4 parts separated by `---`
+   - part 1 is the main post
+   - parts 2-4 each start with `[핵심 한 줄]`
    - no `Reply 1:`, `Reply 2:`, `Reply 3:`
-   - no `[한 줄 원칙:]`, `한 줄 원칙:`, or `[초안 작성 모드]`
-   - no JSON or fenced code blocks
+   - no JSON, fenced code blocks, or metadata
    - full `https://...` URLs in the source reply
-5. Preserve or pass topic fingerprint metadata when available:
-   - `Series`
-   - `SeriesPart`
-   - `PublicTheme`
-   - `TopicPillar`
-   - `WorkflowStage`
-   - `FailureMode`
-   - `SolutionPattern`
-   - `BadRequest`
-6. Do not invent missing approval. If the user only asks for a dry run, do not publish.
-7. Write the approved chain to `approved-thread-chain.txt`.
-8. Separate each Threads post/reply with exactly:
+4. Preserve metadata when available: topic, format, source count, source name, source URL, image/card flag, and topic fingerprint.
+5. If the user only asks for a dry run, do not publish.
+6. Write the approved chain to `approved-thread-chain.txt`.
+7. Run the dry run and fix any gate or length issue before publishing.
 
-```text
----
-```
-
-9. Run:
+Dry run:
 
 ```powershell
 .\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -DryRun
 ```
 
-10. Fix any quality gate or length issue before publishing.
-
-## Approved Chain File
-
-The file should contain only publishable text:
-
-```text
-main post text
----
-first reply text
----
-second reply text
----
-third reply text
-```
-
-Do not add Markdown headings, reply labels, metadata, analysis, or notes to `approved-thread-chain.txt`.
-
-## Publish
-
-Publish only when the user explicitly approves or directly asks to publish/upload now.
+Publish:
 
 ```powershell
 .\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3
 ```
 
-The wrapper should:
+Optional image/card metadata:
 
-- run the quality gate
-- verify the current Threads account from `THREADS_ACCESS_TOKEN`
-- publish each reply in order
-- append the first post to `threads-post-metrics.csv`
+```powershell
+$env:THREADS_IMAGE_URL = "https://..."
+$env:THREADS_ALT_TEXT = "..."
+.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -CardUsed
+```
 
-Do not ask the user to paste tokens into chat. Use an existing environment variable or tell the user the exact terminal command to set `THREADS_ACCESS_TOKEN` locally. Do not write access tokens to repo files.
+## Approved Chain File
 
-Do not ask for `THREADS_USER_ID` unless `/me` is unavailable. A stale user ID causes misleading API errors.
+`approved-thread-chain.txt` should contain only publishable text:
+
+```text
+main post text
+---
+[first reply core line]
+first reply text
+---
+[second reply core line]
+second reply text
+---
+[third reply core line]
+third reply text
+```
+
+Do not add headings, labels, metadata, analysis, or notes.
+
+## GitHub Actions Publish
+
+Use `Publish Threads Chain` when the user asks to publish through GitHub Actions. Run `dry_run=true` first unless the user explicitly says to skip it.
+
+Important inputs:
+
+- `thread_text`: approved chain, separated with `---`
+- `dry_run`: true for validation, false for live publish
+- `topic`, `format`, `source_count`, `source_name`, `source_url`
+- `image_url`, `alt_text`, `card_used` when the main post uses an image
 
 ## Debug Rules
 
+- Do not ask the user to paste tokens into chat.
+- Use existing local env vars or GitHub secrets.
 - If the API fails, preserve and report the response body.
 - If `/threads_publish` says the media/container does not exist, check container readiness and retry logic in `scripts/threads_auto_upload.py`.
-- If credentials are missing from Codex's shell, give the exact command for the user's terminal instead of asking for secrets in chat.
+- Do not ask for `THREADS_USER_ID` unless `/me` is unavailable.
 
 ## Metrics
 
@@ -109,4 +99,4 @@ After publishing, collect snapshots with:
 .\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
 ```
 
-Use the channel playbook before suggesting direction changes. Optimize for useful replies, shares, follows, and comment quality, not views alone.
+Use the playbook before suggesting direction changes. Optimize for useful replies, saves, shares, follows, and comment quality, not views alone.
