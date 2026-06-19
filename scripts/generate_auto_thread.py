@@ -5,6 +5,7 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -716,23 +717,45 @@ def write_review_artifact(review_dir: Path, date: str, post_slot: str, label: st
     return path
 
 
+def retry_delay_seconds(response: requests.Response) -> float:
+    retry_after = response.headers.get("Retry-After")
+    if retry_after:
+        try:
+            return max(1.0, float(retry_after))
+        except ValueError:
+            pass
+
+    match = re.search(r"try again in ([0-9.]+)s", response.text, re.I)
+    if match:
+        return max(1.0, float(match.group(1)))
+    return 30.0
+
+
 def call_groq(api_key: str, model: str, prompt: str) -> dict:
-    response = requests.post(
-        RESPONSES_URL,
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": model,
-            "input": prompt,
-            "max_output_tokens": 2000,
-        },
-        timeout=120,
-    )
-    if response.status_code >= 400:
+    for attempt in range(1, 4):
+        response = requests.post(
+            RESPONSES_URL,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "input": prompt,
+                "max_output_tokens": 2000,
+            },
+            timeout=120,
+        )
+        if response.ok:
+            return response.json()
+        if response.status_code == 429 and attempt < 3:
+            delay = retry_delay_seconds(response) + 2
+            print(f"Groq rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")
+            time.sleep(delay)
+            continue
         raise SystemExit(f"Groq API error {response.status_code}:\n{response.text}")
-    return response.json()
+
+    raise SystemExit("Groq API did not return a response after retries.")
 
 
 def main() -> int:
