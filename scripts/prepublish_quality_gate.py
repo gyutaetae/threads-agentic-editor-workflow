@@ -51,6 +51,13 @@ def has_explanation_for(parts: list[str], number: str) -> bool:
     return any(part.lstrip().startswith(expected_prefix) and len(part) >= 120 for part in parts[1:])
 
 
+def good_request_lines(main: str) -> list[str]:
+    if "좋은 요청:" not in main:
+        return []
+    good_request = main.split("좋은 요청:", 1)[1]
+    return QUOTE_LINE_RE.findall(good_request)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check an approved Threads chain before publishing.")
     parser.add_argument("--thread-path", default="approved-thread-chain.txt")
@@ -89,11 +96,15 @@ def main() -> int:
     if main and ("나쁜 요청:" not in main or "좋은 요청:" not in main):
         errors.append("Main post must include both '나쁜 요청:' and '좋은 요청:' sections.")
 
+    quoted_good_lines = good_request_lines(main)
     if "좋은 요청:" in main:
-        good_request = main.split("좋은 요청:", 1)[1]
-        quoted_good_lines = QUOTE_LINE_RE.findall(good_request)
         if len(quoted_good_lines) < 4:
             errors.append("Main post must include at least four quoted good-request examples.")
+        numbered_good_lines = [
+            line for line in quoted_good_lines if re.match(r'^\s*["“]\s*\d+\.', line)
+        ]
+        if numbered_good_lines:
+            errors.append("Good-request lines should not include 1./2./3./4. numbering inside the quotes.")
 
     checklist_numbers = CHECKLIST_RE.findall(main)
     if len(checklist_numbers) >= 3:
@@ -110,11 +121,13 @@ def main() -> int:
         errors.append("Part 3 must include four quoted prompt examples matching the four good requests.")
 
     if len(parts) >= 2:
+        if not parts[1].startswith("실전에서는"):
+            errors.append("Part 2 must start with '실전에서는'.")
         for number in ("1", "2", "3", "4"):
             if f"{number}." not in parts[1]:
-                errors.append(f"Part 2 must explain why good request {number} is useful.")
-        if parts[1].count("- 활용:") < 4:
-            errors.append("Part 2 must include a '- 활용:' line for each of the four good requests.")
+                errors.append(f"Part 2 must include framework item {number}.")
+        if "왜 좋은 요청일까요?" in parts[1]:
+            errors.append("Part 2 should use the practical '실전에서는 ... 합니다.' framing, not '왜 좋은 요청일까요?'.")
 
     if len(parts) >= 4:
         if not parts[3].startswith("참고해서 볼 만한 것들:"):

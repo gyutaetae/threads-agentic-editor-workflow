@@ -438,13 +438,18 @@ def validate_thread(thread_text: str) -> None:
     if "나쁜 요청:" not in parts[0] or "좋은 요청:" not in parts[0]:
         raise SystemExit("Generated main post must include both '나쁜 요청:' and '좋은 요청:' sections.")
     good_request = parts[0].split("좋은 요청:", 1)[1]
-    if len(QUOTE_LINE_RE.findall(good_request)) < 4:
+    quoted_good_lines = QUOTE_LINE_RE.findall(good_request)
+    if len(quoted_good_lines) < 4:
         raise SystemExit("Generated main post must include at least four quoted good-request lines.")
+    if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_good_lines):
+        raise SystemExit("Generated good-request lines should not include 1./2./3./4. numbering inside the quotes.")
+    if not parts[1].startswith("실전에서는"):
+        raise SystemExit("Generated second part must start with '실전에서는'.")
     for number in ("1", "2", "3", "4"):
         if f"{number}." not in parts[1]:
-            raise SystemExit(f"Generated explanation reply is missing good request {number}.")
-    if parts[1].count("- 활용:") < 4:
-        raise SystemExit("Generated explanation reply must include four '- 활용:' lines.")
+            raise SystemExit(f"Generated second part is missing framework item {number}.")
+    if "왜 좋은 요청일까요?" in parts[1]:
+        raise SystemExit("Generated second part should use the practical '실전에서는 ... 합니다.' framing.")
     if not parts[2].startswith("예시 프롬프트:"):
         raise SystemExit("Generated third part must start with '예시 프롬프트:'.")
     if len(QUOTE_LINE_RE.findall(parts[2])) < 4:
@@ -552,8 +557,9 @@ def build_prompt(
         "- Main must be easy to understand and must not contain external links.\n"
         "- Main post must include '나쁜 요청:' with one quoted bad request.\n"
         "- Main post must include '좋은 요청:' with at least four short quoted good-request lines.\n"
-        "- Number the four good requests 1 through 4 inside the quoted lines so later explanations map to them.\n"
-        "- Reply 1 must explain why each of the four requests is good and include a concrete '- 활용:' line for each.\n"
+        "- Do not number the good-request lines inside the quotes. Do not write 1./2./3./4. in the good requests.\n"
+        "- Reply 1 must start with '실전에서는' and turn the good requests into a practical 4-item framework.\n"
+        "- Reply 1 must not use the phrase '왜 좋은 요청일까요?'.\n"
         "- Reply 2 must start with '예시 프롬프트:' and include four natural quoted Korean prompts corresponding to requests 1 through 4, not JSON and not a code block.\n"
         "- Reply 3 must start with '참고해서 볼 만한 것들:' and include source links plus how to apply each source.\n"
         "- Reference lines must include a full clickable URL beginning with https:// and a '- 볼 부분: ...' line.\n"
@@ -575,21 +581,17 @@ def build_prompt(
         "나쁜 요청:\n"
         "\"...\"\n\n"
         "좋은 요청:\n"
-        "\"1. ...\"\n"
-        "\"2. ...\"\n"
-        "\"3. ...\"\n"
-        "\"4. ...\"\n\n"
+        "\"...\"\n"
+        "\"...\"\n"
+        "\"...\"\n"
+        "\"...\"\n\n"
         "[plain principle sentence without label]\n"
         "---\n"
-        "왜 좋은 요청일까요?\n"
-        "1. [why request 1 is good]\n"
-        "- 활용: [when/how to use it]\n"
-        "2. [why request 2 is good]\n"
-        "- 활용: [when/how to use it]\n"
-        "3. [why request 3 is good]\n"
-        "- 활용: [when/how to use it]\n"
-        "4. [why request 4 is good]\n"
-        "- 활용: [when/how to use it]\n"
+        "실전에서는 [topic]을 4칸으로 나눕니다.\n"
+        "1. [Name]: [what to extract or check]\n"
+        "2. [Name]: [what to extract or check]\n"
+        "3. [Name]: [what to extract or check]\n"
+        "4. [Name]: [what to extract or check]\n"
         "---\n"
         "예시 프롬프트:\n"
         "\"[prompt for request 1]\"\n"
