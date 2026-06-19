@@ -22,7 +22,8 @@ SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 URL_RE = re.compile(r"https?://\S+")
 QUOTE_LINE_RE = re.compile(r"(?m)^\s*[\"“][^\"”]+[\"”]\s*$")
-HYPE_WORDS = ["무조건", "혁명", "개발자 끝", "역대급", "미친 생산성", "뒤처집니다", "끝입니다"]
+BRACKET_HEADING_RE = re.compile(r"^\[[^\]\n]{4,80}\]\s*(?:\n|$)")
+HYPE_WORDS = ["무조건", "혁명", "논문 끝", "개발자 끝", "역대급", "미친 생산성", "뒤처집니다", "끝입니다"]
 PRACTICAL_MARKERS = [
     "예시 프롬프트",
     "체크리스트",
@@ -30,6 +31,10 @@ PRACTICAL_MARKERS = [
     "모드",
     "규칙",
     "이런 방식으로 요청해보세요",
+    "claim",
+    "evidence",
+    "citation",
+    "limitation",
     "1.",
     "2.",
     "3.",
@@ -54,50 +59,49 @@ FORMAT_TYPES = {
     "short_opinion",
 }
 POST_GOALS = {"save", "comment", "share", "follow", "profile_visit"}
-CANONICAL_STYLE_EXAMPLE = """만약
-"앱 하나 만들어줘"
-라고 사용하고 있다면,
+CANONICAL_STYLE_EXAMPLE = """AI에게 논문 요약을 맡길 때
+"이 논문 요약해줘"라고 쓰면
+초록을 다시 쓴 글이 나올 가능성이 큽니다.
 
-검증 가능한 작업 단위를 agent에게 주지 못한다는 겁니다.
+나쁜 요청:
+"이 논문 요약해줘"
 
-이런 방식으로 요청해보세요:
-"이 failing test 하나만 고쳐줘"
-"이 PR에서 위험한 변경만 찾아줘"
-"이 함수 타입 오류만 정리해줘"
+좋은 요청:
+"핵심 기여를 기존 연구와 분리해줘"
+"방법을 재현 가능한 단계로 나눠줘"
+"주장을 받치는 표, 그림, 실험을 연결해줘"
+"저자가 말한 한계와 내가 의심할 점을 분리해줘"
 
+좋은 요약은 짧은 글이 아니라
+검증 가능한 연구 노트입니다.
 ---
-
-왜 이게 중요하냐면,
-AI agent는 애매한 큰 목표보다
-검증 가능한 작은 티켓에서 훨씬 잘 작동한다.
-
-사람 팀도 마찬가지다.
-"서비스 개선해줘"보다
-"로그인 실패 케이스 재현하고 테스트 하나 추가해줘"가 훨씬 낫다.
-
-agent도 결국 작업 단위가 좋아야 일을 잘한다.
-
+[논문 요약은 4칸으로 나눕니다]
+실전에서는 논문 요약을 4칸으로 나눕니다.
+1. Contribution: 무엇을 주장했나
+2. Method: 어떻게 증명하려 했나
+3. Evidence: 어떤 실험/표/그림이 받치나
+4. Limitation: 어디까지 믿어야 하나
 ---
-
-내가 생각하는 좋은 agent 작업 조건:
-
-1. 범위가 작다
-2. 성공 기준이 보인다
-3. 테스트나 diff로 검증 가능하다
-4. 실패해도 되돌릴 수 있다
-5. 사람이 마지막 판단을 할 수 있다
-
-AI agent 시대의 실력은
-명령어가 아니라 작업 분해에서 나온다."""
+[복사해서 쓸 프롬프트]
+예시 프롬프트:
+"이 논문의 main claim을 한 문장으로 쓰고, 근거 문단 위치를 붙여줘."
+"method를 내가 재현할 순서대로 5단계로 나눠줘."
+"claim마다 figure, table, experiment를 연결해줘."
+"limitation과 내가 추가로 검증해야 할 gap을 분리해줘."
+---
+[볼 부분이 있는 링크만 남깁니다]
+참고해서 볼 만한 것들:
+https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
+- 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조"""
 
 FORMAT_GUIDE = {
-    "bad_to_better": "Show one bad agent usage and three better requests. Use the phrase '이런 방식으로 요청해보세요:' in Main.",
-    "senior_first_move": "Explain what a senior developer asks the agent before implementation. Main should be easy, replies should add decision criteria and a copyable prompt.",
-    "workflow_mode": "Turn the idea into repeatable modes such as 탐색 모드, 수정 모드, 검증 모드, 리뷰 모드, 롤백 모드.",
-    "repo_lesson": "Teach what to copy from the repo's structure, tests, docs, configs, or examples. Do not turn it into generic repo news.",
-    "failure_case": "Start from a common failure and give a prevention rule. Keep it calm and practical.",
-    "copy_checklist": "Make a reusable checklist or decision criteria that developers can save.",
-    "update_to_action": "Translate the official update into a concrete developer action. Separate source fact from our interpretation.",
+    "bad_to_better": "Show one vague research request and four better requests. Main must use '나쁜 요청:' and '좋은 요청:'.",
+    "senior_first_move": "Explain what an experienced researcher checks before asking AI to summarize, compare, draft, or verify a paper.",
+    "workflow_mode": "Turn the idea into repeatable research modes such as 읽기, 비교, 구조화, 초안, citation 검증.",
+    "repo_lesson": "Teach what to copy from the repo's workflow, examples, notebooks, templates, or docs. Do not turn it into generic repo news.",
+    "failure_case": "Start from a common paper-reading or citation failure and give a prevention rule. Keep it calm and practical.",
+    "copy_checklist": "Make reusable criteria or a copyable research prompt that students can save.",
+    "update_to_action": "Translate the official update into a concrete paper-reading, drafting, citation, or review workflow. Separate source fact from our interpretation.",
     "short_opinion": "Write a concise account-level viewpoint with one practical takeaway.",
 }
 
@@ -106,7 +110,7 @@ HOOK_PATTERNS = {
     "personal_diary": re.compile(r"오늘|내가|요즘 내가|23살|논문"),
     "quote_idea": re.compile(r"Feynman|Karpathy|Paul Graham|Andrew Ng|Sam Altman|말|요지"),
     "repo_diagnostic": re.compile(r"GitHub|repo|star|README"),
-    "direct_claim": re.compile(r"AI agent|agent|프롬프트|작업 단위"),
+    "direct_claim": re.compile(r"논문|요약|citation|reference|evidence|claim|프롬프트|연구 노트"),
 }
 FORBIDDEN_TEXT = [
     "[한 줄 원칙",
@@ -238,21 +242,24 @@ def analyze_candidate(candidate: dict) -> dict:
     if candidate.get("language"):
         source_facts.append(f"language={candidate.get('language')}")
 
-    practical_angle = candidate.get("our_angle") or "AI coding agent workflow lesson"
-    if "test" in text.lower() or "eval" in text.lower():
-        developer_action = "검증 기준을 먼저 정하고 agent에게 작은 작업 단위로 맡긴다."
-    elif "mcp" in text.lower() or "tool" in text.lower():
-        developer_action = "도구 연결 자체보다 agent에게 어떤 작업 환경을 넘길지 정한다."
-    elif "review" in text.lower() or "pr" in text.lower():
-        developer_action = "구현 전에 영향 범위와 리뷰 기준부터 agent에게 분석시킨다."
+    lower_text = text.lower()
+    practical_angle = candidate.get("our_angle") or "AI research workflow lesson"
+    if any(term in lower_text for term in ["citation", "reference", "bibliography"]):
+        workflow_action = "AI가 만든 reference를 그대로 믿지 말고 claim, metadata, 원문 위치를 따로 검증한다."
+    elif any(term in lower_text for term in ["literature review", "related work", "survey"]):
+        workflow_action = "논문 목록을 바로 문단으로 쓰지 말고 evidence matrix로 먼저 비교한다."
+    elif any(term in lower_text for term in ["summarization", "summary", "paper"]):
+        workflow_action = "요약 전에 contribution, method, evidence, limitation을 분리한다."
+    elif any(term in lower_text for term in ["review", "critique", "peer"]):
+        workflow_action = "초안 문체보다 claim과 evidence가 맞물리는지 reviewer 관점으로 확인한다."
     else:
-        developer_action = "큰 요청을 바로 맡기지 말고 범위, 기준, 검증 방법을 분리한다."
+        workflow_action = "큰 요청을 바로 맡기지 말고 읽기, 비교, 구조화, 검증 단계를 분리한다."
 
     return {
         "summary": text[:700],
         "source_facts": source_facts,
         "practical_angle": practical_angle,
-        "developer_action": developer_action,
+        "workflow_action": workflow_action,
     }
 
 
@@ -265,7 +272,7 @@ def select_content_format(candidate: dict) -> dict:
         "format_type": format_type,
         "post_goal": post_goal,
         "format_reason": candidate.get("format_reason")
-        or "Use the format that best turns the source into a practical developer action.",
+        or "Use the format that best turns the source into a practical research workflow action.",
         "format_guide": FORMAT_GUIDE.get(format_type, FORMAT_GUIDE["bad_to_better"]),
     }
 
@@ -443,19 +450,22 @@ def validate_thread(thread_text: str) -> None:
         raise SystemExit("Generated main post must include at least four quoted good-request lines.")
     if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_good_lines):
         raise SystemExit("Generated good-request lines should not include 1./2./3./4. numbering inside the quotes.")
-    if not parts[1].startswith("실전에서는"):
-        raise SystemExit("Generated second part must start with '실전에서는'.")
+    for index, part in enumerate(parts[1:], start=2):
+        if not BRACKET_HEADING_RE.match(part.strip()):
+            raise SystemExit(f"Generated part {index} must start with a bracketed core line such as [핵심 한 줄].")
+    if "실전에서는" not in parts[1]:
+        raise SystemExit("Generated second part must include the practical '실전에서는 ...' framing.")
     for number in ("1", "2", "3", "4"):
         if f"{number}." not in parts[1]:
             raise SystemExit(f"Generated second part is missing framework item {number}.")
     if "왜 좋은 요청일까요?" in parts[1]:
         raise SystemExit("Generated second part should use the practical '실전에서는 ... 합니다.' framing.")
-    if not parts[2].startswith("예시 프롬프트:"):
-        raise SystemExit("Generated third part must start with '예시 프롬프트:'.")
+    if "예시 프롬프트:" not in parts[2]:
+        raise SystemExit("Generated third part must include '예시 프롬프트:'.")
     if len(QUOTE_LINE_RE.findall(parts[2])) < 4:
         raise SystemExit("Generated prompt reply must include four quoted prompt examples.")
-    if not parts[3].startswith("참고해서 볼 만한 것들:"):
-        raise SystemExit("Generated final reply must start with '참고해서 볼 만한 것들:'.")
+    if "참고해서 볼 만한 것들:" not in parts[3]:
+        raise SystemExit("Generated final reply must include '참고해서 볼 만한 것들:'.")
     if not URL_RE.search(parts[3]):
         raise SystemExit("Generated reference reply must include at least one full clickable URL.")
     if "notebooklm.google" in parts[3].lower():
@@ -543,7 +553,7 @@ def build_prompt(
     }
 
     return (
-        "Create exactly one Korean Threads chain for @gyu_in_black.\n"
+        "Create exactly one Korean Threads chain for @arxiv.ai.\n"
         "Follow the channel playbook and selected content format exactly.\n\n"
         "Hard constraints:\n"
         "- Return JSON only.\n"
@@ -551,19 +561,21 @@ def build_prompt(
         "- Also return fingerprint keys: series, series_part, public_theme, topic_pillar, workflow_stage, failure_mode, solution_pattern, bad_request.\n"
         "- thread_text must use --- between main and replies.\n"
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
-        "- Use short, sharp Korean Threads style: practical, calm, developer-to-developer.\n"
+        "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
         "- Exactly 4 parts total: main + 3 replies.\n"
         "- Each part must be under 500 Korean characters.\n"
         "- Main must be easy to understand and must not contain external links.\n"
         "- Main post must include '나쁜 요청:' with one quoted bad request.\n"
         "- Main post must include '좋은 요청:' with at least four short quoted good-request lines.\n"
         "- Do not number the good-request lines inside the quotes. Do not write 1./2./3./4. in the good requests.\n"
-        "- Reply 1 must start with '실전에서는' and turn the good requests into a practical 4-item framework.\n"
+        "- Each reply must start with a bracketed core line, e.g. [논문 요약은 4칸으로 나눕니다].\n"
+        "- Reply 1 must include '실전에서는' and turn the good requests into a practical 4-item framework.\n"
         "- Reply 1 must not use the phrase '왜 좋은 요청일까요?'.\n"
-        "- Reply 2 must start with '예시 프롬프트:' and include four natural quoted Korean prompts corresponding to requests 1 through 4, not JSON and not a code block.\n"
-        "- Reply 3 must start with '참고해서 볼 만한 것들:' and include source links plus how to apply each source.\n"
+        "- Reply 2 must include '예시 프롬프트:' and four natural quoted Korean prompts corresponding to requests 1 through 4, not JSON and not a code block.\n"
+        "- Reply 3 must include '참고해서 볼 만한 것들:' and source links plus how to apply each source.\n"
         "- Reference lines must include a full clickable URL beginning with https:// and a '- 볼 부분: ...' line.\n"
-        "- Choose the first line naturally: either a '만약 ...' diagnostic hook or a natural first line like 'AI에게 논문 초안을 맡길 때'.\n"
+        "- Choose the first line as a sharp main-post hook. It should pull readers into the problem before the details.\n"
+        "- The first post may be paired with a symbolic researcher/scientist image. Do not depend on the image for meaning.\n"
         "- Add human texture: a personal proof line, failed request, quote/idea hook, or direct diagnostic. Do not use the same surface every time.\n"
         "- If using personal experience, keep it to 1-2 lines and then move to a practical example.\n"
         "- If using quote_context, use it as a short doorway into the workflow. Prefer paraphrase unless quote_context.quote is non-empty.\n"
@@ -571,7 +583,8 @@ def build_prompt(
         "- Do not use a quote merely because a famous speaker is available. Prefer quote_used=false when the connection feels decorative or needs a long explanation.\n"
         "- If no supplied quote_context is used, set quote_used=false and quote_id=\"\".\n"
         "- Avoid matching the recent hook patterns when possible.\n"
-        "- Never use hype words: 무조건, 혁명, 개발자 끝, 역대급, 미친 생산성, 이거 모르면 뒤처집니다.\n"
+        "- Never use hype words: 무조건, 혁명, 논문 끝, 개발자 끝, 역대급, 미친 생산성, 이거 모르면 뒤처집니다.\n"
+        "- Use English academic terms only when they preserve meaning; keep them minimal.\n"
         "- Do not use markdown code fences. Do not use bracketed mode labels such as '[초안 작성 모드]'.\n"
         "- Separate source facts from account interpretation.\n"
         "- Do not invent facts. Use only the candidates below as factual sources.\n"
@@ -587,18 +600,21 @@ def build_prompt(
         "\"...\"\n\n"
         "[plain principle sentence without label]\n"
         "---\n"
+        "[core line for reply 1]\n"
         "실전에서는 [topic]을 4칸으로 나눕니다.\n"
         "1. [Name]: [what to extract or check]\n"
         "2. [Name]: [what to extract or check]\n"
         "3. [Name]: [what to extract or check]\n"
         "4. [Name]: [what to extract or check]\n"
         "---\n"
+        "[core line for reply 2]\n"
         "예시 프롬프트:\n"
         "\"[prompt for request 1]\"\n"
         "\"[prompt for request 2]\"\n"
         "\"[prompt for request 3]\"\n"
         "\"[prompt for request 4]\"\n"
         "---\n"
+        "[core line for reply 3]\n"
         "참고해서 볼 만한 것들:\n"
         "[source title]\n"
         "https://...\n"
@@ -651,7 +667,7 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
     if len(main_first_line) < 8:
         score -= 12
         reasons.append("First line is weak or too short.")
-        suggestions.append("Open with a sharper developer mistake or senior-workflow contrast.")
+        suggestions.append("Open with a sharper paper-workflow mistake or research-note contrast.")
     if not has_practical_element(joined):
         score -= 25
         reasons.append("Thread has no copyable prompt/checklist/criteria/workflow mode/failure rule.")
@@ -663,7 +679,7 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
     if any(word in joined for word in HYPE_WORDS):
         score -= 25
         reasons.append("Thread contains banned hype language.")
-        suggestions.append("Replace hype with concrete developer impact.")
+        suggestions.append("Replace hype with concrete research workflow impact.")
     if "AI가 중요" in joined or "AI 시대" in main and "기준" not in joined:
         score -= 12
         reasons.append("Thread risks generic AI advice.")
@@ -883,7 +899,7 @@ def main() -> int:
         "experiment_group": args.experiment_group,
         "generation_candidates": len(selected_candidates),
         "selected_option": best["option"],
-        "topic": data.get("topic", "agent workflow"),
+        "topic": data.get("topic", "research workflow"),
         "source_count": int(data.get("source_count", 0) or 0),
         "format": data.get("format") or routing["format_type"],
         "content_axis": routing["content_axis"],

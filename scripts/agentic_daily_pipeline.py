@@ -141,34 +141,35 @@ SCORING_WEIGHTS = {
 }
 
 PRACTICAL_TERMS = [
-    "test",
-    "tests",
-    "eval",
-    "hook",
-    "memory",
-    "skill",
-    "mcp",
-    "rollback",
+    "paper",
+    "papers",
+    "research",
+    "literature",
+    "citation",
+    "reference",
+    "summary",
+    "summarization",
+    "evidence",
+    "claim",
+    "limitation",
+    "method",
+    "reviewer",
     "review",
-    "pr",
     "workflow",
     "agent",
-    "cursor",
-    "codex",
-    "claude",
+    "template",
+    "prompt",
 ]
 
 RISK_TERMS = [
-    "safe",
-    "safety",
-    "rollback",
+    "citation",
+    "reference",
+    "hallucination",
+    "evidence",
+    "claim",
+    "limitation",
+    "reproducibility",
     "review",
-    "test",
-    "tests",
-    "eval",
-    "permission",
-    "sandbox",
-    "observability",
     "failure",
     "error",
 ]
@@ -176,12 +177,13 @@ RISK_TERMS = [
 MODE_TERMS = [
     "mode",
     "workflow",
+    "paper",
+    "literature",
+    "citation",
+    "draft",
     "review",
     "plan",
-    "debug",
-    "test",
-    "eval",
-    "rollback",
+    "summary",
     "automation",
 ]
 
@@ -234,23 +236,23 @@ def select_content_format(item: dict) -> tuple[str, str, str, str]:
             "official_update",
             "update_to_action",
             "share",
-            "Official update needs a practical translation from release fact to developer action.",
+            "Official update needs a practical translation from release fact to research workflow action.",
         )
-    if any(term in text for term in ["mistake", "failure", "error", "unsafe", "rollback", "broken", "scope"]):
+    if any(term in text for term in ["mistake", "failure", "error", "hallucination", "misleading", "wrong", "scope"]):
         return (
             "failure_prevention",
             "failure_case",
             "save",
-            "Candidate exposes a common agent failure that can become a prevention rule.",
+            "Candidate exposes a common research workflow failure that can become a prevention rule.",
         )
-    if any(term in text for term in ["mode", "workflow", "review", "debug", "test", "eval", "rollback"]):
+    if any(term in text for term in ["mode", "workflow", "review", "paper", "citation", "summary", "draft", "evidence"]):
         return (
             "workflow_mode",
             "workflow_mode",
             "save",
-            "Candidate naturally maps to repeatable agent work modes.",
+            "Candidate naturally maps to repeatable paper work modes.",
         )
-    if source_type == "github_repo" and any(term in text for term in ["example", "examples", "docs", "config", "tests", "template", "readme"]):
+    if source_type == "github_repo" and any(term in text for term in ["example", "examples", "docs", "notebook", "paper", "template", "readme"]):
         return (
             "repo_teardown",
             "repo_lesson",
@@ -271,12 +273,12 @@ def select_content_format(item: dict) -> tuple[str, str, str, str]:
             "save",
             "Candidate can show a clear bad usage to better usage transformation.",
         )
-    if any(term in text for term in ["senior", "architecture", "harness", "agentic"]):
+    if any(term in text for term in ["researcher", "architecture", "agent", "agentic", "reviewer"]):
         return (
             "workflow_mode",
             "senior_first_move",
             "follow",
-            "Candidate reveals how experienced developers structure work before implementation.",
+            "Candidate reveals how experienced researchers structure work before writing.",
         )
     if any(term in topics for term in ["ai", "llm", "agent"]):
         return (
@@ -306,11 +308,11 @@ def score_routed_candidate(item: dict) -> dict:
 
     actionability = clamp_score(35 + practical_hits * 8 + (12 if readme_present else 0))
     copyability = clamp_score(25 + count_terms(text, ["prompt", "template", "checklist", "example", "criteria", "rule"]) * 12)
-    senior_insight = clamp_score(30 + count_terms(text, ["harness", "workflow", "architecture", "agentic", "review", "eval"]) * 10)
+    senior_insight = clamp_score(30 + count_terms(text, ["workflow", "architecture", "agentic", "review", "evidence", "citation", "limitation"]) * 10)
     source_grounding = clamp_score(55 if source_type == "official_feed" else 45 + (20 if readme_present else 0) + min(stars // 2000, 15))
-    hook_strength = clamp_score(30 + count_terms(text, ["mistake", "failure", "wrong", "bad", "before", "review", "rollback", "test"]) * 9 + practical_hits * 2)
+    hook_strength = clamp_score(30 + count_terms(text, ["mistake", "failure", "wrong", "bad", "before", "review", "citation", "evidence"]) * 9 + practical_hits * 2)
     format_fit = clamp_score(45 + mode_hits * 7 + (15 if format_type in {"repo_lesson", "update_to_action"} else 0))
-    reuse_value = clamp_score(35 + count_terms(text, ["workflow", "template", "checklist", "criteria", "memory", "skill", "eval"]) * 9)
+    reuse_value = clamp_score(35 + count_terms(text, ["workflow", "template", "checklist", "criteria", "matrix", "prompt", "citation"]) * 9)
     risk_reduction = clamp_score(25 + risk_hits * 10)
 
     weighted = (
@@ -686,7 +688,7 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
             [
                 f"### {index}. {item['title']}",
                 "",
-                f"- Final score: {score['total']} (actionability {score['actionability_score']}, copyability {score['copyability_score']}, senior insight {score['senior_insight_score']}, source grounding {score['source_grounding_score']}, format fit {score['format_fit_score']}, reuse {score['reuse_value_score']}, risk reduction {score['risk_reduction_score']}, hook {score['hook_strength_score']})",
+                f"- Final score: {score['total']} (actionability {score['actionability_score']}, copyability {score['copyability_score']}, research insight {score['senior_insight_score']}, source grounding {score['source_grounding_score']}, format fit {score['format_fit_score']}, reuse {score['reuse_value_score']}, risk reduction {score['risk_reduction_score']}, hook {score['hook_strength_score']})",
                 f"- Content axis: {item.get('content_axis', 'unknown')}",
                 f"- Format type: {item.get('format_type', 'unknown')}",
                 f"- Post goal: {item.get('post_goal', 'unknown')}",
@@ -733,7 +735,7 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
         "",
         "Task:",
         "",
-        "Create A/B Threads drafts from today's candidates. A안 should be broad and punchy. B안 should be deeper and more technical. Include card copy, sources, and risk notes. Do not publish.",
+        "Create A/B Threads drafts from today's candidates. A안 should be broad and punchy. B안 should be deeper and more technical. Include source notes, optional image/card idea, and risk notes. Do not publish.",
         "",
         "Candidates:",
         "",

@@ -12,6 +12,7 @@ URL_RE = re.compile(r"https?://\S+")
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 QUOTE_LINE_RE = re.compile(r"(?m)^\s*[\"“][^\"”]+[\"”]\s*$")
+BRACKET_HEADING_RE = re.compile(r"^\[[^\]\n]{4,80}\]\s*(?:\n|$)")
 FORBIDDEN_TEXT = [
     "[한 줄 원칙",
     "한 줄 원칙:",
@@ -56,6 +57,10 @@ def good_request_lines(main: str) -> list[str]:
         return []
     good_request = main.split("좋은 요청:", 1)[1]
     return QUOTE_LINE_RE.findall(good_request)
+
+
+def has_reply_heading(part: str) -> bool:
+    return bool(BRACKET_HEADING_RE.match(part.strip()))
 
 
 def main() -> int:
@@ -115,23 +120,28 @@ def main() -> int:
     if "repo" in joined.lower() and not URL_RE.search(joined):
         warnings.append("Repo-based post has no source links.")
 
-    if len(parts) >= 3 and not parts[2].startswith("예시 프롬프트:"):
-        errors.append("Part 3 must start with '예시 프롬프트:'.")
-    elif len(parts) >= 3 and len(QUOTE_LINE_RE.findall(parts[2])) < 4:
-        errors.append("Part 3 must include four quoted prompt examples matching the four good requests.")
+    for index, part in enumerate(parts[1:], start=2):
+        if not has_reply_heading(part):
+            errors.append(f"Part {index} must start with a bracketed core line such as [핵심 한 줄].")
 
     if len(parts) >= 2:
-        if not parts[1].startswith("실전에서는"):
-            errors.append("Part 2 must start with '실전에서는'.")
+        if "실전에서는" not in parts[1]:
+            errors.append("Part 2 must include the practical '실전에서는 ...' framing.")
         for number in ("1", "2", "3", "4"):
             if f"{number}." not in parts[1]:
                 errors.append(f"Part 2 must include framework item {number}.")
         if "왜 좋은 요청일까요?" in parts[1]:
             errors.append("Part 2 should use the practical '실전에서는 ... 합니다.' framing, not '왜 좋은 요청일까요?'.")
 
+    if len(parts) >= 3:
+        if "예시 프롬프트:" not in parts[2]:
+            errors.append("Part 3 must include '예시 프롬프트:'.")
+        elif len(QUOTE_LINE_RE.findall(parts[2])) < 4:
+            errors.append("Part 3 must include four quoted prompt examples matching the four good requests.")
+
     if len(parts) >= 4:
-        if not parts[3].startswith("참고해서 볼 만한 것들:"):
-            errors.append("Part 4 must start with '참고해서 볼 만한 것들:'.")
+        if "참고해서 볼 만한 것들:" not in parts[3]:
+            errors.append("Part 4 must include '참고해서 볼 만한 것들:'.")
         if not URL_RE.search(parts[3]):
             errors.append("Reference reply must include at least one full clickable URL starting with https://.")
         if "notebooklm.google" in parts[3].lower():
