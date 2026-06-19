@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 import requests
@@ -13,6 +13,7 @@ import requests
 
 GRAPH_BASE = "https://graph.threads.net"
 API_VERSION = "v1.0"
+ACCOUNT_TIMEZONE = timezone(timedelta(hours=9), "KST")
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 
@@ -36,6 +37,10 @@ def raise_for_status_with_body(response: requests.Response) -> None:
 def read_text(path: str) -> str:
     with open(path, "r", encoding="utf-8") as handle:
         return handle.read().strip()
+
+
+def account_now() -> datetime:
+    return datetime.now(ACCOUNT_TIMEZONE)
 
 
 def strip_section_label(text: str) -> str:
@@ -388,7 +393,7 @@ def append_metrics_row(
     exists = os.path.exists(path)
     if exists:
         ensure_csv_columns(path, fields)
-    now = datetime.now().astimezone()
+    now = account_now()
     with open(path, "a", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         if not exists:
@@ -486,7 +491,7 @@ def append_content_history(
     ):
         return
 
-    now = datetime.now().astimezone()
+    now = account_now()
     entry = {
         "date": now.strftime("%Y-%m-%d"),
         "posted_at": now.isoformat(timespec="seconds"),
