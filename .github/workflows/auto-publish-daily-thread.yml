@@ -81,7 +81,7 @@ jobs:
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
-          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 4 -PerFeed 4 -ReadmeTop 4 -Date $date
+          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 10 -PerFeed 10 -ReadmeTop 10 -Date $date
 
       - name: Generate approved chain
         shell: pwsh
