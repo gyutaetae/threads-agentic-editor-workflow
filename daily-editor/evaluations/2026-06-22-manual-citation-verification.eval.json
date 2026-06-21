@@ -1,0 +1,25 @@
+{
+  "run_id": "2026-06-22-manual-citation-verification",
+  "evaluation": {
+    "score": 88,
+    "decision": "publish",
+    "strengths": [
+      "실제 연구자가 겪는 citation 검증 문제에서 시작한다.",
+      "존재성, 관련성, 위치, 강도로 나눠 저장 가능한 체크리스트를 제공한다.",
+      "바로 붙여 넣을 수 있는 claim-citation 검증 프롬프트가 있다."
+    ],
+    "risks": [
+      "source facts와 account interpretation 구분이 본문 안에서 명시적으로 드러나지는 않는다.",
+      "publish-thread workflow는 아직 새 fingerprint 필드 전체를 content-history에 넘기지 않는다."
+    ],
+    "revision_suggestions": [
+      "다음 citation 글에서는 '출처가 말하는 것'과 '우리가 적용할 방식'을 한 줄로 더 분리한다.",
+      "publish-thread workflow에도 새 fingerprint 인자를 추가해 manual publish 기록 품질을 맞춘다."
+    ],
+    "learning_candidate": "citation 글은 reference 존재 여부보다 claim을 직접 지지하는지 묻는 구조가 저장 가치가 높다.",
+    "skill_candidate": {
+      "name": "citation_verification",
+      "summary": "claim-citation-evidence table을 중심으로 citation 검증 글을 구성한다."
+    }
+  }
+}

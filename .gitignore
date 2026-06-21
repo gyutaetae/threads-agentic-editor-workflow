@@ -5,7 +5,11 @@ __pycache__/
 .venv/
 venv/
 
-daily-editor/
+daily-editor/*
+!daily-editor/runs/
+!daily-editor/runs/*.json
+!daily-editor/evaluations/
+!daily-editor/evaluations/*.json
 threads-hosted-assets.json
 threads-post-metrics.csv
 approved-thread-chain.txt

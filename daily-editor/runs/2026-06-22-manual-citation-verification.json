@@ -1,0 +1,52 @@
+{
+  "run_id": "2026-06-22-manual-citation-verification",
+  "mode": "manual_approved_publish",
+  "topic": "AI citation 검증",
+  "format": "research_checklist",
+  "thread_url": "https://www.threads.net/@arxiv.ai/post/17955254165986058",
+  "post_ids": [
+    "17955254165986058",
+    "18153908977470445",
+    "18011161208867717",
+    "18093000086344018"
+  ],
+  "context_used": {
+    "playbook": "docs/threads-channel-playbook.md",
+    "prd": "docs/prd.md",
+    "adr": "docs/adr.md",
+    "learnings": "docs/learnings.md",
+    "skill": "skills_library/citation_verification.md"
+  },
+  "human_signal": {
+    "source": "inferred",
+    "type": "citation_doubt",
+    "research_problem": "AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다"
+  },
+  "fingerprint": {
+    "workflow_stage": "citation_verification",
+    "failure_mode": "claim_reference_mismatch",
+    "solution_pattern": "claim-citation-evidence table",
+    "hook_pattern": "citation_false_safety",
+    "structure_pattern": "risk_checklist_prompt_source",
+    "closer_pattern": "source_reference",
+    "reusable_unit_type": "verification_checklist"
+  },
+  "sources": [
+    {
+      "name": "Claude Citations",
+      "url": "https://platform.claude.com/docs/en/build-with-claude/citations",
+      "used_for": "claim별 citation을 source 위치와 연결하는 구조"
+    },
+    {
+      "name": "CheckIfExist",
+      "url": "https://arxiv.org/html/2602.15871v1",
+      "used_for": "LLM citation hallucination과 multi-source validation 문제"
+    }
+  ],
+  "final_thread_parts": [
+    "AI가 citation을 달아주면 안심하기 쉽습니다.\n\n그런데 논문 작업에서는\ncitation이 있다는 것과\n그 citation이 claim을 실제로 받친다는 것은 다릅니다.\n\nAI가 붙인 참고문헌은 먼저\n\"존재하는가\"보다\n\"이 문장을 정말 지지하는가\"로 봐야 합니다.\n\n좋은 citation 검증은 reference 확인이 아니라\nclaim과 근거 위치를 다시 연결하는 작업입니다.",
+    "citation을 볼 때는 이 4개만 먼저 확인합니다.\n\n1. 존재성: 실제 논문/문서인가\n2. 관련성: 주제만 비슷한가, claim을 직접 받치나\n3. 위치: 어느 문단, 표, 그림, 실험이 근거인가\n4. 강도: 강한 근거인가, 배경 설명인가\n\nAI가 만든 bibliography를 그대로 믿으면\n가장 위험한 부분이 제일 깔끔해 보입니다.",
+    "바로 써볼 프롬프트:\n\n\"아래 초안의 모든 claim을 표로 뽑아줘.\n각 claim마다 연결된 citation, 근거 위치, 근거 강도를 표시해줘.\ncitation이 claim을 직접 지지하지 않으면 '검증 필요'로 표시해줘.\n존재 여부와 claim 지지 여부를 분리해서 판단해줘.\"",
+    "참고해서 볼 만한 것들:\n\nClaude Citations 문서\nhttps://platform.claude.com/docs/en/build-with-claude/citations\n- 볼 부분: claim별 citation이 source 문서 위치와 연결되는 response structure\n\nCheckIfExist 논문\nhttps://arxiv.org/html/2602.15871v1\n- 볼 부분: LLM citation hallucination 문제와 multi-source validation 구조"
+  ]
+}
