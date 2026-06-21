@@ -1,0 +1,41 @@
+name: Propose Self Improvement
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Monday 10:20 KST, after metrics and weekly editorial memory jobs.
+    - cron: "20 1 * * 1"
+
+jobs:
+  propose-learnings:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Propose learnings and skills
+        shell: pwsh
+        run: python .\scripts\propose_learnings.py --run-log-dir ".\daily-editor\runs" --evaluation-dir ".\daily-editor\evaluations" --metrics-path ".\threads-post-metrics.csv" --learnings-path ".\docs\learnings.md" --output-path ".\daily-editor\proposals\learnings.proposed.md" --skills-library-dir ".\skills_library"
+
+      - name: Commit proposal updates
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add daily-editor/proposals/learnings.proposed.md
+          Get-ChildItem skills_library -Filter *.proposed.md | ForEach-Object { git add $_.FullName }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Propose Threads self-improvement learnings"
+            git push
+          }

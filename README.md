@@ -1,240 +1,121 @@
 # @arxiv.ai Threads Workflow
 
-AI로 논문을 읽고, 요약하고, 초안을 만들고, citation을 검증하는 `@arxiv.ai` 운영 워크플로우.
-
-목표:
+AI로 논문을 읽고, 요약하고, 초안을 만들고, citation을 검증하는 `@arxiv.ai` 운영 workflow.
 
 ```text
-매일 하나, 논문 작업을 덜 막막하게 만드는 AI research workflow
+AI agent로 논문 작업을 더 검증 가능한 작업 단위로 바꾼다.
 ```
 
-## 구성
+## Core Files
 
 ```text
-skills/threads-agentic-editor
-  Codex 스킬. 글 톤, 훅, 사실/해석 분리, A/B 초안 기준.
+docs/threads-channel-playbook.md
+  채널 컨셉, format router, human_signal, source rule, self-improvement 원칙.
 
-scripts/agentic_daily_pipeline.py
-  GitHub API, repo README, 안정적인 공식 RSS/Atom feed 수집 및 점수화.
-  후보는 논문 요약, literature review, citation 검증, research agent 중심으로 고른다.
+docs/learnings.md
+  다음 글 생성 prompt 상단에 넣는 짧은 durable rule.
 
-scripts/quote_matcher.py
-  검증된 유명인 인용을 오늘 주제와 매칭한다. 관련성 기준을 넘고 최근 3개 글에서
-  인용을 쓰지 않았을 때만 선택 후보로 전달한다.
+docs/ops.md
+  사람이 publish, pause, learning promotion, token/API 운영을 결정할 때 보는 문서.
 
-data/verified-quotes.json
-  발언 원문, 한국어 번역, 1차 출처 URL, 주제 태그를 관리하는 검증 카탈로그.
+skills_library/
+  잘된 실행 경로를 결정화한 reusable skill.
 
-scripts/threads_auto_upload.py
-  Threads API 게시 도우미.
+daily-editor/runs/
+daily-editor/evaluations/
+  실행 로그와 evaluator 로그.
 
-scripts/record-thread-metrics.ps1
-scripts/update-thread-metrics.ps1
-  게시물 반응 기록.
+daily-editor/proposals/
+daily-editor/memory/
+  자동 생성되는 learning 제안과 weekly metrics memory.
 ```
 
-## 새 컴퓨터 설치
+## Daily Local Flow
 
-1. 이 repo를 clone한다.
-2. Python 패키지를 설치한다.
-
-```powershell
-python -m pip install requests pillow
-```
-
-3. Codex 스킬을 설치한다.
-
-```powershell
-.\install-skill.ps1
-```
-
-4. 샘플 파일을 복사한다.
-
-```powershell
-Copy-Item .\templates\approved-thread-chain.example.txt .\approved-thread-chain.txt
-Copy-Item .\templates\threads-post-metrics.example.csv .\threads-post-metrics.csv
-Copy-Item .\scripts\threads-api-env.sample.ps1 .\threads-api-env.ps1
-```
-
-5. `threads-api-env.ps1`에 실제 Threads 값은 로컬에서만 넣는다. 이 파일은 commit하지 않는다.
-
-## 매일 루틴
+Generate candidates:
 
 ```powershell
 .\scripts\run-daily-agentic-editor.ps1
 ```
 
-생성물:
-
-```text
-daily-editor/YYYY-MM-DD-brief.md
-daily-editor/YYYY-MM-DD-draft-prompt.md
-daily-editor/YYYY-MM-DD-candidates.json
-```
-
-그 다음 Codex에:
-
-```text
-Use $threads-agentic-editor with daily-editor/YYYY-MM-DD-draft-prompt.md and create A/B drafts.
-```
-
-계정 컨셉과 작성 규칙은 한 파일만 본다.
-
-```text
-docs/threads-channel-playbook.md
-```
-
-현재 우선 포맷:
-
-```text
-Main: 강한 hook + 나쁜 요청 1개 + 번호 없는 좋은 요청 4개 + 원칙 문장
-Reply 1: [핵심 한 줄] + "실전에서는 ..." + 4-item framework
-Reply 2: [핵심 한 줄] + 예시 프롬프트 4개
-Reply 3: [핵심 한 줄] + 참고 링크 + 볼 부분
-```
-
-글은 짧게 쓴다. 자동 게시 글은 main + 댓글 3개, 총 4파트로 고정한다. 본문은 scroll-stopper 역할을 하고, 댓글은 각자 `[핵심 한 줄]`로 시작한다. technical/academic term은 의미가 흐려질 때만 English로 둔다.
-
-유명인 인용은 기본 구성 요소가 아니다. 카탈로그의 관련성 점수가 8점 이상이고
-최근 3개 게시물에서 인용을 사용하지 않았을 때만 생성기에 선택지로 전달한다.
-생성기는 인용 없이도 완결된 글을 우선하며, 사용할 경우 한 게시물에 1개만 넣는다.
-실전 참고 링크는 계속 한국어 기술 블로그/GitHub를 사용하고, 영문 링크는
-`인용 원문:` 아래의 검증된 1차 출처에만 허용한다.
-
-자동 게시에서 금지하는 표현:
-
-```text
-Reply 1:
-Reply 2:
-Reply 3:
-[한 줄 원칙:]
-한 줄 원칙:
-[초안 작성 모드]
-JSON/code block 예시 프롬프트
-URL 없는 참고 링크
-```
-
-승인 후 게시 전 확인:
+Generate an approved chain from candidates:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3 -DryRun
+python .\scripts\generate_auto_thread.py --date 2026-06-22 --candidates-path ".\daily-editor\2026-06-22-candidates.json"
 ```
 
-게시:
+Dry run:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -Topic "research ai workflow" -SourceCount 3
+.\scripts\publish-approved-chain.ps1 -DryRun
 ```
 
-이 명령은 `THREADS_ACCESS_TOKEN`으로 실제 계정 ID를 확인해서 stale `THREADS_USER_ID` 문제를 피하고, 게시 후 `threads-post-metrics.csv`에 기본 행을 기록한다.
-
-게시 전 품질 검사만 따로 실행:
+Publish:
 
 ```powershell
-.\scripts\check-approved-chain.ps1
+.\scripts\publish-approved-chain.ps1
 ```
 
-게시 후 metrics 수집:
+## Auto Publish
 
-```powershell
-.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
-```
+`Auto Publish Daily Threads Chain` collects candidates, generates a thread, evaluates it, validates it, publishes it, and records history.
 
-내가 직접 단 추가 댓글까지 제외하려면:
-
-```powershell
-.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h" -OwnReplies 1
-```
-
-`threads-post-metrics.csv`의 `replies`는 Threads API가 주는 총 reply 수다. 분석에는 체인으로 단 답글과 내가 직접 단 댓글을 뺀 `audience_replies`를 우선 사용한다.
-
-```text
-audience_replies = replies - chain_replies - own_replies
-```
-
-## GitHub Actions 게시
-
-로컬 터미널 대신 GitHub Actions에서 수동으로 게시할 수 있다.
-
-초기 설정:
-
-1. GitHub repo `Settings -> Secrets and variables -> Actions`로 간다.
-2. `New repository secret`을 누른다.
-3. 이름은 `THREADS_ACCESS_TOKEN`, 값은 Threads long-lived access token으로 저장한다.
-4. 변경사항을 GitHub에 push한다.
-
-게시:
-
-1. GitHub repo `Actions` 탭으로 간다.
-2. `Publish Threads Chain` workflow를 선택한다.
-3. `Run workflow`를 누른다.
-4. `thread_text`에 본문을 붙여넣는다. main/reply 구분은 `---` 한 줄만 사용한다.
-5. 이미지가 있으면 `image_url`, `alt_text`, `card_used = true`를 함께 넣는다.
-6. 처음에는 `dry_run = true`로 실행해서 미리보기와 품질 검사를 확인한다.
-7. 문제가 없으면 같은 내용으로 `dry_run = false`를 실행한다.
-
-규칙:
-
-- `approved-thread-chain.txt`는 gitignore라서 GitHub Actions 입력창에 매번 붙여넣는다.
-- 게시 전 검사에서 main + 댓글 3개를 넘으면 실패한다.
-- 실행 결과의 artifact에 `approved-thread-chain.txt`와 `threads-post-metrics.csv`가 저장된다.
-
-## GitHub Actions 완전 자동 게시
-
-`Auto Publish Daily Threads Chain` workflow는 매일 09:00 KST에 후보 수집, Groq 초안 생성, 품질 검사, Threads 게시를 자동 실행한다.
-
-필요한 GitHub secret:
+Required GitHub secrets:
 
 ```text
 GROQ_API_KEY
 THREADS_ACCESS_TOKEN
 ```
 
-선택 GitHub variable:
+Optional GitHub variables:
 
 ```text
 GROQ_MODEL
 THREADS_IMAGE_URL
 THREADS_ALT_TEXT
+POSTS_PER_DAY
 ```
 
-기본 모델은 `openai/gpt-oss-20b`다. Groq는 OpenAI-compatible endpoint를 제공하므로 자동 초안 생성은 `GROQ_API_KEY`로 실행한다.
+## Self-Improvement Loop
 
-수동 테스트:
-
-1. GitHub repo `Actions` 탭으로 간다.
-2. `Auto Publish Daily Threads Chain`을 선택한다.
-3. `Run workflow`를 누른다.
-4. `publish = false`로 실행하면 생성 + dry-run만 한다.
-5. `publish = true`로 실행하면 생성 후 실제 게시한다.
-
-주의:
-
-- `schedule` 실행은 승인 없이 바로 게시한다.
-- 자동 글은 main + 댓글 3개, 파트당 500자, 번호 없는 좋은 요청 4개, `[핵심 한 줄]` 댓글, 전체 URL 참고 링크 기준을 통과해야 한다.
-- 품질이 흔들리면 workflow의 `schedule` 줄을 제거하고 수동 실행만 유지한다.
-
-## 게시 정책
-
-자동 게시도 수동 게시와 같은 품질 게이트를 통과해야 한다.
+Current phase:
 
 ```text
-auto collect
-auto score
-auto draft
-quality gate
-auto publish
-record history
+generate -> evaluate -> log -> propose learnings -> human promotion -> next generation
 ```
 
-## 중요한 규칙
+Run proposals manually:
 
-- 안정적인 소스만 자동 수집한다.
-- 출처가 말한 사실과 우리의 해석을 분리한다.
-- GitHub stars는 인기도이지 품질 보장이 아니다.
-- AI가 만든 citation/reference는 원문에서 다시 확인한다.
-- 강한 훅과 상징 인물 이미지는 허용하지만 근거 없는 1등/최고/무조건 표현은 피한다.
-- 같은 source URL이나 repo는 `content-history.jsonl`에 기록하고 다음 후보에서 제외한다. 계정 컨셉은 반복하되, 같은 논문/문서/도구만 반복 소재로 쓰지 않는다.
-- 유명인 인용은 `data/verified-quotes.json`에 원문과 출처가 등록된 경우만 사용한다.
-- 인용은 주제 관련성, 실천 연결성, 출처 신뢰도 합계가 8점 이상일 때만 후보가 된다.
-- 인용 사용 여부와 ID는 `content-history.jsonl`에 기록해 최소 3개 글의 간격을 둔다.
+```powershell
+python .\scripts\propose_learnings.py
+```
+
+Review:
+
+```text
+daily-editor/proposals/learnings.proposed.md
+skills_library/*.proposed.md
+```
+
+Promote only durable rules into:
+
+```text
+docs/learnings.md
+skills_library/*.md
+```
+
+## Metrics
+
+Collect metrics:
+
+```powershell
+.\scripts\collect-thread-metrics.ps1 -PostId "THREADS_POST_ID" -Window "24h"
+```
+
+`audience_replies` is preferred over raw `replies`:
+
+```text
+audience_replies = replies - chain_replies - own_replies
+```
+
+Use metrics as weak guidance until enough 24h/72h data exists. Prefer saves, reposts, quotes, audience replies, profile visits, and follows over views alone.

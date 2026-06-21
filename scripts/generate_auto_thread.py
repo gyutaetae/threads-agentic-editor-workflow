@@ -977,7 +977,7 @@ def main() -> int:
     parser.add_argument("--metadata-path", default="daily-editor/auto-thread-metadata.json")
     parser.add_argument("--metrics-path", default="threads-post-metrics.csv")
     parser.add_argument("--quote-bank-path", default="data/quote_bank.json")
-    parser.add_argument("--weekly-memory-path", default="docs/weekly-editorial-memory.md")
+    parser.add_argument("--weekly-memory-path", default="daily-editor/memory/weekly-editorial-memory.md")
     parser.add_argument("--learnings-path", default="docs/learnings.md")
     parser.add_argument("--skills-library-dir", default="skills_library")
     parser.add_argument("--review-dir", default="daily-editor/review")

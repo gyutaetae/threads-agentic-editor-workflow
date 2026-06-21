@@ -10,6 +10,10 @@ daily-editor/*
 !daily-editor/runs/*.json
 !daily-editor/evaluations/
 !daily-editor/evaluations/*.json
+!daily-editor/memory/
+!daily-editor/memory/*.md
+!daily-editor/proposals/
+!daily-editor/proposals/*.md
 threads-hosted-assets.json
 threads-post-metrics.csv
 approved-thread-chain.txt

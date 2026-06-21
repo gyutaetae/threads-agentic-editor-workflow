@@ -145,7 +145,7 @@ def render_memory(rows: list[dict], days: int) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Update weekly Threads editorial memory from metrics CSV.")
     parser.add_argument("--metrics-path", default="threads-post-metrics.csv")
-    parser.add_argument("--output-path", default="docs/weekly-editorial-memory.md")
+    parser.add_argument("--output-path", default="daily-editor/memory/weekly-editorial-memory.md")
     parser.add_argument("--days", type=int, default=7)
     args = parser.parse_args()
 

@@ -12,8 +12,6 @@
   ],
   "context_used": {
     "playbook": "docs/threads-channel-playbook.md",
-    "prd": "docs/prd.md",
-    "adr": "docs/adr.md",
     "learnings": "docs/learnings.md",
     "skill": "skills_library/citation_verification.md"
   },
