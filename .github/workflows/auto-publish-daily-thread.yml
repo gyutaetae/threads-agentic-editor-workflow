@@ -133,6 +133,13 @@ jobs:
             -QuoteId $metadata.quote_id `
             -QuoteSpeaker $metadata.quote_speaker `
             -QuoteSourceUrl $metadata.quote_source_url `
+            -HumanSignalSource $metadata.human_signal_source `
+            -HumanSignalType $metadata.human_signal_type `
+            -ResearchProblem $metadata.research_problem `
+            -HookPattern $metadata.hook_pattern `
+            -StructurePattern $metadata.structure_pattern `
+            -CloserPattern $metadata.closer_pattern `
+            -ReusableUnitType $metadata.reusable_unit_type `
             -CardUsed:([bool]$env:THREADS_IMAGE_URL)
 
       - name: Commit content history

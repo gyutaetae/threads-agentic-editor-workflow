@@ -26,6 +26,13 @@ param(
     [string]$QuoteId = "",
     [string]$QuoteSpeaker = "",
     [string]$QuoteSourceUrl = "",
+    [string]$HumanSignalSource = "",
+    [string]$HumanSignalType = "",
+    [string]$ResearchProblem = "",
+    [string]$HookPattern = "",
+    [string]$StructurePattern = "",
+    [string]$CloserPattern = "",
+    [string]$ReusableUnitType = "",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -68,7 +75,14 @@ try {
         "--bad-request", $BadRequest,
         "--quote-id", $QuoteId,
         "--quote-speaker", $QuoteSpeaker,
-        "--quote-source-url", $QuoteSourceUrl
+        "--quote-source-url", $QuoteSourceUrl,
+        "--human-signal-source", $HumanSignalSource,
+        "--human-signal-type", $HumanSignalType,
+        "--research-problem", $ResearchProblem,
+        "--hook-pattern", $HookPattern,
+        "--structure-pattern", $StructurePattern,
+        "--closer-pattern", $CloserPattern,
+        "--reusable-unit-type", $ReusableUnitType
     )
 
     if ($CardUsed) {

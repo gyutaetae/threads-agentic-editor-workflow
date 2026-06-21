@@ -51,63 +51,66 @@ Block exact repeats:
 - same `bad_request` with the same fix
 - same `failure_mode` + same `solution_pattern`
 
-## Default Chain
+## Format Router
 
-Exactly 4 parts: main + 3 replies. Each part must stay under 500 chars.
+There is no default 4-part chain. Pick the format that best fits the research problem, workflow stage, recent repetition history, and reusable unit.
+
+Thread length:
+
+- 1 to 4 parts are allowed.
+- Every part must stay under 500 chars.
+- Links belong in the final reply, not the main post.
+- Do not use labels like `Main:` or `Reply 1:`.
+
+Initial formats:
+
+| Format | Use When |
+|---|---|
+| `workflow_observation` | A concrete judgment from AI-assisted paper work should open the post. |
+| `failed_agent_run` | A common AI-agent failure needs to be shown and corrected. |
+| `better_prompt_pattern` | A vague request should become a practical research prompt. |
+| `research_checklist` | Readers need criteria to verify AI output. |
+| `agent_role_split` | One broad task should be split into reader, synthesizer, critic, editor roles. |
+| `tiny_source_case` | One paper, repo, or official doc should become a reusable workflow. |
+| `weekly_review_advice` | Friday evening review of the previous 7 days. |
+
+Every chain must include one reusable unit:
+
+- practical `prompt`
+- verification checklist
+- role-specific AI agent instruction
+- source-to-workflow template
+
+Reusable reply labels should rotate:
 
 ```text
-Main: 강한 hook + 나쁜 요청 1개 + 번호 없는 좋은 요청 4개 + 원칙 문장
-Reply 1: [핵심 한 줄] + "실전에서는 ..." + 4-item framework
-Reply 2: [핵심 한 줄] + 예시 프롬프트 4개
-Reply 3: [핵심 한 줄] + 참고 링크 + 볼 부분
+바로 써볼 프롬프트:
+오늘 적용할 문장:
+AI agent에게 이렇게 시켜보세요:
+논문 읽을 때 붙여 넣을 문장:
+다음 요약 전에 써볼 질문:
 ```
 
-Main should work as the scroll-stopper. The first post may carry a symbolic person image when it strengthens the idea. The image is context, not proof.
+The old bad-request/good-request card is allowed only when `better_prompt_pattern` genuinely needs it.
 
-Reply rule:
+## Human Signal
 
-- Every reply starts with `[핵심 한 줄]`.
-- Then explain the point in plain Korean.
-- Do not use labels like `Reply 1:`.
+Posts should feel like a research-work judgment, not a template filled with research vocabulary.
 
-## Proven Shape
+Manual mode:
+
+- A one-line user signal is enough.
+- Turn it into a concrete research problem, practical derived questions, and one reusable unit.
+
+Automatic mode:
+
+- Infer only source surprise, reader friction, common confusion, verification need, or agent-workflow bottleneck.
+- Do not invent personal experience.
+
+Normalize each topic into:
 
 ```text
-AI에게 논문 요약을 맡길 때
-"이 논문 요약해줘"라고 쓰면
-초록을 다시 쓴 글이 나올 가능성이 큽니다.
-
-나쁜 요청:
-"이 논문 요약해줘"
-
-좋은 요청:
-"핵심 기여를 기존 연구와 분리해줘"
-"방법을 재현 가능한 단계로 나눠줘"
-"주장을 받치는 표, 그림, 실험을 연결해줘"
-"저자가 말한 한계와 내가 의심할 점을 분리해줘"
-
-좋은 요약은 짧은 글이 아니라
-검증 가능한 연구 노트입니다.
----
-[논문 요약은 4칸으로 나눕니다]
-실전에서는 논문 요약을 4칸으로 나눕니다.
-1. Contribution: 무엇을 주장했나
-2. Method: 어떻게 증명하려 했나
-3. Evidence: 어떤 실험/표/그림이 받치나
-4. Limitation: 어디까지 믿어야 하나
----
-[복사해서 쓸 프롬프트]
-예시 프롬프트:
-"..."
-"..."
-"..."
-"..."
----
-[볼 부분이 있는 링크만 남깁니다]
-참고해서 볼 만한 것들:
-source title
-https://...
-- 볼 부분: ...
+human_signal_type + workflow_stage + failure_mode
 ```
 
 ## Source Rules

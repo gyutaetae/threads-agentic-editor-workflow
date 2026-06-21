@@ -474,6 +474,13 @@ def append_content_history(
     quote_id: str = "",
     quote_speaker: str = "",
     quote_source_url: str = "",
+    human_signal_source: str = "",
+    human_signal_type: str = "",
+    research_problem: str = "",
+    hook_pattern: str = "",
+    structure_pattern: str = "",
+    closer_pattern: str = "",
+    reusable_unit_type: str = "",
 ) -> None:
     if not any(
         [
@@ -487,6 +494,9 @@ def append_content_history(
             bad_request,
             quote_used,
             quote_id,
+            human_signal_type,
+            research_problem,
+            reusable_unit_type,
         ]
     ):
         return
@@ -514,6 +524,13 @@ def append_content_history(
         "quote_id": quote_id,
         "quote_speaker": quote_speaker,
         "quote_source_url": quote_source_url,
+        "human_signal_source": human_signal_source,
+        "human_signal_type": human_signal_type,
+        "research_problem": research_problem,
+        "hook_pattern": hook_pattern,
+        "structure_pattern": structure_pattern,
+        "closer_pattern": closer_pattern,
+        "reusable_unit_type": reusable_unit_type,
     }
     with open(path, "a", encoding="utf-8") as handle:
         handle.write(json.dumps(entry, ensure_ascii=False, sort_keys=True) + "\n")
@@ -690,6 +707,13 @@ def main() -> int:
     approved.add_argument("--quote-id", default="")
     approved.add_argument("--quote-speaker", default="")
     approved.add_argument("--quote-source-url", default="")
+    approved.add_argument("--human-signal-source", default="")
+    approved.add_argument("--human-signal-type", default="")
+    approved.add_argument("--research-problem", default="")
+    approved.add_argument("--hook-pattern", default="")
+    approved.add_argument("--structure-pattern", default="")
+    approved.add_argument("--closer-pattern", default="")
+    approved.add_argument("--reusable-unit-type", default="")
     approved.add_argument("--card-used", action="store_true")
     approved.add_argument("--dry-run", action="store_true")
 
@@ -825,6 +849,13 @@ def main() -> int:
             quote_id=args.quote_id,
             quote_speaker=args.quote_speaker,
             quote_source_url=args.quote_source_url,
+            human_signal_source=args.human_signal_source,
+            human_signal_type=args.human_signal_type,
+            research_problem=args.research_problem,
+            hook_pattern=args.hook_pattern,
+            structure_pattern=args.structure_pattern,
+            closer_pattern=args.closer_pattern,
+            reusable_unit_type=args.reusable_unit_type,
         )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")

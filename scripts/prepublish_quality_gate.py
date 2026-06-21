@@ -6,6 +6,7 @@ from pathlib import Path
 
 
 MAX_CHARS = 500
+MIN_PARTS = 1
 MAX_PARTS = 4
 CHECKLIST_RE = re.compile(r"(?m)^\s*(\d+)\.\s+")
 URL_RE = re.compile(r"https?://\S+")
@@ -77,8 +78,8 @@ def main() -> int:
 
     if not parts:
         errors.append("No thread parts found.")
-    elif len(parts) != MAX_PARTS:
-        errors.append(f"Thread has {len(parts)} parts; expected exactly {MAX_PARTS} (main + 3 replies).")
+    elif len(parts) < MIN_PARTS or len(parts) > MAX_PARTS:
+        errors.append(f"Thread has {len(parts)} parts; expected {MIN_PARTS}-{MAX_PARTS} parts.")
 
     for index, part in enumerate(parts, start=1):
         if SECTION_LABEL_RE.match(part):
@@ -98,13 +99,8 @@ def main() -> int:
     if "```" in joined or '{"role"' in joined or '"tools"' in joined:
         errors.append("Example prompt should be natural quoted Korean text, not a code block or JSON object.")
 
-    if main and ("나쁜 요청:" not in main or "좋은 요청:" not in main):
-        errors.append("Main post must include both '나쁜 요청:' and '좋은 요청:' sections.")
-
     quoted_good_lines = good_request_lines(main)
     if "좋은 요청:" in main:
-        if len(quoted_good_lines) < 4:
-            errors.append("Main post must include at least four quoted good-request examples.")
         numbered_good_lines = [
             line for line in quoted_good_lines if re.match(r'^\s*["“]\s*\d+\.', line)
         ]
@@ -120,34 +116,29 @@ def main() -> int:
     if "repo" in joined.lower() and not URL_RE.search(joined):
         warnings.append("Repo-based post has no source links.")
 
-    for index, part in enumerate(parts[1:], start=2):
-        if not has_reply_heading(part):
-            errors.append(f"Part {index} must start with a bracketed core line such as [핵심 한 줄].")
+    if "왜 좋은 요청일까요?" in joined:
+        errors.append("Use practical framing, not '왜 좋은 요청일까요?'.")
 
-    if len(parts) >= 2:
-        if "실전에서는" not in parts[1]:
-            errors.append("Part 2 must include the practical '실전에서는 ...' framing.")
-        for number in ("1", "2", "3", "4"):
-            if f"{number}." not in parts[1]:
-                errors.append(f"Part 2 must include framework item {number}.")
-        if "왜 좋은 요청일까요?" in parts[1]:
-            errors.append("Part 2 should use the practical '실전에서는 ... 합니다.' framing, not '왜 좋은 요청일까요?'.")
+    if URL_RE.search(joined) and "- 볼 부분:" not in joined and "인용 원문:" not in joined:
+        errors.append("Source links must include '- 볼 부분:' or a quote source labeled '인용 원문:'.")
+    if "notebooklm.google" in joined.lower():
+        errors.append("Reference reply must link to an actual example, not the NotebookLM product homepage.")
 
-    if len(parts) >= 3:
-        if "예시 프롬프트:" not in parts[2]:
-            errors.append("Part 3 must include '예시 프롬프트:'.")
-        elif len(QUOTE_LINE_RE.findall(parts[2])) < 4:
-            errors.append("Part 3 must include four quoted prompt examples matching the four good requests.")
-
-    if len(parts) >= 4:
-        if "참고해서 볼 만한 것들:" not in parts[3]:
-            errors.append("Part 4 must include '참고해서 볼 만한 것들:'.")
-        if not URL_RE.search(parts[3]):
-            errors.append("Reference reply must include at least one full clickable URL starting with https://.")
-        if "notebooklm.google" in parts[3].lower():
-            errors.append("Reference reply must link to an actual Korean example, not the NotebookLM product homepage.")
-        if "- 볼 부분:" not in parts[3]:
-            errors.append("Reference reply must explain what readers should inspect in each linked example.")
+    reusable_markers = [
+        "예시 프롬프트",
+        "바로 써볼 프롬프트",
+        "오늘 적용할 문장",
+        "AI agent에게 이렇게 시켜보세요",
+        "논문 읽을 때 붙여 넣을 문장",
+        "다음 요약 전에 써볼 질문",
+        "체크리스트",
+        "claim",
+        "evidence",
+        "citation",
+        "limitation",
+    ]
+    if not any(marker in joined for marker in reusable_markers):
+        errors.append("Chain needs a reusable prompt, checklist, agent instruction, or verification work unit.")
 
     catalog_path = Path(args.quote_catalog_path)
     if catalog_path.exists():

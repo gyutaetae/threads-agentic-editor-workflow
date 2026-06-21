@@ -13,6 +13,7 @@ import requests
 
 RESPONSES_URL = "https://api.groq.com/openai/v1/responses"
 DEFAULT_MODEL = "openai/gpt-oss-120b"
+MIN_PARTS = 1
 MAX_PARTS = 4
 MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = 85
@@ -26,6 +27,11 @@ BRACKET_HEADING_RE = re.compile(r"^\[[^\]\n]{4,80}\]\s*(?:\n|$)")
 HYPE_WORDS = ["무조건", "혁명", "논문 끝", "개발자 끝", "역대급", "미친 생산성", "뒤처집니다", "끝입니다"]
 PRACTICAL_MARKERS = [
     "예시 프롬프트",
+    "바로 써볼 프롬프트",
+    "오늘 적용할 문장",
+    "AI agent에게 이렇게 시켜보세요",
+    "논문 읽을 때 붙여 넣을 문장",
+    "다음 요약 전에 써볼 질문",
     "체크리스트",
     "기준",
     "모드",
@@ -49,14 +55,13 @@ CONTENT_AXES = {
     "opinion",
 }
 FORMAT_TYPES = {
-    "bad_to_better",
-    "senior_first_move",
-    "workflow_mode",
-    "repo_lesson",
-    "failure_case",
-    "copy_checklist",
-    "update_to_action",
-    "short_opinion",
+    "workflow_observation",
+    "failed_agent_run",
+    "better_prompt_pattern",
+    "research_checklist",
+    "agent_role_split",
+    "tiny_source_case",
+    "weekly_review_advice",
 }
 POST_GOALS = {"save", "comment", "share", "follow", "profile_visit"}
 CANONICAL_STYLE_EXAMPLE = """AI에게 논문 요약을 맡길 때
@@ -94,15 +99,43 @@ CANONICAL_STYLE_EXAMPLE = """AI에게 논문 요약을 맡길 때
 https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
 - 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조"""
 
+LEGACY_FORMAT_MAP = {
+    "bad_to_better": "better_prompt_pattern",
+    "senior_first_move": "workflow_observation",
+    "workflow_mode": "agent_role_split",
+    "repo_lesson": "tiny_source_case",
+    "failure_case": "failed_agent_run",
+    "copy_checklist": "research_checklist",
+    "update_to_action": "tiny_source_case",
+    "short_opinion": "workflow_observation",
+}
+AXIS_FORMAT_MAP = {
+    "prompt_habit": "better_prompt_pattern",
+    "workflow_mode": "agent_role_split",
+    "repo_teardown": "tiny_source_case",
+    "failure_prevention": "failed_agent_run",
+    "checklist": "research_checklist",
+    "official_update": "tiny_source_case",
+    "opinion": "workflow_observation",
+}
 FORMAT_GUIDE = {
-    "bad_to_better": "Show one vague research request and four better requests. Main must use '나쁜 요청:' and '좋은 요청:'.",
-    "senior_first_move": "Explain what an experienced researcher checks before asking AI to summarize, compare, draft, or verify a paper.",
-    "workflow_mode": "Turn the idea into repeatable research modes such as 읽기, 비교, 구조화, 초안, citation 검증.",
-    "repo_lesson": "Teach what to copy from the repo's workflow, examples, notebooks, templates, or docs. Do not turn it into generic repo news.",
-    "failure_case": "Start from a common paper-reading or citation failure and give a prevention rule. Keep it calm and practical.",
-    "copy_checklist": "Make reusable criteria or a copyable research prompt that students can save.",
-    "update_to_action": "Translate the official update into a concrete paper-reading, drafting, citation, or review workflow. Separate source fact from our interpretation.",
-    "short_opinion": "Write a concise account-level viewpoint with one practical takeaway.",
+    "workflow_observation": "Start from one concrete paper-workflow judgment. Show why it matters, then add one reusable prompt or verification question.",
+    "failed_agent_run": "Show a plausible AI-agent failure in paper work and the corrected work instruction. Do not invent first-person experience unless provided.",
+    "better_prompt_pattern": "Turn a vague research request into a precise research prompt. The bad/good request structure is allowed but not required.",
+    "research_checklist": "Give criteria a researcher can save and reuse to verify AI output.",
+    "agent_role_split": "Split one broad paper task into agent roles such as reader, synthesizer, critic, and editor.",
+    "tiny_source_case": "Translate one paper, repo, or official source into a reusable research workflow. Keep source facts separate from account interpretation.",
+    "weekly_review_advice": "Friday evening only: derive one advice from the last 7 days of posts. Use a verified Korean quote only when it genuinely fits; otherwise publish a general weekly review.",
+}
+HUMAN_SIGNAL_TYPES = {
+    "summary_suspicion",
+    "citation_doubt",
+    "literature_overload",
+    "draft_without_argument",
+    "evidence_missing",
+    "agent_role_confusion",
+    "reviewer_anxiety",
+    "method_understanding_gap",
 }
 
 HOOK_PATTERNS = {
@@ -138,6 +171,28 @@ def read_optional_text(path: Path, max_chars: int = 4000) -> str:
     if not path.exists():
         return ""
     return path.read_text(encoding="utf-8").strip()[:max_chars]
+
+
+def read_skill_library(path: Path, max_files: int = 8, max_chars: int = 8000) -> str:
+    if not path.exists() or not path.is_dir():
+        return ""
+    chunks = []
+    for item in sorted(path.glob("*.md"))[:max_files]:
+        text = item.read_text(encoding="utf-8").strip()
+        if text:
+            chunks.append(f"## {item.name}\n{text}")
+    return "\n\n".join(chunks)[:max_chars]
+
+
+def safe_slug(text: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9가-힣_-]+", "-", text.strip())
+    slug = re.sub(r"-{2,}", "-", slug).strip("-")
+    return slug[:80] or "thread"
+
+
+def write_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def classify_hook_pattern(text: str) -> str:
@@ -223,6 +278,105 @@ def safe_enum(value: str, allowed: set[str], fallback: str) -> str:
     return value if value in allowed else fallback
 
 
+def classify_research_problem(candidate: dict, analysis: dict | None = None) -> dict:
+    text = " ".join(
+        [
+            candidate.get("title") or "",
+            candidate.get("description") or "",
+            candidate.get("readme_summary") or "",
+            candidate.get("our_angle") or "",
+            (analysis or {}).get("workflow_action") or "",
+        ]
+    ).lower()
+
+    if any(term in text for term in ["citation", "reference", "bibliography", "인용", "참고문헌"]):
+        signal = "citation_doubt"
+        stage = "citation_verification"
+        failure = "claim_reference_mismatch"
+        problem = "AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다."
+    elif any(term in text for term in ["literature review", "related work", "survey", "리뷰", "관련 연구"]):
+        signal = "literature_overload"
+        stage = "literature_review"
+        failure = "comparison_axis_missing"
+        problem = "논문은 많지만 비교 기준이 없어 연구 흐름으로 정리하기 어렵다."
+    elif any(term in text for term in ["draft", "writing", "초안", "논문 작성", "problem-gap", "argument"]):
+        signal = "draft_without_argument"
+        stage = "draft_structure"
+        failure = "argument_structure_missing"
+        problem = "초안 문장은 나왔지만 problem-gap-contribution 논리가 약하다."
+    elif any(term in text for term in ["evidence", "experiment", "figure", "table", "근거", "실험", "그림", "표"]):
+        signal = "evidence_missing"
+        stage = "evidence_mapping"
+        failure = "claim_evidence_link_missing"
+        problem = "주장은 있지만 evidence가 표, 그림, 실험, 데이터와 연결되지 않는다."
+    elif any(term in text for term in ["reviewer", "critique", "peer", "리뷰어", "반박"]):
+        signal = "reviewer_anxiety"
+        stage = "reviewer_critique"
+        failure = "weakness_not_prechecked"
+        problem = "리뷰어가 물을 약점과 limitation을 미리 찾기 어렵다."
+    elif any(term in text for term in ["method", "reproduce", "reproduc", "방법", "재현"]):
+        signal = "method_understanding_gap"
+        stage = "method_understanding"
+        failure = "method_steps_not_reproducible"
+        problem = "방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다."
+    elif any(term in text for term in ["agent", "multi-agent", "subagent", "에이전트", "역할"]):
+        signal = "agent_role_confusion"
+        stage = "agent_workflow_design"
+        failure = "roles_collapsed_into_one_agent"
+        problem = "하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다."
+    else:
+        signal = "summary_suspicion"
+        stage = "summary_verification"
+        failure = "false_fluency"
+        problem = "AI 요약이 깔끔하지만 실제 이해를 만들었는지 검증하기 어렵다."
+
+    return {
+        "human_signal_source": "inferred",
+        "human_signal_type": signal,
+        "workflow_stage": stage,
+        "failure_mode": failure,
+        "research_problem": problem,
+        "diagnostic_question": f"지금 문제는 {problem}",
+        "verification_question": "AI 결과가 claim, evidence, limitation으로 분리되어 검증 가능한가?",
+        "next_action_question": "AI agent에게 다음에 맡길 가장 작은 작업 단위는 무엇인가?",
+    }
+
+
+def is_friday_evening(date_text: str, post_slot: str) -> bool:
+    try:
+        return post_slot == "evening" and time.strptime(date_text, "%Y-%m-%d").tm_wday == 4
+    except ValueError:
+        return False
+
+
+def route_format(candidate: dict, problem: dict, date_text: str, post_slot: str) -> str:
+    if is_friday_evening(date_text, post_slot):
+        return "weekly_review_advice"
+
+    raw_format = str(candidate.get("format_type") or "").strip()
+    if raw_format in FORMAT_TYPES:
+        return raw_format
+    if raw_format in LEGACY_FORMAT_MAP:
+        return LEGACY_FORMAT_MAP[raw_format]
+
+    axis = str(candidate.get("content_axis") or "").strip()
+    if axis in AXIS_FORMAT_MAP:
+        return AXIS_FORMAT_MAP[axis]
+
+    signal = problem["human_signal_type"]
+    if signal == "citation_doubt":
+        return "research_checklist"
+    if signal == "literature_overload":
+        return "agent_role_split"
+    if signal == "agent_role_confusion":
+        return "agent_role_split"
+    if signal in {"draft_without_argument", "method_understanding_gap"}:
+        return "better_prompt_pattern"
+    if signal in {"evidence_missing", "reviewer_anxiety"}:
+        return "research_checklist"
+    return "workflow_observation"
+
+
 def analyze_candidate(candidate: dict) -> dict:
     text = " ".join(
         [
@@ -263,17 +417,29 @@ def analyze_candidate(candidate: dict) -> dict:
     }
 
 
-def select_content_format(candidate: dict) -> dict:
+def select_content_format(candidate: dict, analysis: dict, date_text: str, post_slot: str) -> dict:
     content_axis = safe_enum(candidate.get("content_axis"), CONTENT_AXES, "prompt_habit")
-    format_type = safe_enum(candidate.get("format_type"), FORMAT_TYPES, "bad_to_better")
+    problem = classify_research_problem(candidate, analysis)
+    format_type = route_format(candidate, problem, date_text, post_slot)
     post_goal = safe_enum(candidate.get("post_goal"), POST_GOALS, "save")
+    reusable_unit_type = {
+        "workflow_observation": "applicable_prompt",
+        "failed_agent_run": "corrected_instruction",
+        "better_prompt_pattern": "applicable_prompt",
+        "research_checklist": "verification_checklist",
+        "agent_role_split": "agent_role_instruction",
+        "tiny_source_case": "source_to_workflow_template",
+        "weekly_review_advice": "weekly_research_prompt",
+    }[format_type]
     return {
         "content_axis": content_axis,
         "format_type": format_type,
         "post_goal": post_goal,
+        "reusable_unit_type": reusable_unit_type,
+        **problem,
         "format_reason": candidate.get("format_reason")
         or "Use the format that best turns the source into a practical research workflow action.",
-        "format_guide": FORMAT_GUIDE.get(format_type, FORMAT_GUIDE["bad_to_better"]),
+        "format_guide": FORMAT_GUIDE.get(format_type, FORMAT_GUIDE["workflow_observation"]),
     }
 
 
@@ -359,6 +525,13 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
                 "failure_mode": entry.get("failure_mode"),
                 "solution_pattern": entry.get("solution_pattern"),
                 "bad_request": entry.get("bad_request"),
+                "human_signal_source": entry.get("human_signal_source"),
+                "human_signal_type": entry.get("human_signal_type"),
+                "research_problem": entry.get("research_problem"),
+                "hook_pattern": entry.get("hook_pattern"),
+                "structure_pattern": entry.get("structure_pattern"),
+                "closer_pattern": entry.get("closer_pattern"),
+                "reusable_unit_type": entry.get("reusable_unit_type"),
                 "hook": entry.get("hook"),
                 "source_name": entry.get("source_name"),
                 "source_url": entry.get("source_url"),
@@ -423,8 +596,8 @@ def validate_thread(thread_text: str) -> None:
     parts = [part.strip() for part in SEPARATOR_RE.split(thread_text.strip()) if part.strip()]
     if not parts:
         raise SystemExit("Generated thread has no parts.")
-    if len(parts) != MAX_PARTS:
-        raise SystemExit(f"Generated thread has {len(parts)} parts; expected exactly {MAX_PARTS} parts.")
+    if len(parts) < MIN_PARTS or len(parts) > MAX_PARTS:
+        raise SystemExit(f"Generated thread has {len(parts)} parts; expected {MIN_PARTS}-{MAX_PARTS} parts.")
     for index, part in enumerate(parts, start=1):
         if SECTION_LABEL_RE.match(part):
             raise SystemExit(f"Generated part {index} still has a drafting label such as Main: or Reply n:.")
@@ -442,36 +615,16 @@ def validate_thread(thread_text: str) -> None:
             raise SystemExit(f"Generated thread contains forbidden label: {forbidden}")
     if "```" in joined or '{"role"' in joined or '"tools"' in joined:
         raise SystemExit("Generated thread uses a code block or JSON-style prompt; use natural quoted Korean prompt text.")
-    if "나쁜 요청:" not in parts[0] or "좋은 요청:" not in parts[0]:
-        raise SystemExit("Generated main post must include both '나쁜 요청:' and '좋은 요청:' sections.")
-    good_request = parts[0].split("좋은 요청:", 1)[1]
-    quoted_good_lines = QUOTE_LINE_RE.findall(good_request)
-    if len(quoted_good_lines) < 4:
-        raise SystemExit("Generated main post must include at least four quoted good-request lines.")
-    if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_good_lines):
-        raise SystemExit("Generated good-request lines should not include 1./2./3./4. numbering inside the quotes.")
-    for index, part in enumerate(parts[1:], start=2):
-        if not BRACKET_HEADING_RE.match(part.strip()):
-            raise SystemExit(f"Generated part {index} must start with a bracketed core line such as [핵심 한 줄].")
-    if "실전에서는" not in parts[1]:
-        raise SystemExit("Generated second part must include the practical '실전에서는 ...' framing.")
-    for number in ("1", "2", "3", "4"):
-        if f"{number}." not in parts[1]:
-            raise SystemExit(f"Generated second part is missing framework item {number}.")
-    if "왜 좋은 요청일까요?" in parts[1]:
-        raise SystemExit("Generated second part should use the practical '실전에서는 ... 합니다.' framing.")
-    if "예시 프롬프트:" not in parts[2]:
-        raise SystemExit("Generated third part must include '예시 프롬프트:'.")
-    if len(QUOTE_LINE_RE.findall(parts[2])) < 4:
-        raise SystemExit("Generated prompt reply must include four quoted prompt examples.")
-    if "참고해서 볼 만한 것들:" not in parts[3]:
-        raise SystemExit("Generated final reply must include '참고해서 볼 만한 것들:'.")
-    if not URL_RE.search(parts[3]):
-        raise SystemExit("Generated reference reply must include at least one full clickable URL.")
-    if "notebooklm.google" in parts[3].lower():
+    if "좋은 요청:" in joined:
+        quoted_good_lines = QUOTE_LINE_RE.findall(joined.split("좋은 요청:", 1)[1])
+        if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_good_lines):
+            raise SystemExit("Generated good-request lines should not include 1./2./3./4. numbering inside the quotes.")
+    if "왜 좋은 요청일까요?" in joined:
+        raise SystemExit("Generated thread should use practical framing, not '왜 좋은 요청일까요?'.")
+    if any(part.lower().find("notebooklm.google") >= 0 for part in parts):
         raise SystemExit("Generated reference reply must link an actual example, not the NotebookLM homepage.")
-    if "- 볼 부분:" not in parts[3]:
-        raise SystemExit("Generated reference reply must explain what to inspect in each source.")
+    if URL_RE.search(joined) and "- 볼 부분:" not in joined and "인용 원문:" not in joined:
+        raise SystemExit("Generated source links must explain what to inspect with '- 볼 부분:' or cite a quote source with '인용 원문:'.")
 
 
 def validate_quote_selection(thread_text: str, data: dict, source_item: dict) -> dict | None:
@@ -535,6 +688,9 @@ def build_prompt(
     feedback: dict,
     quote_context: dict | None,
     recent_hooks: list[dict],
+    recent_history: list[dict],
+    persistent_learnings: str,
+    skill_library: str,
     weekly_memory: str,
 ) -> str:
     compact_candidate = {
@@ -554,73 +710,49 @@ def build_prompt(
 
     return (
         "Create exactly one Korean Threads chain for @arxiv.ai.\n"
-        "Follow the channel playbook and selected content format exactly.\n\n"
+        "Follow the channel playbook, PRD/ADR intent, and selected format router output exactly.\n\n"
+        "Persistent learnings to apply before any other style choice:\n"
+        f"{persistent_learnings or 'No persistent learnings yet.'}\n\n"
+        "Reusable crystallized skills from previous good runs:\n"
+        f"{skill_library or 'No crystallized skills yet.'}\n\n"
         "Hard constraints:\n"
         "- Return JSON only.\n"
         "- JSON keys: thread_text, topic, source_count, format, source_name, source_url, quote_used, quote_id.\n"
-        "- Also return fingerprint keys: series, series_part, public_theme, topic_pillar, workflow_stage, failure_mode, solution_pattern, bad_request.\n"
+        "- Also return fingerprint keys: series, series_part, public_theme, topic_pillar, workflow_stage, failure_mode, solution_pattern, bad_request, human_signal_source, human_signal_type, research_problem, hook_pattern, structure_pattern, closer_pattern, reusable_unit_type.\n"
         "- thread_text must use --- between main and replies.\n"
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
-        "- Exactly 4 parts total: main + 3 replies.\n"
+        "- Use 1 to 4 parts total. Do not force a 4-part chain unless the format genuinely needs it.\n"
         "- Each part must be under 500 Korean characters.\n"
         "- Main must be easy to understand and must not contain external links.\n"
-        "- Main post must include '나쁜 요청:' with one quoted bad request.\n"
-        "- Main post must include '좋은 요청:' with at least four short quoted good-request lines.\n"
-        "- Do not number the good-request lines inside the quotes. Do not write 1./2./3./4. in the good requests.\n"
-        "- Each reply must start with a bracketed core line, e.g. [논문 요약은 4칸으로 나눕니다].\n"
-        "- Reply 1 must include '실전에서는' and turn the good requests into a practical 4-item framework.\n"
-        "- Reply 1 must not use the phrase '왜 좋은 요청일까요?'.\n"
-        "- Reply 2 must include '예시 프롬프트:' and four natural quoted Korean prompts corresponding to requests 1 through 4, not JSON and not a code block.\n"
-        "- Reply 3 must include '참고해서 볼 만한 것들:' and source links plus how to apply each source.\n"
-        "- Reference lines must include a full clickable URL beginning with https:// and a '- 볼 부분: ...' line.\n"
+        "- Do not force '나쁜 요청:'/'좋은 요청:' unless selected format is better_prompt_pattern and it is the most natural shape.\n"
+        "- Do not force bracketed reply headings. Use them only if they make the reply easier to scan.\n"
+        "- Every chain must include one reusable unit: a practical prompt, verification checklist, agent-role instruction, or source-to-workflow template.\n"
+        "- Prefer labels such as '바로 써볼 프롬프트:', '오늘 적용할 문장:', 'AI agent에게 이렇게 시켜보세요:', '논문 읽을 때 붙여 넣을 문장:', or '다음 요약 전에 써볼 질문:'. Rotate the label so it does not feel templated.\n"
+        "- Derived questions must be practical: diagnostic question, verification question, or next-action question. Avoid philosophical questions.\n"
+        "- If source links are used, put them in the final reply with full https:// URLs and '- 볼 부분: ...'.\n"
         "- Choose the first line as a sharp main-post hook. It should pull readers into the problem before the details.\n"
         "- The first post may be paired with a symbolic researcher/scientist image. Do not depend on the image for meaning.\n"
-        "- Add human texture: a personal proof line, failed request, quote/idea hook, or direct diagnostic. Do not use the same surface every time.\n"
-        "- If using personal experience, keep it to 1-2 lines and then move to a practical example.\n"
-        "- If using quote_context, use it as a short doorway into the workflow. Prefer paraphrase unless quote_context.quote is non-empty.\n"
-        "- If using a verified quote, copy speaker_ko and quote_ko exactly, set quote_used=true and quote_id to the supplied id, and include the supplied source_url under '인용 원문:' in the final reply.\n"
-        "- Do not use a quote merely because a famous speaker is available. Prefer quote_used=false when the connection feels decorative or needs a long explanation.\n"
+        "- Add human_signal as judgment, not fake diary. Automatic mode may infer source surprise, reader friction, common confusion, verification need, or agent-workflow bottleneck. Do not claim '직접 해봤다' unless supplied by the user.\n"
+        "- If selected format is weekly_review_advice, first derive advice from recent history, then use a verified quote only if it genuinely matches. Quote text must be Korean only. Include source_url under '인용 원문:' in the final reply.\n"
+        "- If using a verified quote, copy speaker_ko and quote_ko exactly, set quote_used=true and quote_id to the supplied id.\n"
+        "- Do not use a quote merely because a famous speaker is available. If the quote is forced, set quote_used=false and write a general weekly review.\n"
         "- If no supplied quote_context is used, set quote_used=false and quote_id=\"\".\n"
         "- Avoid matching the recent hook patterns when possible.\n"
         "- Never use hype words: 무조건, 혁명, 논문 끝, 개발자 끝, 역대급, 미친 생산성, 이거 모르면 뒤처집니다.\n"
-        "- Use English academic terms only when they preserve meaning; keep them minimal.\n"
+        "- Use Korean for names and general prose. Use English only for technical terms where Korean loses precision: AI agent, claim, evidence, limitation, citation, reviewer critique, workflow, prompt.\n"
         "- Do not use markdown code fences. Do not use bracketed mode labels such as '[초안 작성 모드]'.\n"
         "- Separate source facts from account interpretation.\n"
         "- Do not invent facts. Use only the candidates below as factual sources.\n"
         "- GitHub stars are popularity signals only, never quality proof.\n\n"
-        "Required thread_text skeleton:\n"
-        "[natural diagnostic hook]\n\n"
-        "나쁜 요청:\n"
-        "\"...\"\n\n"
-        "좋은 요청:\n"
-        "\"...\"\n"
-        "\"...\"\n"
-        "\"...\"\n"
-        "\"...\"\n\n"
-        "[plain principle sentence without label]\n"
-        "---\n"
-        "[core line for reply 1]\n"
-        "실전에서는 [topic]을 4칸으로 나눕니다.\n"
-        "1. [Name]: [what to extract or check]\n"
-        "2. [Name]: [what to extract or check]\n"
-        "3. [Name]: [what to extract or check]\n"
-        "4. [Name]: [what to extract or check]\n"
-        "---\n"
-        "[core line for reply 2]\n"
-        "예시 프롬프트:\n"
-        "\"[prompt for request 1]\"\n"
-        "\"[prompt for request 2]\"\n"
-        "\"[prompt for request 3]\"\n"
-        "\"[prompt for request 4]\"\n"
-        "---\n"
-        "[core line for reply 3]\n"
-        "참고해서 볼 만한 것들:\n"
-        "[source title]\n"
-        "https://...\n"
-        "- 볼 부분: ...\n\n"
-        "Canonical style example for bad_to_better only. Copy the compact line shape, not the topic:\n"
-        f"{CANONICAL_STYLE_EXAMPLE}\n\n"
+        "Format examples:\n"
+        "- workflow_observation: observation -> research risk -> reusable prompt/check question.\n"
+        "- failed_agent_run: failed agent request -> what broke -> corrected instruction.\n"
+        "- better_prompt_pattern: vague request -> better research prompt(s), without forcing four examples.\n"
+        "- research_checklist: verification checklist -> execution prompt.\n"
+        "- agent_role_split: one broad task -> reader/synthesizer/critic/editor instructions.\n"
+        "- tiny_source_case: source fact -> account interpretation -> reusable workflow.\n"
+        "- weekly_review_advice: weekly pattern -> advice -> optional verified Korean quote -> next week's practical research prompt.\n\n"
         "Selected routing:\n"
         f"{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
         "Candidate analysis:\n"
@@ -629,6 +761,8 @@ def build_prompt(
         f"{json.dumps(feedback, ensure_ascii=False, indent=2)}\n\n"
         "Recent hook patterns to avoid repeating:\n"
         f"{json.dumps(recent_hooks, ensure_ascii=False, indent=2)}\n\n"
+        "Recent content-history fingerprints to avoid repeating:\n"
+        f"{json.dumps(recent_history, ensure_ascii=False, indent=2)}\n\n"
         "Optional quote/idea context:\n"
         f"{json.dumps(quote_context or {}, ensure_ascii=False, indent=2)}\n\n"
         "Weekly editorial memory:\n"
@@ -690,13 +824,16 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
     if any(len(part) > MAX_CHARS for part in parts):
         score -= 30
         reasons.append("At least one part exceeds Threads length limits.")
-    if routing.get("format_type") == "repo_lesson" and "적용" not in joined:
+    if routing.get("format_type") == "tiny_source_case" and "적용" not in joined and "AI agent" not in joined:
         score -= 10
-        reasons.append("Repo lesson has no application note.")
+        reasons.append("Source case has no application note.")
         suggestions.append("Add a short '적용:' line explaining what to copy into a workflow.")
-    if routing.get("format_type") == "update_to_action" and "해석" not in joined and "중요한 건" not in joined:
+    if routing.get("format_type") == "weekly_review_advice" and "인용 원문:" in joined and not URL_RE.search(joined):
+        score -= 20
+        reasons.append("Weekly quote has no source URL.")
+    if routing.get("format_type") == "weekly_review_advice" and "다음" not in joined and "프롬프트" not in joined:
         score -= 10
-        reasons.append("Official update is not clearly translated into account interpretation.")
+        reasons.append("Weekly review lacks a next practical question or prompt.")
     if len(parts) >= 2 and len(parts[0]) > 360:
         score -= 8
         reasons.append("Main is too dense for an easy hook.")
@@ -705,7 +842,7 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
         score -= 18
         reasons.append(f"Factory-feel risk: hook pattern '{hook_pattern}' repeats the last 3 posts.")
         suggestions.append("Use a personal proof line, quote/idea hook, failed-request hook, or direct claim instead.")
-    if "오늘" not in joined and "내가" not in joined and "요즘" not in joined and "Feynman" not in joined and "Karpathy" not in joined and "Paul Graham" not in joined:
+    if "오늘" not in joined and "내가" not in joined and "요즘" not in joined and "리처드 파인만" not in joined and "안드레이 카파시" not in joined and "폴 그레이엄" not in joined and routing.get("human_signal_source") != "inferred":
         score -= 5
         reasons.append("Thread has little human texture.")
         suggestions.append("Add one short personal-use line or idea hook without turning it into a diary.")
@@ -725,6 +862,60 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
         "decision": decision,
         "reasons": reasons,
         "revision_suggestions": suggestions,
+    }
+
+
+def build_evaluator_prompt(
+    thread_text: str,
+    routing: dict,
+    analysis: dict,
+    recent_history: list[dict],
+    persistent_learnings: str,
+    skill_library: str,
+) -> str:
+    return (
+        "You are the evaluator agent for @arxiv.ai. Review one Korean Threads chain.\n"
+        "Return JSON only. Do not rewrite the full post.\n\n"
+        "Evaluation goals:\n"
+        "- The post should solve a real paper-work problem, not make generic AI commentary.\n"
+        "- It must include a reusable prompt, checklist, agent instruction, or workflow template.\n"
+        "- It must not invent personal experience in automatic mode.\n"
+        "- It should avoid recent hook, structure, and closer repetition.\n"
+        "- It must separate source facts from our interpretation.\n\n"
+        "Return keys:\n"
+        "{\n"
+        '  "score": 0-100,\n'
+        '  "decision": "publish" | "revise" | "discard",\n'
+        '  "strengths": ["..."],\n'
+        '  "risks": ["..."],\n'
+        '  "revision_suggestions": ["..."],\n'
+        '  "learning_candidate": "one compact lesson to add to docs/learnings.md if this result proves useful",\n'
+        '  "skill_candidate": {"name": "optional_skill_name", "summary": "reusable pattern if any"}\n'
+        "}\n\n"
+        "Persistent learnings:\n"
+        f"{persistent_learnings or 'No persistent learnings yet.'}\n\n"
+        "Existing skill library:\n"
+        f"{skill_library or 'No skills yet.'}\n\n"
+        "Routing:\n"
+        f"{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
+        "Candidate analysis:\n"
+        f"{json.dumps(analysis, ensure_ascii=False, indent=2)}\n\n"
+        "Recent history:\n"
+        f"{json.dumps(recent_history, ensure_ascii=False, indent=2)}\n\n"
+        "Thread text:\n"
+        f"{thread_text}"
+    )
+
+
+def fallback_evaluation(reason: str) -> dict:
+    return {
+        "score": 0,
+        "decision": "revise",
+        "strengths": [],
+        "risks": [reason],
+        "revision_suggestions": ["Evaluator failed. Review manually before using this evaluation as learning data."],
+        "learning_candidate": "",
+        "skill_candidate": {"name": "", "summary": ""},
     }
 
 
@@ -787,7 +978,12 @@ def main() -> int:
     parser.add_argument("--metrics-path", default="threads-post-metrics.csv")
     parser.add_argument("--quote-bank-path", default="data/quote_bank.json")
     parser.add_argument("--weekly-memory-path", default="docs/weekly-editorial-memory.md")
+    parser.add_argument("--learnings-path", default="docs/learnings.md")
+    parser.add_argument("--skills-library-dir", default="skills_library")
     parser.add_argument("--review-dir", default="daily-editor/review")
+    parser.add_argument("--run-log-dir", default="daily-editor/runs")
+    parser.add_argument("--evaluation-dir", default="daily-editor/evaluations")
+    parser.add_argument("--skip-evaluator", action="store_true")
     parser.add_argument("--post-slot", choices=["morning", "evening"], default=os.environ.get("POST_SLOT", "morning"))
     parser.add_argument("--posts-per-day", type=int, choices=[1, 2], default=int(os.environ.get("POSTS_PER_DAY", "1")))
     parser.add_argument("--experiment-group", default=os.environ.get("EXPERIMENT_GROUP", "manual"))
@@ -806,8 +1002,11 @@ def main() -> int:
     playbook = read_text(Path(args.playbook_path))
     feedback = metrics_feedback(Path(args.metrics_path))
     recent_hooks = recent_hook_patterns(Path(args.metrics_path))
+    recent_history = load_recent_history(Path(args.history_path))
     quote_bank = load_quote_bank(Path(args.quote_bank_path))
     weekly_memory = read_optional_text(Path(args.weekly_memory_path), max_chars=3000)
+    persistent_learnings = read_optional_text(Path(args.learnings_path), max_chars=5000)
+    skill_library = read_skill_library(Path(args.skills_library_dir))
     review_dir = Path(args.review_dir)
     selected_candidates = choose_candidates(candidates, args.post_slot, max(1, args.generation_candidates))
     candidate_by_url = {item.get("url"): item for item in candidates if item.get("url")}
@@ -815,9 +1014,21 @@ def main() -> int:
 
     for index, selected_candidate in enumerate(selected_candidates, start=1):
         analysis = analyze_candidate(selected_candidate)
-        routing = select_content_format(selected_candidate)
+        routing = select_content_format(selected_candidate, analysis, args.date, args.post_slot)
         quote_context = select_quote_context(selected_candidate, quote_bank)
-        prompt = build_prompt(playbook, selected_candidate, analysis, routing, feedback, quote_context, recent_hooks, weekly_memory)
+        prompt = build_prompt(
+            playbook,
+            selected_candidate,
+            analysis,
+            routing,
+            feedback,
+            quote_context,
+            recent_hooks,
+            recent_history,
+            persistent_learnings,
+            skill_library,
+            weekly_memory,
+        )
         payload = call_groq(api_key, args.model, prompt)
         text = extract_text(payload)
         try:
@@ -832,6 +1043,8 @@ def main() -> int:
                     "quality_decision": "discard",
                     "quality_reasons": [f"Groq returned malformed JSON: {exc}"],
                     "raw_text_preview": text[:1200],
+                    "writer_prompt": prompt,
+                    "model_output_raw": text,
                 }
             )
             continue
@@ -861,6 +1074,8 @@ def main() -> int:
                 "quality_decision": gate["decision"],
                 "quality_reasons": gate["reasons"],
                 "revision_suggestions": gate["revision_suggestions"],
+                "writer_prompt": prompt,
+                "model_output_raw": text,
             }
         )
 
@@ -891,6 +1106,29 @@ def main() -> int:
     quote_id = str(data.get("quote_id") or "").strip()
     quote_suggestion = validate_quote_selection(thread_text, data, source_item)
 
+    evaluator_prompt = ""
+    evaluator_result = {}
+    if args.skip_evaluator:
+        evaluator_result = fallback_evaluation("Evaluator skipped by --skip-evaluator.")
+    else:
+        evaluator_prompt = build_evaluator_prompt(
+            thread_text=thread_text,
+            routing=routing,
+            analysis=analysis,
+            recent_history=recent_history,
+            persistent_learnings=persistent_learnings,
+            skill_library=skill_library,
+        )
+        try:
+            evaluator_payload = call_groq(api_key, args.model, evaluator_prompt)
+            evaluator_text = extract_text(evaluator_payload)
+            evaluator_result = extract_json(evaluator_text)
+            evaluator_result["model_output_raw"] = evaluator_text
+        except SystemExit as exc:
+            evaluator_result = fallback_evaluation(f"Evaluator failed: {exc}")
+        except Exception as exc:
+            evaluator_result = fallback_evaluation(f"Evaluator failed: {exc}")
+
     metadata = {
         "date": args.date,
         "model": args.model,
@@ -914,6 +1152,18 @@ def main() -> int:
         "analysis": analysis,
         "metrics_feedback": feedback,
         "recent_hooks": recent_hooks,
+        "recent_history": recent_history,
+        "persistent_learnings_path": args.learnings_path,
+        "skills_library_dir": args.skills_library_dir,
+        "evaluator": {
+            "score": evaluator_result.get("score", 0),
+            "decision": evaluator_result.get("decision", "revise"),
+            "strengths": evaluator_result.get("strengths", []),
+            "risks": evaluator_result.get("risks", []),
+            "revision_suggestions": evaluator_result.get("revision_suggestions", []),
+            "learning_candidate": evaluator_result.get("learning_candidate", ""),
+            "skill_candidate": evaluator_result.get("skill_candidate", {}),
+        },
         "quote_context": best.get("quote_context"),
         "generated_options": [
             {
@@ -938,15 +1188,61 @@ def main() -> int:
         "series_part": data.get("series_part", ""),
         "public_theme": data.get("public_theme", ""),
         "topic_pillar": data.get("topic_pillar", ""),
-        "workflow_stage": data.get("workflow_stage", ""),
-        "failure_mode": data.get("failure_mode", ""),
+        "workflow_stage": data.get("workflow_stage") or routing.get("workflow_stage", ""),
+        "failure_mode": data.get("failure_mode") or routing.get("failure_mode", ""),
         "solution_pattern": data.get("solution_pattern", ""),
         "bad_request": data.get("bad_request", ""),
+        "human_signal_source": data.get("human_signal_source") or routing.get("human_signal_source", ""),
+        "human_signal_type": data.get("human_signal_type") or routing.get("human_signal_type", ""),
+        "research_problem": data.get("research_problem") or routing.get("research_problem", ""),
+        "hook_pattern": data.get("hook_pattern") or classify_hook_pattern(thread_text),
+        "structure_pattern": data.get("structure_pattern", ""),
+        "closer_pattern": data.get("closer_pattern", ""),
+        "reusable_unit_type": data.get("reusable_unit_type") or routing.get("reusable_unit_type", ""),
         "quote_used": quote_used,
         "quote_id": quote_id,
         "quote_speaker": quote_suggestion.get("speaker", "") if quote_suggestion else "",
         "quote_source_url": quote_suggestion.get("source_url", "") if quote_suggestion else "",
     }
+
+    run_slug = safe_slug(f"{args.date}-{args.post_slot}-{metadata['format']}-{metadata['topic']}")
+    run_log = {
+        "run_id": run_slug,
+        "date": args.date,
+        "model": args.model,
+        "selected_candidate": selected_candidate,
+        "context_used": {
+            "playbook_path": args.playbook_path,
+            "history_path": args.history_path,
+            "metrics_path": args.metrics_path,
+            "weekly_memory_path": args.weekly_memory_path,
+            "learnings_path": args.learnings_path,
+            "skills_library_dir": args.skills_library_dir,
+            "recent_history_count": len(recent_history),
+            "recent_hook_count": len(recent_hooks),
+        },
+        "routing": routing,
+        "analysis": analysis,
+        "writer_prompt": best.get("writer_prompt", ""),
+        "model_output_raw": best.get("model_output_raw", ""),
+        "final_thread_text": thread_text,
+        "metadata": metadata,
+    }
+    run_log_path = Path(args.run_log_dir) / f"{run_slug}.json"
+    evaluation_path = Path(args.evaluation_dir) / f"{run_slug}.eval.json"
+    write_json(run_log_path, run_log)
+    write_json(
+        evaluation_path,
+        {
+            "run_id": run_slug,
+            "evaluator_prompt": evaluator_prompt,
+            "evaluation": evaluator_result,
+            "thread_text": thread_text,
+            "routing": routing,
+        },
+    )
+    metadata["run_log_path"] = str(run_log_path)
+    metadata["evaluation_path"] = str(evaluation_path)
     metadata_path = Path(args.metadata_path)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
