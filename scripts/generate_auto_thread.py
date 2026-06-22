@@ -19,11 +19,11 @@ MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = 85
 DRAFT_QUALITY_SCORE = 70
 DEFAULT_GENERATION_CANDIDATES = 1
-DEFAULT_MAX_OUTPUT_TOKENS = 1200
-PLAYBOOK_PROMPT_CHARS = 5000
-LEARNINGS_PROMPT_CHARS = 2500
-SKILL_LIBRARY_PROMPT_CHARS = 3500
-WEEKLY_MEMORY_PROMPT_CHARS = 1500
+DEFAULT_MAX_OUTPUT_TOKENS = 900
+PLAYBOOK_PROMPT_CHARS = 1800
+LEARNINGS_PROMPT_CHARS = 1200
+SKILL_LIBRARY_PROMPT_CHARS = 1000
+WEEKLY_MEMORY_PROMPT_CHARS = 700
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 URL_RE = re.compile(r"https?://\S+")
@@ -190,6 +190,11 @@ def read_skill_library(path: Path, max_files: int = 4, max_chars: int = SKILL_LI
         if text:
             chunks.append(f"## {item.name}\n{text}")
     return "\n\n".join(chunks)[:max_chars]
+
+
+def clip_text(value: object, max_chars: int) -> str:
+    text = str(value or "").strip()
+    return text[:max_chars]
 
 
 def safe_slug(text: str) -> str:
@@ -709,17 +714,17 @@ def build_prompt(
     weekly_memory: str,
 ) -> str:
     compact_candidate = {
-        "title": candidate.get("title"),
+        "title": clip_text(candidate.get("title"), 160),
         "url": candidate.get("url"),
         "source_type": candidate.get("source_type"),
         "category": candidate.get("category"),
-        "description": candidate.get("description"),
-        "readme_summary": candidate.get("readme_summary"),
-        "our_angle": candidate.get("our_angle"),
+        "description": clip_text(candidate.get("description"), 260),
+        "readme_summary": clip_text(candidate.get("readme_summary"), 500),
+        "our_angle": clip_text(candidate.get("our_angle"), 180),
         "score": candidate.get("score", {}).get("total"),
         "score_breakdown": candidate.get("score", {}),
-        "risk": candidate.get("risk"),
-        "facts_vs_interpretation": candidate.get("fact_boundary"),
+        "risk": clip_text(candidate.get("risk"), 180),
+        "facts_vs_interpretation": clip_text(candidate.get("fact_boundary"), 220),
         "optional_verified_quote": candidate.get("quote_suggestion"),
     }
 
