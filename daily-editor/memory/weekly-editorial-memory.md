@@ -1,7 +1,7 @@
 # Weekly Editorial Memory
 
-Updated: 2026-06-22T03:40:07+09:00
-Window: last 7 days; analyzed posts: 1
+Updated: 2026-06-22T06:25:48+00:00
+Window: last 7 days; analyzed posts: 0
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
@@ -12,23 +12,23 @@ Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Winning Slots
 
-- morning: 0
+- No slot data yet.
 
 ## Winning Experiments
 
-- manual_morning: 0
+- No experiment data yet.
 
 ## Winning Formats
 
-- workflow_mode: 0
+- No format data yet.
 
 ## Winning Content Axes
 
-- workflow_mode: 0
+- No content-axis data yet.
 
 ## Top Posts
 
-- score 0 | morning | workflow_mode | AI로 논문 초안 쓰기 | AI 연구 에이전트에게 논문 초안을 맡길 때, "초안 써줘"만 말하면 핵심 논리와 근거가 사라집니다.
+- No posts available.
 
 ## Editorial Decisions
 
