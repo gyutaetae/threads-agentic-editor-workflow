@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 
 from scripts.generate_auto_thread import (
     build_evaluator_prompt,
+    extract_text,
     read_skill_library,
     safe_slug,
     select_content_format,
@@ -114,6 +115,10 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertIn("Return JSON only", prompt)
         self.assertIn("citation은 claim 지지 여부를 본다.", prompt)
         self.assertIn("바로 써볼 프롬프트", prompt)
+
+    def test_extract_text_reads_chat_completion_payload(self) -> None:
+        payload = {"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]}
+        self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
 
 
 if __name__ == "__main__":

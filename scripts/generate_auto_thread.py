@@ -11,7 +11,7 @@ from pathlib import Path
 import requests
 
 
-RESPONSES_URL = "https://api.groq.com/openai/v1/responses"
+CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_MODEL = "openai/gpt-oss-20b"
 MIN_PARTS = 1
 MAX_PARTS = 4
@@ -552,6 +552,13 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
 
 
 def extract_text(payload: dict) -> str:
+    choices = payload.get("choices")
+    if isinstance(choices, list) and choices:
+        message = choices[0].get("message") or {}
+        content = message.get("content")
+        if isinstance(content, str):
+            return content.strip()
+
     if isinstance(payload.get("output_text"), str):
         return payload["output_text"]
 
@@ -951,15 +958,25 @@ def retry_delay_seconds(response: requests.Response) -> float:
 def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
     for attempt in range(1, 4):
         response = requests.post(
-            RESPONSES_URL,
+            CHAT_COMPLETIONS_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json={
                 "model": model,
-                "input": prompt,
-                "max_output_tokens": max_output_tokens,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Return one valid JSON object only. Do not include markdown, prose, or code fences.",
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                "response_format": {"type": "json_object"},
+                "max_completion_tokens": max_output_tokens,
             },
             timeout=120,
         )
