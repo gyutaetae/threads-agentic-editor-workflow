@@ -96,19 +96,22 @@ jobs:
             .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -CardUsed:$cardUsed
           }
 
-      - name: Commit content history
+      - name: Commit publish records
         if: ${{ inputs.dry_run == false }}
         shell: pwsh
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if (Test-Path ".\content-history.jsonl") {
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add content-history.jsonl
-            git diff --cached --quiet
-            if ($LASTEXITCODE -ne 0) {
-              git commit -m "Record published Threads source"
-              git push
-            }
+            git add -f content-history.jsonl
+          }
+          if (Test-Path ".\threads-post-metrics.csv") {
+            git add -f threads-post-metrics.csv
+          }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Record published Threads source"
+            git push
           }
 
       - name: Upload run artifacts

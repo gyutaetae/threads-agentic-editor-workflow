@@ -14,8 +14,10 @@ daily-editor/*
 !daily-editor/memory/*.md
 !daily-editor/proposals/
 !daily-editor/proposals/*.md
+!daily-editor/proposals/dashboard-learning-candidates.jsonl
 threads-hosted-assets.json
 threads-post-metrics.csv
+!threads-post-metrics.csv
 approved-thread-chain.txt
 approved-thread-post.txt
 *.png

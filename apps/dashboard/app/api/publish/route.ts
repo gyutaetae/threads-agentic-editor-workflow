@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     sourceUrl?: string;
   };
   const quality = qualityScore(body.threadText || "");
-  const threshold = Number(process.env.AUTO_PUBLISH_THRESHOLD || 90);
+  const threshold = Number(process.env.AUTO_PUBLISH_THRESHOLD || 85);
   const dryRun = body.autoPublish ? quality.score < threshold : body.dryRun !== false;
-  if (body.autoPublish && !quality.passed) {
+  if (body.autoPublish && quality.score < threshold) {
     return NextResponse.json({ ok: false, blocked: true, quality }, { status: 422 });
   }
 

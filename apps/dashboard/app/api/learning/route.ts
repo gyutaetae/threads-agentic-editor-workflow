@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { kstDate, requireDashboardSecret } from "@/lib/config";
+import { requireDashboardSecret } from "@/lib/config";
 import { appendRepoText } from "@/lib/github";
-import { summarizeDiff } from "@/lib/workflow";
+import { buildLearningCandidates } from "@/lib/analytics";
 
 export async function POST(request: Request) {
   requireDashboardSecret(request);
@@ -9,19 +9,20 @@ export async function POST(request: Request) {
     original: string;
     edited: string;
     draftId?: string;
+    sourceUrl?: string;
+    sourceName?: string;
+    score?: number;
     note?: string;
   };
-  const entry = {
-    created_at: new Date().toISOString(),
-    date: kstDate(),
-    draft_id: body.draftId || "",
-    note: body.note || "",
-    diff_summary: summarizeDiff(body.original || "", body.edited || ""),
-    original: body.original || "",
-    edited: body.edited || "",
-    status: "candidate",
-    promotion_rule: "Promote only after published metrics show the edit was useful.",
-  };
+  const entry = buildLearningCandidates(body.original || "", body.edited || "", {
+    id: body.draftId === "B" ? "B" : "A",
+    label: "",
+    candidateTitle: body.sourceName || "",
+    sourceUrl: body.sourceUrl || "",
+    score: body.score || 0,
+    styleHints: [],
+    threadText: body.original || "",
+  }, body.note || "");
   await appendRepoText(
     "daily-editor/proposals/dashboard-learning-candidates.jsonl",
     `${JSON.stringify(entry)}\n`,

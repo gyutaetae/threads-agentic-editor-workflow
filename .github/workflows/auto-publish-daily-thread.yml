@@ -144,19 +144,22 @@ jobs:
             -ReusableUnitType $metadata.reusable_unit_type `
             -CardUsed:([bool]$env:THREADS_IMAGE_URL)
 
-      - name: Commit content history
+      - name: Commit publish records
         if: ${{ github.event_name == 'schedule' || inputs.publish == true }}
         shell: pwsh
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if (Test-Path ".\content-history.jsonl") {
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add content-history.jsonl
-            git diff --cached --quiet
-            if ($LASTEXITCODE -ne 0) {
-              git commit -m "Record published Threads source"
-              git push
-            }
+            git add -f content-history.jsonl
+          }
+          if (Test-Path ".\threads-post-metrics.csv") {
+            git add -f threads-post-metrics.csv
+          }
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "Record published Threads source"
+            git push
           }
 
       - name: Upload run artifacts
