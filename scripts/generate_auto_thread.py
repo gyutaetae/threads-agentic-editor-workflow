@@ -957,31 +957,37 @@ def retry_delay_seconds(response: requests.Response) -> float:
 
 def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
     for attempt in range(1, 4):
+        request_body = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "Return one valid JSON object only. Do not include markdown, prose, or code fences.",
+                },
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ],
+            "max_completion_tokens": max_output_tokens,
+        }
+        if attempt == 1:
+            request_body["response_format"] = {"type": "json_object"}
+
         response = requests.post(
             CHAT_COMPLETIONS_URL,
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": model,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "Return one valid JSON object only. Do not include markdown, prose, or code fences.",
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                "response_format": {"type": "json_object"},
-                "max_completion_tokens": max_output_tokens,
-            },
+            json=request_body,
             timeout=120,
         )
         if response.ok:
             return response.json()
+        if response.status_code == 400 and "json_validate_failed" in response.text and attempt < 3:
+            print("Groq JSON mode validation failed; retrying without response_format.")
+            continue
         if response.status_code == 429 and attempt < 3:
             delay = retry_delay_seconds(response) + 2
             print(f"Groq rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")
