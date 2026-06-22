@@ -12,13 +12,18 @@ import requests
 
 
 RESPONSES_URL = "https://api.groq.com/openai/v1/responses"
-DEFAULT_MODEL = "openai/gpt-oss-120b"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
 MIN_PARTS = 1
 MAX_PARTS = 4
 MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = 85
 DRAFT_QUALITY_SCORE = 70
-DEFAULT_GENERATION_CANDIDATES = 3
+DEFAULT_GENERATION_CANDIDATES = 1
+DEFAULT_MAX_OUTPUT_TOKENS = 1200
+PLAYBOOK_PROMPT_CHARS = 5000
+LEARNINGS_PROMPT_CHARS = 2500
+SKILL_LIBRARY_PROMPT_CHARS = 3500
+WEEKLY_MEMORY_PROMPT_CHARS = 1500
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 URL_RE = re.compile(r"https?://\S+")
@@ -159,8 +164,11 @@ FORBIDDEN_TEXT = [
 ]
 
 
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8").strip()
+def read_text(path: Path, max_chars: int | None = None) -> str:
+    text = path.read_text(encoding="utf-8").strip()
+    if max_chars is not None:
+        return text[:max_chars]
+    return text
 
 
 def read_json(path: Path) -> object:
@@ -173,7 +181,7 @@ def read_optional_text(path: Path, max_chars: int = 4000) -> str:
     return path.read_text(encoding="utf-8").strip()[:max_chars]
 
 
-def read_skill_library(path: Path, max_files: int = 8, max_chars: int = 8000) -> str:
+def read_skill_library(path: Path, max_files: int = 4, max_chars: int = SKILL_LIBRARY_PROMPT_CHARS) -> str:
     if not path.exists() or not path.is_dir():
         return ""
     chunks = []
@@ -940,7 +948,7 @@ def retry_delay_seconds(response: requests.Response) -> float:
     return 30.0
 
 
-def call_groq(api_key: str, model: str, prompt: str) -> dict:
+def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
     for attempt in range(1, 4):
         response = requests.post(
             RESPONSES_URL,
@@ -951,7 +959,7 @@ def call_groq(api_key: str, model: str, prompt: str) -> dict:
             json={
                 "model": model,
                 "input": prompt,
-                "max_output_tokens": 2000,
+                "max_output_tokens": max_output_tokens,
             },
             timeout=120,
         )
@@ -989,6 +997,7 @@ def main() -> int:
     parser.add_argument("--experiment-group", default=os.environ.get("EXPERIMENT_GROUP", "manual"))
     parser.add_argument("--generation-candidates", type=int, default=int(os.environ.get("GENERATION_CANDIDATES", str(DEFAULT_GENERATION_CANDIDATES))))
     parser.add_argument("--model", default=os.environ.get("GROQ_MODEL", DEFAULT_MODEL))
+    parser.add_argument("--max-output-tokens", type=int, default=int(os.environ.get("GROQ_MAX_OUTPUT_TOKENS", str(DEFAULT_MAX_OUTPUT_TOKENS))))
     args = parser.parse_args()
 
     api_key = os.environ.get("GROQ_API_KEY")
@@ -999,13 +1008,13 @@ def main() -> int:
     if not isinstance(candidates, list) or not candidates:
         raise SystemExit(f"No candidates found in {args.candidates_path}")
 
-    playbook = read_text(Path(args.playbook_path))
-    feedback = metrics_feedback(Path(args.metrics_path))
+    playbook = read_text(Path(args.playbook_path), max_chars=PLAYBOOK_PROMPT_CHARS)
+    feedback = metrics_feedback(Path(args.metrics_path), limit=15)
     recent_hooks = recent_hook_patterns(Path(args.metrics_path))
-    recent_history = load_recent_history(Path(args.history_path))
+    recent_history = load_recent_history(Path(args.history_path), limit=5)
     quote_bank = load_quote_bank(Path(args.quote_bank_path))
-    weekly_memory = read_optional_text(Path(args.weekly_memory_path), max_chars=3000)
-    persistent_learnings = read_optional_text(Path(args.learnings_path), max_chars=5000)
+    weekly_memory = read_optional_text(Path(args.weekly_memory_path), max_chars=WEEKLY_MEMORY_PROMPT_CHARS)
+    persistent_learnings = read_optional_text(Path(args.learnings_path), max_chars=LEARNINGS_PROMPT_CHARS)
     skill_library = read_skill_library(Path(args.skills_library_dir))
     review_dir = Path(args.review_dir)
     selected_candidates = choose_candidates(candidates, args.post_slot, max(1, args.generation_candidates))
@@ -1029,7 +1038,7 @@ def main() -> int:
             skill_library,
             weekly_memory,
         )
-        payload = call_groq(api_key, args.model, prompt)
+        payload = call_groq(api_key, args.model, prompt, args.max_output_tokens)
         text = extract_text(payload)
         try:
             data = extract_json(text)
@@ -1120,7 +1129,7 @@ def main() -> int:
             skill_library=skill_library,
         )
         try:
-            evaluator_payload = call_groq(api_key, args.model, evaluator_prompt)
+            evaluator_payload = call_groq(api_key, args.model, evaluator_prompt, min(args.max_output_tokens, 800))
             evaluator_text = extract_text(evaluator_payload)
             evaluator_result = extract_json(evaluator_text)
             evaluator_result["model_output_raw"] = evaluator_text
@@ -1268,4 +1277,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
