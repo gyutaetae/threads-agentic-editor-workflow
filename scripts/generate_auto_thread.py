@@ -580,6 +580,7 @@ def extract_json(text: str) -> dict:
     if text.startswith("```"):
         text = re.sub(r"^```(?:json)?\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
+    text = re.sub(r"\\\s*\n\s*", r"\\n", text)
     try:
         return json.loads(text)
     except json.JSONDecodeError:

@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 
 from scripts.generate_auto_thread import (
     build_evaluator_prompt,
+    extract_json,
     extract_text,
     read_skill_library,
     safe_slug,
@@ -119,6 +120,10 @@ class SelfImprovementLoopTests(unittest.TestCase):
     def test_extract_text_reads_chat_completion_payload(self) -> None:
         payload = {"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]}
         self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
+
+    def test_extract_json_repairs_backslash_newline(self) -> None:
+        data = extract_json('{"thread_text":"첫 줄\\\n둘째 줄"}')
+        self.assertEqual(data["thread_text"], "첫 줄\n둘째 줄")
 
 
 if __name__ == "__main__":
