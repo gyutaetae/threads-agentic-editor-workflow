@@ -4,8 +4,10 @@ from tempfile import TemporaryDirectory
 
 from scripts.generate_auto_thread import (
     build_evaluator_prompt,
+    build_fallback_thread,
     extract_json,
     extract_text,
+    quality_gate,
     read_skill_library,
     safe_slug,
     select_content_format,
@@ -124,6 +126,17 @@ class SelfImprovementLoopTests(unittest.TestCase):
     def test_extract_json_repairs_backslash_newline(self) -> None:
         data = extract_json('{"thread_text":"첫 줄\\\n둘째 줄"}')
         self.assertEqual(data["thread_text"], "첫 줄\n둘째 줄")
+
+    def test_fallback_thread_passes_quality_gate(self) -> None:
+        routing = {
+            "research_problem": "AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.",
+            "format_type": "agent_role_split",
+        }
+        analysis = {"workflow_action": "claim, evidence, citation을 분리해 검증한다."}
+        candidate = {"title": "example/research-skills", "url": "https://github.com/example/research-skills"}
+        thread = build_fallback_thread(candidate, routing, analysis)
+        validate_thread(thread)
+        self.assertNotEqual(quality_gate(thread, routing)["decision"], "discard")
 
 
 if __name__ == "__main__":

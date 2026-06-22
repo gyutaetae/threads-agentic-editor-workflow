@@ -613,6 +613,42 @@ def normalize_thread_text(thread_text: str) -> str:
     return "\n---\n".join(parts)
 
 
+def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str:
+    source_title = clip_text(candidate.get("title") or candidate.get("name") or "오늘의 source", 80)
+    source_url = str(candidate.get("url") or "").strip()
+    problem = routing.get("research_problem") or "AI가 만든 연구 결과를 그대로 믿기 어렵다."
+    workflow_action = analysis.get("workflow_action") or "읽기, 비교, 검증, 작성을 분리한다."
+
+    parts = [
+        (
+            "AI에게 논문 작업을 맡길 때\n"
+            "가장 먼저 정할 것은 모델이 아니라 작업 경계입니다.\n\n"
+            f"오늘 문제는 이것입니다.\n{problem}"
+        ),
+        (
+            "한 요청으로 뭉개면 결과가 그럴듯한 글로 끝납니다.\n\n"
+            f"{workflow_action}\n\n"
+            "좋은 research workflow는 답을 빨리 받는 구조가 아니라\n"
+            "검증할 수 있는 중간 산출물을 남기는 구조입니다."
+        ),
+        (
+            "오늘 적용할 문장:\n\n"
+            "\"이 논문 작업을 reader, synthesizer, critic, citation checker로 나눠줘. "
+            "각 역할은 output, evidence, failure mode를 따로 적어줘.\"\n\n"
+            "이렇게 시키면 글보다 먼저 검토 가능한 연구 노트가 나옵니다."
+        ),
+    ]
+    if source_url:
+        parts.append(
+            "참고해서 볼 만한 것:\n"
+            f"{source_url}\n"
+            f"- 볼 부분: {source_title}에서 연구 작업을 작은 skill 단위로 나누는 방식\n\n"
+            "GitHub stars는 인기 신호일 뿐이고,\n"
+            "연구 품질 증거로 쓰면 안 됩니다."
+        )
+    return "\n---\n".join(parts)
+
+
 def validate_thread(thread_text: str) -> None:
     parts = [part.strip() for part in SEPARATOR_RE.split(thread_text.strip()) if part.strip()]
     if not parts:
@@ -1093,6 +1129,16 @@ def main() -> int:
                 "reasons": [str(exc)],
                 "revision_suggestions": ["Regenerate with stronger format compliance."],
             }
+        if gate["decision"] == "discard":
+            fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
+            try:
+                validate_thread(fallback_thread_text)
+                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks)
+            except SystemExit:
+                fallback_gate = {"decision": "discard"}
+            if fallback_gate.get("decision") != "discard":
+                thread_text = fallback_thread_text
+                gate = fallback_gate
 
         generated_options.append(
             {
