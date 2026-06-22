@@ -733,7 +733,7 @@ def build_prompt(
         "Hard constraints:\n"
         "- Return JSON only.\n"
         "- JSON keys: thread_text, topic, source_count, format, source_name, source_url, quote_used, quote_id.\n"
-        "- Also return fingerprint keys: series, series_part, public_theme, topic_pillar, workflow_stage, failure_mode, solution_pattern, bad_request, human_signal_source, human_signal_type, research_problem, hook_pattern, structure_pattern, closer_pattern, reusable_unit_type.\n"
+        "- Keep JSON compact. Do not include optional empty metadata fields.\n"
         "- thread_text must use --- between main and replies.\n"
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
@@ -971,8 +971,6 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
             ],
             "max_completion_tokens": max_output_tokens,
         }
-        if attempt == 1:
-            request_body["response_format"] = {"type": "json_object"}
 
         response = requests.post(
             CHAT_COMPLETIONS_URL,
@@ -985,9 +983,6 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
         )
         if response.ok:
             return response.json()
-        if response.status_code == 400 and "json_validate_failed" in response.text and attempt < 3:
-            print("Groq JSON mode validation failed; retrying without response_format.")
-            continue
         if response.status_code == 429 and attempt < 3:
             delay = retry_delay_seconds(response) + 2
             print(f"Groq rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")
