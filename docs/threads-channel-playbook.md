@@ -98,16 +98,26 @@ Derived questions must be practical:
 
 ## Format Router
 
-There is no default 4-part chain. Pick the format that best fits the research problem, workflow stage, recent fingerprints, and reusable unit.
+Use a stable 4-part master template. The format router changes the content emphasis inside each part, not the chain skeleton. This keeps the account recognizable while avoiding copy-paste prose.
 
 Thread rules:
 
-- 1 to 4 parts are allowed.
+- Exactly 4 parts: problem hook, diagnosis criteria, reusable action, source interpretation.
 - Every part must stay under 500 chars.
 - Main post must not contain source links.
 - Links belong in the final reply with `- 볼 부분:` or `인용 원문:`.
 - Do not use labels like `Main:` or `Reply 1:`.
-- Do not force the old bad-request/good-request card.
+- Keep the structure stable; rotate only the hook pattern, criteria names, prompt label, source angle, and closing action.
+- Use recent `content-history.jsonl` to avoid repeating the same Part 1 pattern twice in a row.
+
+Master template:
+
+```text
+Part 1: Hook/problem. Rotate A) direct problem, B) failure scene, C) judgment sentence. Include a bad request in A/B when natural; avoid fake first-person claims.
+Part 2: [핵심 한 줄] + 3 criteria/checks by default, 4 only when needed.
+Part 3: [핵심 한 줄] + one copyable prompt, checklist, or agent instruction.
+Part 4: [핵심 한 줄] + source URL + "- 볼 부분:" + source fact vs account interpretation + closing next action.
+```
 
 Formats:
 
@@ -120,6 +130,18 @@ Formats:
 | `agent_role_split` | reader, synthesizer, critic, editor처럼 역할을 나눈다. |
 | `tiny_source_case` | 논문, repo, 문서 하나를 research workflow로 번역한다. |
 | `weekly_review_advice` | 금요일 저녁, 지난 7일 글에서 핵심 조언을 뽑아 회고한다. |
+
+Format emphasis:
+
+```text
+research_checklist -> Part 2 criteria/checks
+agent_role_split -> Part 3 role instruction
+better_prompt_pattern -> Part 1 bad request + Part 3 better request
+failed_agent_run -> Part 1 failure scene + Part 3 corrected instruction
+tiny_source_case -> Part 4 source fact/interpretation boundary
+workflow_observation -> Part 1 judgment
+weekly_review_advice -> Part 2-3 advice from recent history
+```
 
 Suggested starting mix:
 
