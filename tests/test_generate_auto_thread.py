@@ -172,6 +172,29 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
         self.assertEqual(calls, [900, 585])
 
+    def test_groq_gpt_oss_uses_json_and_hidden_reasoning_options(self) -> None:
+        class FakeResponse:
+            ok = True
+            status_code = 200
+            text = ""
+
+            def json(self) -> dict:
+                return {"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]}
+
+        request_bodies = []
+
+        def fake_post(*args, **kwargs):
+            request_bodies.append(kwargs["json"])
+            return FakeResponse()
+
+        with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
+            call_groq("key", "openai/gpt-oss-120b", "prompt", max_output_tokens=500)
+
+        body = request_bodies[0]
+        self.assertEqual(body["response_format"], {"type": "json_object"})
+        self.assertFalse(body["include_reasoning"])
+        self.assertEqual(body["reasoning_effort"], "low")
+
     def test_malformed_model_json_uses_fallback_thread(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

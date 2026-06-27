@@ -1008,6 +1008,16 @@ def is_groq_size_limit(response: requests.Response) -> bool:
     )
 
 
+def groq_request_options(model: str) -> dict:
+    options = {
+        "response_format": {"type": "json_object"},
+    }
+    if model.startswith("openai/gpt-oss-"):
+        options["include_reasoning"] = False
+        options["reasoning_effort"] = "low"
+    return options
+
+
 def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
     output_tokens = max_output_tokens
     for attempt in range(1, 4):
@@ -1024,6 +1034,7 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
                 },
             ],
             "max_completion_tokens": output_tokens,
+            **groq_request_options(model),
         }
 
         response = requests.post(
