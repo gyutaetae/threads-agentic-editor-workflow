@@ -36,9 +36,12 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
+      LLM_PROVIDER: ${{ vars.LLM_PROVIDER || 'openrouter' }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/free' }}
+      LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '500' }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
-      GROQ_MAX_OUTPUT_TOKENS: ${{ vars.GROQ_MAX_OUTPUT_TOKENS || '500' }}
       GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}
       POSTS_PER_DAY: ${{ github.event_name == 'schedule' && '1' || inputs.posts_per_day || vars.POSTS_PER_DAY || '1' }}
       POST_SLOT: ${{ inputs.post_slot || 'morning' }}

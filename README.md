@@ -102,14 +102,16 @@ $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw |
 Required GitHub secrets:
 
 ```text
-GROQ_API_KEY
+OPENROUTER_API_KEY
 THREADS_ACCESS_TOKEN
 ```
 
 Optional GitHub variables:
 
 ```text
-GROQ_MODEL
+LLM_PROVIDER
+OPENROUTER_MODEL
+LLM_MAX_OUTPUT_TOKENS
 THREADS_IMAGE_URL
 THREADS_ALT_TEXT
 POSTS_PER_DAY

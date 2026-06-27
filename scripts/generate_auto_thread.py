@@ -11,8 +11,11 @@ from pathlib import Path
 import requests
 
 
-CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "openai/gpt-oss-120b"
+GROQ_CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
+OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions"
+DEFAULT_PROVIDER = "openrouter"
+DEFAULT_MODEL = "openrouter/free"
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
 MIN_PARTS = 1
 MAX_PARTS = 4
 MAX_CHARS = 500
@@ -997,7 +1000,7 @@ def retry_delay_seconds(response: requests.Response) -> float:
     return 30.0
 
 
-def is_groq_size_limit(response: requests.Response) -> bool:
+def is_size_limit(response: requests.Response) -> bool:
     if response.status_code not in {413, 429}:
         return False
     text = response.text.lower()
@@ -1008,17 +1011,31 @@ def is_groq_size_limit(response: requests.Response) -> bool:
     )
 
 
-def groq_request_options(model: str) -> dict:
+def request_options(provider: str, model: str) -> dict:
     options = {
         "response_format": {"type": "json_object"},
     }
-    if model.startswith("openai/gpt-oss-"):
+    if provider == "groq" and model.startswith("openai/gpt-oss-"):
         options["include_reasoning"] = False
         options["reasoning_effort"] = "low"
     return options
 
 
-def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
+def call_llm(
+    provider: str,
+    api_key: str,
+    model: str,
+    prompt: str,
+    max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
+) -> dict:
+    provider = provider.lower()
+    endpoint = {
+        "groq": GROQ_CHAT_COMPLETIONS_URL,
+        "openrouter": OPENROUTER_CHAT_COMPLETIONS_URL,
+    }.get(provider)
+    if endpoint is None:
+        raise SystemExit(f"Unsupported LLM provider: {provider}")
+
     output_tokens = max_output_tokens
     for attempt in range(1, 4):
         request_body = {
@@ -1034,40 +1051,48 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
                 },
             ],
             "max_completion_tokens": output_tokens,
-            **groq_request_options(model),
+            **request_options(provider, model),
         }
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+        if provider == "openrouter":
+            headers["HTTP-Referer"] = os.environ.get("OPENROUTER_HTTP_REFERER", "https://github.com/gyutaetae/threads-agentic-editor-workflow")
+            headers["X-Title"] = os.environ.get("OPENROUTER_APP_TITLE", "threads-agentic-editor-workflow")
 
         response = requests.post(
-            CHAT_COMPLETIONS_URL,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
+            endpoint,
+            headers=headers,
             json=request_body,
             timeout=120,
         )
         if response.ok:
             return response.json()
-        if is_groq_size_limit(response) and output_tokens > 300 and attempt < 3:
+        if is_size_limit(response) and output_tokens > 300 and attempt < 3:
             next_tokens = max(300, int(output_tokens * 0.65))
             print(
-                f"Groq request exceeded token limits; retrying with "
+                f"{provider} request exceeded token limits; retrying with "
                 f"max_completion_tokens={next_tokens} (attempt {attempt}/3)."
             )
             output_tokens = next_tokens
             continue
         if response.status_code == 429 and attempt < 3:
             delay = retry_delay_seconds(response) + 2
-            print(f"Groq rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")
+            print(f"{provider} rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")
             time.sleep(delay)
             continue
-        raise SystemExit(f"Groq API error {response.status_code}:\n{response.text}")
+        raise SystemExit(f"{provider} API error {response.status_code}:\n{response.text}")
 
-    raise SystemExit("Groq API did not return a response after retries.")
+    raise SystemExit(f"{provider} API did not return a response after retries.")
+
+
+def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
+    return call_llm("groq", api_key, model, prompt, max_output_tokens)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate one approved Threads chain with Groq.")
+    parser = argparse.ArgumentParser(description="Generate one approved Threads chain with an OpenAI-compatible LLM.")
     parser.add_argument("--date", required=True)
     parser.add_argument("--candidates-path", required=True)
     parser.add_argument("--playbook-path", default="docs/threads-channel-playbook.md")
@@ -1087,13 +1112,25 @@ def main() -> int:
     parser.add_argument("--posts-per-day", type=int, choices=[1, 2], default=int(os.environ.get("POSTS_PER_DAY", "1")))
     parser.add_argument("--experiment-group", default=os.environ.get("EXPERIMENT_GROUP", "manual"))
     parser.add_argument("--generation-candidates", type=int, default=int(os.environ.get("GENERATION_CANDIDATES", str(DEFAULT_GENERATION_CANDIDATES))))
-    parser.add_argument("--model", default=os.environ.get("GROQ_MODEL", DEFAULT_MODEL))
-    parser.add_argument("--max-output-tokens", type=int, default=int(os.environ.get("GROQ_MAX_OUTPUT_TOKENS", str(DEFAULT_MAX_OUTPUT_TOKENS))))
+    parser.add_argument("--provider", choices=["groq", "openrouter"], default=os.environ.get("LLM_PROVIDER", DEFAULT_PROVIDER))
+    parser.add_argument("--model", default=None)
+    parser.add_argument(
+        "--max-output-tokens",
+        type=int,
+        default=int(os.environ.get("LLM_MAX_OUTPUT_TOKENS") or os.environ.get("GROQ_MAX_OUTPUT_TOKENS", str(DEFAULT_MAX_OUTPUT_TOKENS))),
+    )
     args = parser.parse_args()
 
-    api_key = os.environ.get("GROQ_API_KEY")
+    if args.model is None:
+        if args.provider == "openrouter":
+            args.model = os.environ.get("OPENROUTER_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_MODEL
+        else:
+            args.model = os.environ.get("GROQ_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_GROQ_MODEL
+
+    api_key = os.environ.get("OPENROUTER_API_KEY") if args.provider == "openrouter" else os.environ.get("GROQ_API_KEY")
     if not api_key:
-        raise SystemExit("GROQ_API_KEY is required.")
+        env_name = "OPENROUTER_API_KEY" if args.provider == "openrouter" else "GROQ_API_KEY"
+        raise SystemExit(f"{env_name} is required.")
 
     candidates = read_json(Path(args.candidates_path))
     if not isinstance(candidates, list) or not candidates:
@@ -1129,7 +1166,7 @@ def main() -> int:
             skill_library,
             weekly_memory,
         )
-        payload = call_groq(api_key, args.model, prompt, args.max_output_tokens)
+        payload = call_llm(args.provider, api_key, args.model, prompt, args.max_output_tokens)
         text = extract_text(payload)
         try:
             data = extract_json(text)
@@ -1143,7 +1180,7 @@ def main() -> int:
                     "quality_score": 0,
                     "decision": "discard",
                     "reasons": [
-                        f"Groq returned malformed JSON: {exc}",
+                        f"{args.provider} returned malformed JSON: {exc}",
                         f"Fallback thread failed validation: {fallback_exc}",
                     ],
                     "revision_suggestions": ["Review the raw model output and regenerate manually."],
@@ -1171,7 +1208,7 @@ def main() -> int:
                         "quality_score": fallback_gate["quality_score"],
                         "quality_decision": fallback_gate["decision"],
                         "quality_reasons": [
-                            f"Groq returned malformed JSON: {exc}",
+                            f"{args.provider} returned malformed JSON: {exc}",
                             *fallback_gate["reasons"],
                         ],
                         "revision_suggestions": fallback_gate["revision_suggestions"],
@@ -1188,7 +1225,7 @@ def main() -> int:
                     "candidate_url": selected_candidate.get("url"),
                     "quality_score": 0,
                     "quality_decision": "discard",
-                    "quality_reasons": [f"Groq returned malformed JSON: {exc}"],
+                    "quality_reasons": [f"{args.provider} returned malformed JSON: {exc}"],
                     "raw_text_preview": text[:1200],
                     "writer_prompt": prompt,
                     "model_output_raw": text,
@@ -1277,7 +1314,7 @@ def main() -> int:
             skill_library=skill_library,
         )
         try:
-            evaluator_payload = call_groq(api_key, args.model, evaluator_prompt, min(args.max_output_tokens, 800))
+            evaluator_payload = call_llm(args.provider, api_key, args.model, evaluator_prompt, min(args.max_output_tokens, 800))
             evaluator_text = extract_text(evaluator_payload)
             evaluator_result = extract_json(evaluator_text)
             evaluator_result["model_output_raw"] = evaluator_text
@@ -1288,6 +1325,7 @@ def main() -> int:
 
     metadata = {
         "date": args.date,
+        "provider": args.provider,
         "model": args.model,
         "post_slot": args.post_slot,
         "posts_per_day": args.posts_per_day,

@@ -11,6 +11,7 @@ from scripts.generate_auto_thread import (
     build_fallback_thread,
     classify_hook_pattern,
     call_groq,
+    call_llm,
     extract_json,
     extract_text,
     main,
@@ -216,6 +217,32 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertFalse(body["include_reasoning"])
         self.assertEqual(body["reasoning_effort"], "low")
 
+    def test_openrouter_free_uses_openrouter_endpoint_and_headers(self) -> None:
+        class FakeResponse:
+            ok = True
+            status_code = 200
+            text = ""
+
+            def json(self) -> dict:
+                return {"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]}
+
+        calls = []
+
+        def fake_post(*args, **kwargs):
+            calls.append((args, kwargs))
+            return FakeResponse()
+
+        with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
+            call_llm("openrouter", "key", "openrouter/free", "prompt", max_output_tokens=500)
+
+        args, kwargs = calls[0]
+        self.assertEqual(args[0], "https://openrouter.ai/api/v1/chat/completions")
+        self.assertEqual(kwargs["json"]["model"], "openrouter/free")
+        self.assertEqual(kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertEqual(kwargs["headers"]["Authorization"], "Bearer key")
+        self.assertIn("HTTP-Referer", kwargs["headers"])
+        self.assertIn("X-Title", kwargs["headers"])
+
     def test_malformed_model_json_uses_fallback_thread(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -242,7 +269,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
             )
             playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
 
-            def fake_call_groq(*args, **kwargs):
+            def fake_call_llm(*args, **kwargs):
                 return {"choices": [{"message": {"content": "not json at all"}}]}
 
             argv = [
@@ -278,8 +305,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
                 "--skip-evaluator",
             ]
 
-            with patch.dict(os.environ, {"GROQ_API_KEY": "test-key"}), patch.object(sys, "argv", argv), patch(
-                "scripts.generate_auto_thread.call_groq", side_effect=fake_call_groq
+            with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch.object(sys, "argv", argv), patch(
+                "scripts.generate_auto_thread.call_llm", side_effect=fake_call_llm
             ):
                 self.assertEqual(main(), 0)
 
@@ -287,7 +314,9 @@ class SelfImprovementLoopTests(unittest.TestCase):
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
         validate_thread(thread)
-        self.assertIn("Groq returned malformed JSON", metadata["quality_reasons"][0])
+        self.assertIn("openrouter returned malformed JSON", metadata["quality_reasons"][0])
+        self.assertEqual(metadata["provider"], "openrouter")
+        self.assertEqual(metadata["model"], "openrouter/free")
         self.assertEqual(metadata["quality_decision"], "publish")
 
 
