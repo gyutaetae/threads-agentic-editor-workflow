@@ -36,6 +36,11 @@ def read_rows(path: Path) -> list[dict]:
         return list(csv.DictReader(handle))
 
 
+def shorten_note(value: object, max_chars: int = 180) -> str:
+    text = " ".join(str(value).split())
+    return text[:max_chars]
+
+
 def due_windows(row: dict, now: datetime) -> list[str]:
     posted_at = parse_posted_at(row.get("posted_at", ""))
     if posted_at is None:
@@ -47,7 +52,11 @@ def due_windows(row: dict, now: datetime) -> list[str]:
     age = now - posted_at
     due = []
     for label, minimum_age in WINDOWS.items():
-        if age >= minimum_age and f"metrics collected: {label}" not in notes:
+        if (
+            age >= minimum_age
+            and f"metrics collected: {label}" not in notes
+            and f"metrics skipped: {label}" not in notes
+        ):
             due.append(label)
     return due
 
@@ -70,13 +79,21 @@ def main() -> int:
     metric_names = [metric.strip() for metric in args.metrics.split(",") if metric.strip()]
     now = datetime.now().astimezone()
     collected = 0
+    skipped = 0
 
     for row in rows:
         post_id = row.get("post_id", "")
         if not post_id:
             continue
         for label in due_windows(row, now):
-            payload = get_thread_insights(access_token, post_id, metric_names)
+            try:
+                payload = get_thread_insights(access_token, post_id, metric_names)
+            except SystemExit as exc:
+                note = f"metrics skipped: {label}: {shorten_note(exc)}"
+                update_metrics_row(str(metrics_path), post_id, {}, note)
+                skipped += 1
+                print(f"Skipped {label} metrics for {post_id}: {shorten_note(exc)}")
+                continue
             metrics = parse_insights(payload)
             note = f"metrics collected: {label}"
             if update_metrics_row(str(metrics_path), post_id, metrics, note):
@@ -86,7 +103,10 @@ def main() -> int:
                 return 0
 
     if collected == 0:
-        print("No due metrics windows.")
+        if skipped:
+            print(f"No metrics collected; skipped {skipped} unavailable metric window(s).")
+        else:
+            print("No due metrics windows.")
     return 0
 
 

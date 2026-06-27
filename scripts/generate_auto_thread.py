@@ -19,11 +19,11 @@ MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = 85
 DRAFT_QUALITY_SCORE = 70
 DEFAULT_GENERATION_CANDIDATES = 1
-DEFAULT_MAX_OUTPUT_TOKENS = 900
-PLAYBOOK_PROMPT_CHARS = 1800
-LEARNINGS_PROMPT_CHARS = 1200
-SKILL_LIBRARY_PROMPT_CHARS = 1000
-WEEKLY_MEMORY_PROMPT_CHARS = 700
+DEFAULT_MAX_OUTPUT_TOKENS = 500
+PLAYBOOK_PROMPT_CHARS = 1200
+LEARNINGS_PROMPT_CHARS = 800
+SKILL_LIBRARY_PROMPT_CHARS = 600
+WEEKLY_MEMORY_PROMPT_CHARS = 500
 SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
 SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 URL_RE = re.compile(r"https?://\S+")
@@ -997,7 +997,19 @@ def retry_delay_seconds(response: requests.Response) -> float:
     return 30.0
 
 
+def is_groq_size_limit(response: requests.Response) -> bool:
+    if response.status_code not in {413, 429}:
+        return False
+    text = response.text.lower()
+    return (
+        "request too large" in text
+        or "tokens per minute" in text
+        or "rate_limit_exceeded" in text
+    )
+
+
 def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
+    output_tokens = max_output_tokens
     for attempt in range(1, 4):
         request_body = {
             "model": model,
@@ -1011,7 +1023,7 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
                     "content": prompt,
                 },
             ],
-            "max_completion_tokens": max_output_tokens,
+            "max_completion_tokens": output_tokens,
         }
 
         response = requests.post(
@@ -1025,6 +1037,14 @@ def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DE
         )
         if response.ok:
             return response.json()
+        if is_groq_size_limit(response) and output_tokens > 300 and attempt < 3:
+            next_tokens = max(300, int(output_tokens * 0.65))
+            print(
+                f"Groq request exceeded token limits; retrying with "
+                f"max_completion_tokens={next_tokens} (attempt {attempt}/3)."
+            )
+            output_tokens = next_tokens
+            continue
         if response.status_code == 429 and attempt < 3:
             delay = retry_delay_seconds(response) + 2
             print(f"Groq rate limited; retrying in {delay:.1f}s (attempt {attempt}/3).")

@@ -1,10 +1,12 @@
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from scripts.generate_auto_thread import (
     build_evaluator_prompt,
     build_fallback_thread,
+    call_groq,
     extract_json,
     extract_text,
     quality_gate,
@@ -137,6 +139,34 @@ class SelfImprovementLoopTests(unittest.TestCase):
         thread = build_fallback_thread(candidate, routing, analysis)
         validate_thread(thread)
         self.assertNotEqual(quality_gate(thread, routing)["decision"], "discard")
+
+    def test_groq_size_limit_retries_with_smaller_completion_budget(self) -> None:
+        class FakeResponse:
+            def __init__(self, status_code: int, text: str = "", payload: dict | None = None) -> None:
+                self.status_code = status_code
+                self.text = text
+                self._payload = payload or {}
+                self.ok = status_code < 400
+
+            def json(self) -> dict:
+                return self._payload
+
+        calls = []
+
+        def fake_post(*args, **kwargs):
+            calls.append(kwargs["json"]["max_completion_tokens"])
+            if len(calls) == 1:
+                return FakeResponse(
+                    413,
+                    '{"error":{"message":"Request too large on tokens per minute","code":"rate_limit_exceeded"}}',
+                )
+            return FakeResponse(200, payload={"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]})
+
+        with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
+            payload = call_groq("key", "model", "prompt", max_output_tokens=900)
+
+        self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
+        self.assertEqual(calls, [900, 585])
 
 
 if __name__ == "__main__":
