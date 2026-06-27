@@ -6,7 +6,7 @@ on:
       publish:
         description: "Publish to Threads. false means generate and dry-run only."
         required: true
-        default: false
+        default: true
         type: boolean
       posts_per_day:
         description: "Keep 1 for current behavior. 2 enables future morning/evening expansion."
