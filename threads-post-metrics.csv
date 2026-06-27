@@ -26,3 +26,8 @@
 5. **출처 위치**: 논문 섹션(예: Results, Discussion)에서 인용 위치를 기록한다.
 6. **지원 강도**: 직접적인 실험 결과 vs. 간접적 논의 등 강도를 평가한다.
 *이 체크리스트를 복사해 매 논문 검증 시 바로 사용하세요.*",1,github_repo,https://github.com/Leey21/awesome-ai-research-writing,50,92,evening,manual_evening,openai/gpt-oss-120b,false,2026-06-27T23:15:55+09:00,0,0,0,0,0,0,0,0,,,0,auto-recorded after publish
+2026-06-27,18168433057442701,https://www.threads.net/@arxiv.ai/post/18168433057442701,tiny_source_case,tiny_source_case,official_update,share,agent_role_confusion,AI에게 논문 작업을 맡길 때,"AI에게 논문 작업을 맡길 때
+가장 먼저 정할 것은 모델이 아니라 작업 경계입니다.
+
+오늘 문제는 이것입니다.
+하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.",1,official_feed,https://github.blog/ai-and-ml/llms/accelerating-researchers-and-developers-building-multilingual-ai-with-a-new-open-dataset/,40,92,evening,manual_evening,openrouter/free,false,2026-06-27T23:34:00+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
