@@ -12,7 +12,7 @@ import requests
 
 
 CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
-DEFAULT_MODEL = "llama-3.1-8b-instant"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 MIN_PARTS = 1
 MAX_PARTS = 4
 MAX_CHARS = 500
