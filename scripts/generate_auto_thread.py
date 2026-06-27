@@ -145,7 +145,7 @@ HUMAN_SIGNAL_TYPES = {
 
 HOOK_PATTERNS = {
     "bad_usage": re.compile(r"만약|라고 사용하고 있다면|시키고 있다면"),
-    "personal_diary": re.compile(r"오늘|내가|요즘 내가|23살|논문"),
+    "personal_diary": re.compile(r"오늘|내가|요즘 내가|23살"),
     "quote_idea": re.compile(r"Feynman|Karpathy|Paul Graham|Andrew Ng|Sam Altman|말|요지"),
     "repo_diagnostic": re.compile(r"GitHub|repo|star|README"),
     "direct_claim": re.compile(r"논문|요약|citation|reference|evidence|claim|프롬프트|연구 노트"),

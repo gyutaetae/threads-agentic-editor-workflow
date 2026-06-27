@@ -9,6 +9,7 @@ from unittest.mock import patch
 from scripts.generate_auto_thread import (
     build_evaluator_prompt,
     build_fallback_thread,
+    classify_hook_pattern,
     call_groq,
     extract_json,
     extract_text,
@@ -96,6 +97,9 @@ class ThreadValidationTests(unittest.TestCase):
     def test_chain_without_reusable_unit_fails(self) -> None:
         with self.assertRaises(SystemExit):
             validate_thread("AI 시대에는 논문을 다르게 읽어야 합니다.")
+
+    def test_paper_keyword_alone_is_not_personal_diary_hook(self) -> None:
+        self.assertEqual(classify_hook_pattern("논문 citation을 검증할 때 먼저 볼 것은 claim입니다."), "direct_claim")
 
 
 class SelfImprovementLoopTests(unittest.TestCase):
