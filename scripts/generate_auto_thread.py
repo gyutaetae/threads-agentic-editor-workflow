@@ -1123,6 +1123,53 @@ def main() -> int:
         try:
             data = extract_json(text)
         except json.JSONDecodeError as exc:
+            fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
+            try:
+                validate_thread(fallback_thread_text)
+                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks)
+            except SystemExit as fallback_exc:
+                fallback_gate = {
+                    "quality_score": 0,
+                    "decision": "discard",
+                    "reasons": [
+                        f"Groq returned malformed JSON: {exc}",
+                        f"Fallback thread failed validation: {fallback_exc}",
+                    ],
+                    "revision_suggestions": ["Review the raw model output and regenerate manually."],
+                }
+
+            if fallback_gate.get("decision") != "discard":
+                generated_options.append(
+                    {
+                        "option": index,
+                        "candidate": selected_candidate,
+                        "analysis": analysis,
+                        "routing": routing,
+                        "quote_context": quote_context,
+                        "data": {
+                            "thread_text": fallback_thread_text,
+                            "topic": routing["human_signal_type"],
+                            "source_count": 1 if selected_candidate.get("url") else 0,
+                            "format": routing["format_type"],
+                            "source_name": selected_candidate.get("title") or selected_candidate.get("name") or "",
+                            "source_url": selected_candidate.get("url") or "",
+                            "quote_used": False,
+                            "quote_id": "",
+                        },
+                        "thread_text": fallback_thread_text,
+                        "quality_score": fallback_gate["quality_score"],
+                        "quality_decision": fallback_gate["decision"],
+                        "quality_reasons": [
+                            f"Groq returned malformed JSON: {exc}",
+                            *fallback_gate["reasons"],
+                        ],
+                        "revision_suggestions": fallback_gate["revision_suggestions"],
+                        "writer_prompt": prompt,
+                        "model_output_raw": text,
+                    }
+                )
+                continue
+
             generated_options.append(
                 {
                     "option": index,

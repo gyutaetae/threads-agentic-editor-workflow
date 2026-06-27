@@ -1,3 +1,6 @@
+import json
+import os
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -9,6 +12,7 @@ from scripts.generate_auto_thread import (
     call_groq,
     extract_json,
     extract_text,
+    main,
     quality_gate,
     read_skill_library,
     safe_slug,
@@ -167,6 +171,80 @@ class SelfImprovementLoopTests(unittest.TestCase):
 
         self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
         self.assertEqual(calls, [900, 585])
+
+    def test_malformed_model_json_uses_fallback_thread(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates_path = root / "candidates.json"
+            output_path = root / "approved-thread-chain.txt"
+            metadata_path = root / "metadata.json"
+            playbook_path = root / "playbook.md"
+            metrics_path = root / "metrics.csv"
+            candidates_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "example/research-skills",
+                            "url": "https://github.com/example/research-skills",
+                            "source_type": "github_repo",
+                            "content_axis": "checklist",
+                            "format_type": "research_checklist",
+                            "post_goal": "save",
+                            "score": {"total": 42},
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
+
+            def fake_call_groq(*args, **kwargs):
+                return {"choices": [{"message": {"content": "not json at all"}}]}
+
+            argv = [
+                "generate_auto_thread.py",
+                "--date",
+                "2026-06-27",
+                "--candidates-path",
+                str(candidates_path),
+                "--playbook-path",
+                str(playbook_path),
+                "--output-path",
+                str(output_path),
+                "--metadata-path",
+                str(metadata_path),
+                "--metrics-path",
+                str(metrics_path),
+                "--history-path",
+                str(root / "missing-history.jsonl"),
+                "--quote-bank-path",
+                str(root / "missing-quotes.json"),
+                "--weekly-memory-path",
+                str(root / "missing-memory.md"),
+                "--learnings-path",
+                str(root / "missing-learnings.md"),
+                "--skills-library-dir",
+                str(root / "missing-skills"),
+                "--review-dir",
+                str(root / "review"),
+                "--run-log-dir",
+                str(root / "runs"),
+                "--evaluation-dir",
+                str(root / "evaluations"),
+                "--skip-evaluator",
+            ]
+
+            with patch.dict(os.environ, {"GROQ_API_KEY": "test-key"}), patch.object(sys, "argv", argv), patch(
+                "scripts.generate_auto_thread.call_groq", side_effect=fake_call_groq
+            ):
+                self.assertEqual(main(), 0)
+
+            thread = output_path.read_text(encoding="utf-8")
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+
+        validate_thread(thread)
+        self.assertIn("Groq returned malformed JSON", metadata["quality_reasons"][0])
+        self.assertEqual(metadata["quality_decision"], "publish")
 
 
 if __name__ == "__main__":
