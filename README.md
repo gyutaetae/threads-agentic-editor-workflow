@@ -32,28 +32,67 @@ daily-editor/memory/
 
 ## Daily Local Flow
 
-Generate candidates:
+PowerShell에서 날짜를 고정한다:
 
 ```powershell
-.\scripts\run-daily-agentic-editor.ps1
+$date = Get-Date -Format "yyyy-MM-dd"
 ```
 
-Generate an approved chain from candidates:
+후보 수집:
 
 ```powershell
-python .\scripts\generate_auto_thread.py --date 2026-06-22 --candidates-path ".\daily-editor\2026-06-22-candidates.json"
+.\scripts\run-daily-agentic-editor.ps1 `
+  -PerQuery 10 `
+  -PerFeed 10 `
+  -ReadmeTop 10 `
+  -Date $date
 ```
 
-Dry run:
+후보에서 승인용 thread chain 생성:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1 -DryRun
+python .\scripts\generate_auto_thread.py `
+  --date $date `
+  --candidates-path ".\daily-editor\$date-candidates.json" `
+  --output-path ".\approved-thread-chain.txt" `
+  --metadata-path ".\daily-editor\auto-thread-metadata.json" `
+  --metrics-path ".\threads-post-metrics.csv" `
+  --posts-per-day 1 `
+  --post-slot evening `
+  --experiment-group manual_evening
 ```
 
-Publish:
+실제 업로드 전 검증. `-DryRun`을 붙이면 quality gate와 Threads 문안 검증만 하고 업로드하지 않는다:
 
 ```powershell
-.\scripts\publish-approved-chain.ps1
+.\scripts\publish-approved-chain.ps1 `
+  -Topic "auto generated" `
+  -SourceCount 0 `
+  -PostSlot evening `
+  -DryRun
+```
+
+검증에 문제가 없으면 metadata를 읽어 실제 업로드한다. 이 단계는 Threads에 게시하고 `threads-post-metrics.csv`에 기록한다:
+
+```powershell
+$metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw |
+  ConvertFrom-Json
+
+.\scripts\publish-approved-chain.ps1 `
+  -Topic $metadata.topic `
+  -Format $metadata.format `
+  -ContentAxis $metadata.content_axis `
+  -FormatType $metadata.format_type `
+  -PostGoal $metadata.post_goal `
+  -FinalCandidateScore ([string]$metadata.final_candidate_score) `
+  -QualityScore ([string]$metadata.quality_score) `
+  -SourceType $metadata.source_type `
+  -PostSlot $metadata.post_slot `
+  -ExperimentGroup $metadata.experiment_group `
+  -Model $metadata.model `
+  -SourceCount ([int]$metadata.source_count) `
+  -SourceName $metadata.source_name `
+  -SourceUrl $metadata.source_url
 ```
 
 ## Auto Publish
