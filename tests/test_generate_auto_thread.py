@@ -101,6 +101,23 @@ class ThreadValidationTests(unittest.TestCase):
     def test_paper_keyword_alone_is_not_personal_diary_hook(self) -> None:
         self.assertEqual(classify_hook_pattern("논문 citation을 검증할 때 먼저 볼 것은 claim입니다."), "direct_claim")
 
+    def test_repeated_hook_pattern_warns_without_blocking_publish(self) -> None:
+        thread = (
+            "AI가 붙인 citation이 claim을 실제로 받치는지 먼저 확인해야 합니다.\n"
+            "---\n"
+            "검증 체크리스트:\n"
+            "1. claim을 분리한다\n"
+            "2. citation 원문 위치를 찾는다\n"
+            "3. evidence가 claim을 직접 지지하는지 표시한다"
+        )
+        gate = quality_gate(
+            thread,
+            {"format_type": "research_checklist", "human_signal_source": "inferred"},
+            [{"pattern": "direct_claim"}, {"pattern": "direct_claim"}, {"pattern": "direct_claim"}],
+        )
+        self.assertEqual(gate["decision"], "publish")
+        self.assertEqual(gate["quality_score"], 92)
+
 
 class SelfImprovementLoopTests(unittest.TestCase):
     def test_safe_slug_keeps_korean_and_removes_punctuation(self) -> None:

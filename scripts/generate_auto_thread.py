@@ -896,7 +896,7 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
         reasons.append("Main is too dense for an easy hook.")
         suggestions.append("Move details to Reply 1 or Reply 2.")
     if len(recent_patterns) >= 3 and len(set(recent_patterns[-3:])) == 1 and hook_pattern == recent_patterns[-1]:
-        score -= 18
+        score -= 8
         reasons.append(f"Factory-feel risk: hook pattern '{hook_pattern}' repeats the last 3 posts.")
         suggestions.append("Use a personal proof line, quote/idea hook, failed-request hook, or direct claim instead.")
     if "오늘" not in joined and "내가" not in joined and "요즘" not in joined and "리처드 파인만" not in joined and "안드레이 카파시" not in joined and "폴 그레이엄" not in joined and routing.get("human_signal_source") != "inferred":
