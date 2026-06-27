@@ -1166,11 +1166,23 @@ def main() -> int:
             skill_library,
             weekly_memory,
         )
-        payload = call_llm(args.provider, api_key, args.model, prompt, args.max_output_tokens)
-        text = extract_text(payload)
-        try:
-            data = extract_json(text)
-        except json.JSONDecodeError as exc:
+        text = ""
+        data = None
+        json_error = None
+        for parse_attempt in range(1, 3):
+            payload = call_llm(args.provider, api_key, args.model, prompt, args.max_output_tokens)
+            text = extract_text(payload)
+            try:
+                data = extract_json(text)
+                json_error = None
+                break
+            except json.JSONDecodeError as exc:
+                json_error = exc
+                if parse_attempt < 2:
+                    print(f"{args.provider} returned malformed JSON; retrying generation once.")
+
+        if data is None:
+            exc = json_error or json.JSONDecodeError("empty model response", text, 0)
             fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
             try:
                 validate_thread(fallback_thread_text)

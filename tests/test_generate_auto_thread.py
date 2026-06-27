@@ -269,7 +269,10 @@ class SelfImprovementLoopTests(unittest.TestCase):
             )
             playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
 
+            llm_calls = []
+
             def fake_call_llm(*args, **kwargs):
+                llm_calls.append((args, kwargs))
                 return {"choices": [{"message": {"content": "not json at all"}}]}
 
             argv = [
@@ -314,6 +317,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
         validate_thread(thread)
+        self.assertEqual(len(llm_calls), 2)
         self.assertIn("openrouter returned malformed JSON", metadata["quality_reasons"][0])
         self.assertEqual(metadata["provider"], "openrouter")
         self.assertEqual(metadata["model"], "openrouter/free")
