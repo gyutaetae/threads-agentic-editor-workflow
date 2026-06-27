@@ -85,13 +85,35 @@ class FormatRouterTests(unittest.TestCase):
 
 
 class ThreadValidationTests(unittest.TestCase):
-    def test_flexible_two_part_chain_passes(self) -> None:
+    def test_two_part_chain_fails_fixed_master_template(self) -> None:
         thread = (
             "AI 요약이 너무 깔끔하면 먼저 claim과 evidence를 분리해야 합니다.\n\n"
             "읽기 쉬운 요약과 검증 가능한 연구 노트는 다릅니다.\n"
             "---\n"
             "바로 써볼 프롬프트:\n"
             "\"이 논문의 claim을 나누고, 각 claim을 받치는 evidence와 limitation을 표로 정리해줘.\""
+        )
+        with self.assertRaises(SystemExit):
+            validate_thread(thread)
+
+    def test_fixed_master_template_chain_passes(self) -> None:
+        thread = (
+            "논문 초안을 AI에게 맡길 때 자주 생기는 문제가 있습니다.\n\n"
+            "\"이 문장 더 학술적으로 고쳐줘\"라고만 시키면 claim과 evidence 연결은 남지 않을 수 있습니다.\n"
+            "---\n"
+            "[핵심 한 줄]\n"
+            "초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.\n\n"
+            "1. claim이 분리되는가\n2. evidence 위치가 남는가\n3. citation 범위가 보이는가\n"
+            "---\n"
+            "[핵심 한 줄]\n"
+            "논문 읽을 때 붙여 넣을 문장:\n\n"
+            "\"이 초안을 claim, evidence, limitation, citation으로 나눠줘.\"\n"
+            "---\n"
+            "[핵심 한 줄]\n"
+            "참고해서 볼 만한 것:\n"
+            "https://github.com/example/research-skills\n"
+            "- 볼 부분: source fact를 workflow로 바꾸는 단서\n\n"
+            "source가 실제로 제공한 것과 내가 적용하려는 해석을 나눠보세요."
         )
         validate_thread(thread)
 
@@ -106,10 +128,21 @@ class ThreadValidationTests(unittest.TestCase):
         thread = (
             "AI가 붙인 citation이 claim을 실제로 받치는지 먼저 확인해야 합니다.\n"
             "---\n"
+            "[핵심 한 줄]\n"
             "검증 체크리스트:\n"
             "1. claim을 분리한다\n"
             "2. citation 원문 위치를 찾는다\n"
-            "3. evidence가 claim을 직접 지지하는지 표시한다"
+            "3. evidence가 claim을 직접 지지하는지 표시한다\n"
+            "---\n"
+            "[핵심 한 줄]\n"
+            "오늘 적용할 문장:\n\n"
+            "\"각 claim마다 citation이 실제로 받치는 범위를 표시해줘.\"\n"
+            "---\n"
+            "[핵심 한 줄]\n"
+            "참고해서 볼 만한 것:\n"
+            "https://github.com/example/research-skills\n"
+            "- 볼 부분: source fact를 citation 검증 기준으로 바꾸는 단서\n\n"
+            "source가 실제로 제공한 것과 우리 해석을 분리하세요."
         )
         gate = quality_gate(
             thread,
@@ -164,6 +197,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
         candidate = {"title": "example/research-skills", "url": "https://github.com/example/research-skills"}
         thread = build_fallback_thread(candidate, routing, analysis)
         validate_thread(thread)
+        self.assertNotIn("GitHub stars는 인기 신호일 뿐이고", thread)
+        self.assertIn("[핵심 한 줄]", thread)
         self.assertNotEqual(quality_gate(thread, routing)["decision"], "discard")
 
     def test_groq_size_limit_retries_with_smaller_completion_budget(self) -> None:

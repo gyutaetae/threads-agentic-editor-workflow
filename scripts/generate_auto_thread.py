@@ -16,7 +16,7 @@ OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions
 DEFAULT_PROVIDER = "openrouter"
 DEFAULT_MODEL = "openrouter/free"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
-MIN_PARTS = 1
+MIN_PARTS = 4
 MAX_PARTS = 4
 MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = 85
@@ -53,6 +53,10 @@ PRACTICAL_MARKERS = [
     "2.",
     "3.",
 ]
+FORBIDDEN_FALLBACK_PHRASES = [
+    "GitHub stars는 인기 신호일 뿐이고",
+    "연구 품질 증거로 쓰면 안 됩니다",
+]
 CONTENT_AXES = {
     "prompt_habit",
     "workflow_mode",
@@ -72,40 +76,29 @@ FORMAT_TYPES = {
     "weekly_review_advice",
 }
 POST_GOALS = {"save", "comment", "share", "follow", "profile_visit"}
-CANONICAL_STYLE_EXAMPLE = """AI에게 논문 요약을 맡길 때
-"이 논문 요약해줘"라고 쓰면
-초록을 다시 쓴 글이 나올 가능성이 큽니다.
+CANONICAL_STYLE_EXAMPLE = """논문 초안을 AI에게 맡길 때 자주 생기는 문제가 있습니다.
 
-나쁜 요청:
-"이 논문 요약해줘"
+"이 문장 더 학술적으로 고쳐줘"라고만 시키면
+문장은 좋아지는데 claim, evidence, citation 연결은 그대로 비어 있을 수 있습니다.
+---
+[핵심 한 줄]
+초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.
 
-좋은 요청:
-"핵심 기여를 기존 연구와 분리해줘"
-"방법을 재현 가능한 단계로 나눠줘"
-"주장을 받치는 표, 그림, 실험을 연결해줘"
-"저자가 말한 한계와 내가 의심할 점을 분리해줘"
+1. claim이 한 문장으로 분리되는가
+2. evidence가 표, 실험, 인용 위치와 연결되는가
+3. citation이 실제로 그 claim을 받치는가
+---
+[핵심 한 줄]
+논문 읽을 때 붙여 넣을 문장:
 
-좋은 요약은 짧은 글이 아니라
-검증 가능한 연구 노트입니다.
+"이 초안을 claim, evidence, limitation, citation으로 나눠줘. 각 claim마다 근거 위치와 citation이 실제로 받치는 범위를 따로 표시해줘."
 ---
-[논문 요약은 4칸으로 나눕니다]
-실전에서는 논문 요약을 4칸으로 나눕니다.
-1. Contribution: 무엇을 주장했나
-2. Method: 어떻게 증명하려 했나
-3. Evidence: 어떤 실험/표/그림이 받치나
-4. Limitation: 어디까지 믿어야 하나
----
-[복사해서 쓸 프롬프트]
-예시 프롬프트:
-"이 논문의 main claim을 한 문장으로 쓰고, 근거 문단 위치를 붙여줘."
-"method를 내가 재현할 순서대로 5단계로 나눠줘."
-"claim마다 figure, table, experiment를 연결해줘."
-"limitation과 내가 추가로 검증해야 할 gap을 분리해줘."
----
-[볼 부분이 있는 링크만 남깁니다]
-참고해서 볼 만한 것들:
+[핵심 한 줄]
+참고해서 볼 만한 것:
 https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
-- 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조"""
+- 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조
+
+다음 논문 요약 전에는 claim 하나와 evidence 하나만 먼저 연결해보세요."""
 
 LEGACY_FORMAT_MAP = {
     "bad_to_better": "better_prompt_pattern",
@@ -127,13 +120,13 @@ AXIS_FORMAT_MAP = {
     "opinion": "workflow_observation",
 }
 FORMAT_GUIDE = {
-    "workflow_observation": "Start from one concrete paper-workflow judgment. Show why it matters, then add one reusable prompt or verification question.",
-    "failed_agent_run": "Show a plausible AI-agent failure in paper work and the corrected work instruction. Do not invent first-person experience unless provided.",
-    "better_prompt_pattern": "Turn a vague research request into a precise research prompt. The bad/good request structure is allowed but not required.",
-    "research_checklist": "Give criteria a researcher can save and reuse to verify AI output.",
-    "agent_role_split": "Split one broad paper task into agent roles such as reader, synthesizer, critic, and editor.",
-    "tiny_source_case": "Translate one paper, repo, or official source into a reusable research workflow. Keep source facts separate from account interpretation.",
-    "weekly_review_advice": "Friday evening only: derive one advice from the last 7 days of posts. Use a verified Korean quote only when it genuinely fits; otherwise publish a general weekly review.",
+    "workflow_observation": "Use the fixed 4-part template; emphasize a concrete judgment in Part 1.",
+    "failed_agent_run": "Use the fixed 4-part template; emphasize a failure scene in Part 1 and a corrected instruction in Part 3.",
+    "better_prompt_pattern": "Use the fixed 4-part template; include a bad request in Part 1 and a better request in Part 3.",
+    "research_checklist": "Use the fixed 4-part template; emphasize 3 concrete checks in Part 2.",
+    "agent_role_split": "Use the fixed 4-part template; emphasize reader/synthesizer/critic/editor roles in Part 3.",
+    "tiny_source_case": "Use the fixed 4-part template; emphasize source fact vs account interpretation in Part 4.",
+    "weekly_review_advice": "Use the fixed 4-part template; derive Part 2-3 advice from recent history.",
 }
 HUMAN_SIGNAL_TYPES = {
     "summary_suspicion",
@@ -621,34 +614,38 @@ def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str
     source_url = str(candidate.get("url") or "").strip()
     problem = routing.get("research_problem") or "AI가 만든 연구 결과를 그대로 믿기 어렵다."
     workflow_action = analysis.get("workflow_action") or "읽기, 비교, 검증, 작성을 분리한다."
+    if not source_url:
+        source_url = "https://github.com/gyutaetae/threads-agentic-editor-workflow"
 
     parts = [
         (
-            "AI에게 논문 작업을 맡길 때\n"
-            "가장 먼저 정할 것은 모델이 아니라 작업 경계입니다.\n\n"
-            f"오늘 문제는 이것입니다.\n{problem}"
+            "논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.\n\n"
+            "\"이 논문 정리해줘\"라고만 시키면\n"
+            f"{problem}"
         ),
         (
-            "한 요청으로 뭉개면 결과가 그럴듯한 글로 끝납니다.\n\n"
-            f"{workflow_action}\n\n"
-            "좋은 research workflow는 답을 빨리 받는 구조가 아니라\n"
-            "검증할 수 있는 중간 산출물을 남기는 구조입니다."
+            "[핵심 한 줄]\n"
+            "초안보다 먼저 검증할 중간 산출물을 정해야 합니다.\n\n"
+            "1. claim이 분리되는가\n"
+            "2. evidence 위치가 남는가\n"
+            "3. limitation과 citation 범위가 따로 보이는가"
         ),
         (
-            "오늘 적용할 문장:\n\n"
+            "[핵심 한 줄]\n"
+            "AI agent에게 이렇게 시켜보세요:\n\n"
             "\"이 논문 작업을 reader, synthesizer, critic, citation checker로 나눠줘. "
             "각 역할은 output, evidence, failure mode를 따로 적어줘.\"\n\n"
-            "이렇게 시키면 글보다 먼저 검토 가능한 연구 노트가 나옵니다."
+            f"목표는 {workflow_action}"
         ),
-    ]
-    if source_url:
-        parts.append(
+        (
+            "[핵심 한 줄]\n"
             "참고해서 볼 만한 것:\n"
             f"{source_url}\n"
-            f"- 볼 부분: {source_title}에서 연구 작업을 작은 skill 단위로 나누는 방식\n\n"
-            "GitHub stars는 인기 신호일 뿐이고,\n"
-            "연구 품질 증거로 쓰면 안 됩니다."
-        )
+            f"- 볼 부분: {source_title}에서 source fact를 연구 workflow로 바꾸는 단서\n\n"
+            "다음 요청 전에는 source가 실제로 말한 것과\n"
+            "내가 적용하려는 해석을 한 줄씩 나눠보세요."
+        ),
+    ]
     return "\n---\n".join(parts)
 
 
@@ -663,6 +660,8 @@ def validate_thread(thread_text: str) -> None:
             raise SystemExit(f"Generated part {index} still has a drafting label such as Main: or Reply n:.")
         if len(part) > MAX_CHARS:
             raise SystemExit(f"Generated part {index} is {len(part)} chars; limit is {MAX_CHARS}.")
+        if index >= 2 and not part.startswith("[핵심 한 줄]"):
+            raise SystemExit(f"Generated part {index} must start with [핵심 한 줄].")
     if URL_RE.search(parts[0]):
         raise SystemExit("Generated main post contains a source link; move links to Reply 3.")
     if not has_practical_element(thread_text):
@@ -673,6 +672,9 @@ def validate_thread(thread_text: str) -> None:
     for forbidden in FORBIDDEN_TEXT:
         if forbidden in joined:
             raise SystemExit(f"Generated thread contains forbidden label: {forbidden}")
+    for forbidden in FORBIDDEN_FALLBACK_PHRASES:
+        if forbidden in joined:
+            raise SystemExit(f"Generated thread contains retired fallback phrase: {forbidden}")
     if "```" in joined or '{"role"' in joined or '"tools"' in joined:
         raise SystemExit("Generated thread uses a code block or JSON-style prompt; use natural quoted Korean prompt text.")
     if "좋은 요청:" in joined:
@@ -685,6 +687,8 @@ def validate_thread(thread_text: str) -> None:
         raise SystemExit("Generated reference reply must link an actual example, not the NotebookLM homepage.")
     if URL_RE.search(joined) and "- 볼 부분:" not in joined and "인용 원문:" not in joined:
         raise SystemExit("Generated source links must explain what to inspect with '- 볼 부분:' or cite a quote source with '인용 원문:'.")
+    if URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation"]):
+        raise SystemExit("Generated source reply must separate source fact from account interpretation.")
 
 
 def validate_quote_selection(thread_text: str, data: dict, source_item: dict) -> dict | None:
@@ -782,11 +786,15 @@ def build_prompt(
         "- thread_text must use --- between main and replies.\n"
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
-        "- Use 1 to 4 parts total. Do not force a 4-part chain unless the format genuinely needs it.\n"
+        "- Use exactly 4 parts total. This is a hard rule.\n"
+        "- Part 1: problem hook. Rotate recent-history hook style: direct problem, failure scene, or judgment sentence. Do not include [핵심 한 줄] here.\n"
+        "- Part 2: must start with '[핵심 한 줄]' and give 3 concrete diagnosis criteria/checks by default.\n"
+        "- Part 3: must start with '[핵심 한 줄]' and include one copyable Korean prompt, checklist, or AI agent instruction.\n"
+        "- Part 4: must start with '[핵심 한 줄]', include the source URL, '- 볼 부분:', source fact/account interpretation boundary, and a closing next action.\n"
         "- Each part must be under 500 Korean characters.\n"
         "- Main must be easy to understand and must not contain external links.\n"
-        "- Do not force '나쁜 요청:'/'좋은 요청:' unless selected format is better_prompt_pattern and it is the most natural shape.\n"
-        "- Do not force bracketed reply headings. Use them only if they make the reply easier to scan.\n"
+        "- Use Korean labels. Parts 2-4 must use '[핵심 한 줄]'. Avoid English structural labels.\n"
+        "- Use a bad request in Part 1 only for direct-problem or failure-scene hooks. Do not force a full bad/good request card.\n"
         "- Every chain must include one reusable unit: a practical prompt, verification checklist, agent-role instruction, or source-to-workflow template.\n"
         "- Prefer labels such as '바로 써볼 프롬프트:', '오늘 적용할 문장:', 'AI agent에게 이렇게 시켜보세요:', '논문 읽을 때 붙여 넣을 문장:', or '다음 요약 전에 써볼 질문:'. Rotate the label so it does not feel templated.\n"
         "- Derived questions must be practical: diagnostic question, verification question, or next-action question. Avoid philosophical questions.\n"
@@ -803,16 +811,17 @@ def build_prompt(
         "- Use Korean for names and general prose. Use English only for technical terms where Korean loses precision: AI agent, claim, evidence, limitation, citation, reviewer critique, workflow, prompt.\n"
         "- Do not use markdown code fences. Do not use bracketed mode labels such as '[초안 작성 모드]'.\n"
         "- Separate source facts from account interpretation.\n"
+        "- In Part 4, explicitly distinguish what the source provides from how @arxiv.ai applies it to a research workflow.\n"
         "- Do not invent facts. Use only the candidates below as factual sources.\n"
-        "- GitHub stars are popularity signals only, never quality proof.\n\n"
+        "- Do not write the retired phrase 'GitHub stars는 인기 신호일 뿐이고, 연구 품질 증거로 쓰면 안 됩니다.'\n\n"
         "Format examples:\n"
-        "- workflow_observation: observation -> research risk -> reusable prompt/check question.\n"
-        "- failed_agent_run: failed agent request -> what broke -> corrected instruction.\n"
-        "- better_prompt_pattern: vague request -> better research prompt(s), without forcing four examples.\n"
-        "- research_checklist: verification checklist -> execution prompt.\n"
-        "- agent_role_split: one broad task -> reader/synthesizer/critic/editor instructions.\n"
-        "- tiny_source_case: source fact -> account interpretation -> reusable workflow.\n"
-        "- weekly_review_advice: weekly pattern -> advice -> optional verified Korean quote -> next week's practical research prompt.\n\n"
+        "- workflow_observation: Part 1 judgment -> Part 2 checks -> Part 3 prompt -> Part 4 source/application.\n"
+        "- failed_agent_run: Part 1 failure scene -> Part 2 failure criteria -> Part 3 corrected instruction -> Part 4 source/application.\n"
+        "- better_prompt_pattern: Part 1 bad request -> Part 2 diagnosis -> Part 3 better request -> Part 4 source/application.\n"
+        "- research_checklist: Part 1 problem -> Part 2 checklist -> Part 3 execution prompt -> Part 4 source/application.\n"
+        "- agent_role_split: Part 1 broad-task failure -> Part 2 role criteria -> Part 3 role instruction -> Part 4 source/application.\n"
+        "- tiny_source_case: Part 1 problem -> Part 2 checks -> Part 3 reusable action -> Part 4 source fact vs interpretation.\n"
+        "- weekly_review_advice: Part 1 weekly pattern -> Part 2 advice -> Part 3 next-week prompt -> Part 4 source/quote if used.\n\n"
         "Selected routing:\n"
         f"{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
         "Candidate analysis:\n"
@@ -858,6 +867,22 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
     hook_pattern = classify_hook_pattern(main)
     recent_patterns = [item.get("pattern") for item in (recent_hooks or []) if item.get("pattern")]
 
+    if len(parts) != 4:
+        score -= 50
+        reasons.append("Thread must use the fixed 4-part master template.")
+        suggestions.append("Generate exactly 4 parts: hook, criteria, reusable action, source interpretation.")
+    if any(index >= 2 and not part.startswith("[핵심 한 줄]") for index, part in enumerate(parts, start=1)):
+        score -= 35
+        reasons.append("Parts 2-4 must start with [핵심 한 줄].")
+        suggestions.append("Add the Korean [핵심 한 줄] label to each reply part.")
+    if any(phrase in joined for phrase in FORBIDDEN_FALLBACK_PHRASES):
+        score -= 40
+        reasons.append("Thread uses a retired fallback phrase.")
+        suggestions.append("Replace generic GitHub-stars caveats with a source-specific next action.")
+    if parts and URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation"]):
+        score -= 25
+        reasons.append("Source reply does not separate source fact from account interpretation.")
+        suggestions.append("In Part 4, name what the source provides and how the account applies it.")
     if len(main_first_line) < 8:
         score -= 12
         reasons.append("First line is weak or too short.")
