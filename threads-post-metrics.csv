@@ -31,3 +31,7 @@
 
 오늘 문제는 이것입니다.
 하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.",1,official_feed,https://github.blog/ai-and-ml/llms/accelerating-researchers-and-developers-building-multilingual-ai-with-a-new-open-dataset/,40,92,evening,manual_evening,openrouter/free,false,2026-06-27T23:34:00+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-06-28,18104256953020400,https://www.threads.net/@arxiv.ai/post/18104256953020400,workflow_observation,workflow_observation,opinion,comment,citation_doubt,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+
+""이 논문 정리해줘""라고만 시키면
+AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.",1,github_repo,https://github.com/academic/awesome-datascience,41,92,evening,daily_1800_kst,openrouter/free,false,2026-06-28T20:13:00+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
