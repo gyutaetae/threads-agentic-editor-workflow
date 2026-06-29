@@ -12,8 +12,11 @@ from scripts.generate_auto_thread import (
     classify_hook_pattern,
     call_groq,
     call_llm,
+    choose_candidates,
+    curation_bonus,
     extract_json,
     extract_text,
+    load_curation_log,
     main,
     quality_gate,
     read_skill_library,
@@ -101,18 +104,18 @@ class ThreadValidationTests(unittest.TestCase):
             "논문 초안을 AI에게 맡길 때 자주 생기는 문제가 있습니다.\n\n"
             "\"이 문장 더 학술적으로 고쳐줘\"라고만 시키면 claim과 evidence 연결은 남지 않을 수 있습니다.\n"
             "---\n"
-            "[핵심 한 줄]\n"
+            "[먼저 확인할 것]\n"
             "초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.\n\n"
             "1. claim이 분리되는가\n2. evidence 위치가 남는가\n3. citation 범위가 보이는가\n"
             "---\n"
-            "[핵심 한 줄]\n"
+            "[저장해둘 프롬프트]\n"
             "논문 읽을 때 붙여 넣을 문장:\n\n"
             "\"이 초안을 claim, evidence, limitation, citation으로 나눠줘.\"\n"
             "---\n"
-            "[핵심 한 줄]\n"
-            "참고해서 볼 만한 것:\n"
+            "[참고 논문]\n"
             "https://github.com/example/research-skills\n"
             "- 볼 부분: source fact를 workflow로 바꾸는 단서\n\n"
+            "[나의 견해]\n"
             "source가 실제로 제공한 것과 내가 적용하려는 해석을 나눠보세요."
         )
         validate_thread(thread)
@@ -128,20 +131,20 @@ class ThreadValidationTests(unittest.TestCase):
         thread = (
             "AI가 붙인 citation이 claim을 실제로 받치는지 먼저 확인해야 합니다.\n"
             "---\n"
-            "[핵심 한 줄]\n"
+            "[먼저 확인할 것]\n"
             "검증 체크리스트:\n"
             "1. claim을 분리한다\n"
             "2. citation 원문 위치를 찾는다\n"
             "3. evidence가 claim을 직접 지지하는지 표시한다\n"
             "---\n"
-            "[핵심 한 줄]\n"
+            "[저장해둘 프롬프트]\n"
             "오늘 적용할 문장:\n\n"
             "\"각 claim마다 citation이 실제로 받치는 범위를 표시해줘.\"\n"
             "---\n"
-            "[핵심 한 줄]\n"
-            "참고해서 볼 만한 것:\n"
+            "[참고 논문]\n"
             "https://github.com/example/research-skills\n"
             "- 볼 부분: source fact를 citation 검증 기준으로 바꾸는 단서\n\n"
+            "[나의 견해]\n"
             "source가 실제로 제공한 것과 우리 해석을 분리하세요."
         )
         gate = quality_gate(
@@ -198,8 +201,49 @@ class SelfImprovementLoopTests(unittest.TestCase):
         thread = build_fallback_thread(candidate, routing, analysis)
         validate_thread(thread)
         self.assertNotIn("GitHub stars는 인기 신호일 뿐이고", thread)
-        self.assertIn("[핵심 한 줄]", thread)
+        self.assertIn("[저장해둘 프롬프트]", thread)
         self.assertNotEqual(quality_gate(thread, routing)["decision"], "discard")
+
+    def test_curation_log_boosts_matching_future_signals(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "curation.jsonl"
+            path.write_text(
+                json.dumps(
+                    {
+                        "codex_gate_decision": "keep",
+                        "selected_content_axis": "official_update",
+                        "selected_format_type": "tiny_source_case",
+                        "preferred_future_signals": ["superseded fact", "research workflow"],
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            records = load_curation_log(path)
+
+        candidate = {
+            "title": "Superseded fact memory update",
+            "description": "A research workflow for current and old facts.",
+            "content_axis": "official_update",
+            "format_type": "tiny_source_case",
+            "score": {"total": 30},
+        }
+        self.assertGreater(curation_bonus(candidate, records), 0)
+
+    def test_choose_candidates_uses_curation_bonus(self) -> None:
+        records = [
+            {
+                "codex_gate_decision": "keep",
+                "preferred_future_signals": ["superseded fact"],
+            }
+        ]
+        candidates = [
+            {"title": "generic paper", "score": {"total": 40}, "url": "https://example.com/a"},
+            {"title": "superseded fact workflow", "score": {"total": 36}, "url": "https://example.com/b"},
+        ]
+        selected = choose_candidates(candidates, count=1, curation_records=records)
+        self.assertEqual(selected[0]["url"], "https://example.com/b")
 
     def test_groq_size_limit_retries_with_smaller_completion_budget(self) -> None:
         class FakeResponse:
@@ -334,6 +378,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
                 str(root / "missing-learnings.md"),
                 "--skills-library-dir",
                 str(root / "missing-skills"),
+                "--curation-log-path",
+                str(root / "missing-curation.jsonl"),
                 "--review-dir",
                 str(root / "review"),
                 "--run-log-dir",

@@ -25,6 +25,9 @@ daily-editor/runs/
 daily-editor/evaluations/
   실행 로그와 evaluator 로그.
 
+daily-editor/curation/
+  Codex가 후보를 고른 이유, 자동 1위 후보를 넘긴 이유, 사용자 취향 신호를 남기는 JSONL 로그.
+
 daily-editor/proposals/
 daily-editor/memory/
   자동 생성되는 learning 제안과 weekly metrics memory.

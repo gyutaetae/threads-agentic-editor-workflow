@@ -10,6 +10,10 @@ This file is loaded near the top of the generation prompt. Keep it short. Add on
 - In automatic mode, do not claim first-person experience unless the user supplied it.
 - Avoid repeating the old always-on teaching card: bad request, four good requests, bracketed replies, prompt pack, source reply.
 - Use Korean for names and general prose. Keep English only for technical terms such as `claim`, `evidence`, `limitation`, `citation`, `AI agent`, `workflow`, and `prompt`.
+- For corrective posts, use a memorable failure frame: `만약 [잘못된 방식]으로 하고 있나요? 그렇다면 [비유를 통한 잘못된 이유]입니다.`
+- Replace repeated generic labels like `[핵심 한 줄]` with a one-line summary that matches each reply's role.
+- Checklist items should explain when a researcher would use the criterion, not only what the criterion is.
+- When linking a methodology source, explain why it belongs in the post before giving the URL.
 
 ## Avoid
 

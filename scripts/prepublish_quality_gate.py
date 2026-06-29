@@ -127,6 +127,9 @@ def main() -> int:
     reusable_markers = [
         "예시 프롬프트",
         "바로 써볼 프롬프트",
+        "저장해둘 프롬프트",
+        "저장해두고 적용해볼 프롬프트",
+        "실전에서 사용할 프롬프트",
         "오늘 적용할 문장",
         "AI agent에게 이렇게 시켜보세요",
         "논문 읽을 때 붙여 넣을 문장",
@@ -156,7 +159,22 @@ def main() -> int:
     if not any(marker in main for marker in ["흐려", "애매", "흔들", "놓치", "실패", "위험", "잘못", "검증", "근거"]):
         warnings.append("Main hook may be flat; consider a sharper diagnostic consequence.")
 
-    if "해석" not in joined and "예시" not in joined:
+    if joined.count("[핵심 한 줄]") >= 2:
+        warnings.append("Repeated generic '[핵심 한 줄]' labels make replies feel templated.")
+
+    has_source_application = False
+    for part in parts:
+        if URL_RE.search(part) and "- 볼 부분:" in part:
+            url_match = URL_RE.search(part)
+            if not url_match:
+                continue
+            before_url = part[: url_match.start()].strip()
+            after_url = part[url_match.end() :].strip()
+            has_source_application = (
+                len(before_url) >= 20 and len(after_url) >= 40
+            ) or ("[참고 논문]" in part and "[나의 견해]" in part)
+
+    if URL_RE.search(joined) and not has_source_application:
         warnings.append("Chain may not clearly separate source facts from interpretation.")
 
     print(f"Checked {path} ({len(parts)} parts)")

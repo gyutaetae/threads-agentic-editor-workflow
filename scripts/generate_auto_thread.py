@@ -36,6 +36,8 @@ HYPE_WORDS = ["무조건", "혁명", "논문 끝", "개발자 끝", "역대급",
 PRACTICAL_MARKERS = [
     "예시 프롬프트",
     "바로 써볼 프롬프트",
+    "저장해둘 프롬프트",
+    "저장해두고 적용해볼 프롬프트",
     "오늘 적용할 문장",
     "AI agent에게 이렇게 시켜보세요",
     "논문 읽을 때 붙여 넣을 문장",
@@ -81,23 +83,23 @@ CANONICAL_STYLE_EXAMPLE = """논문 초안을 AI에게 맡길 때 자주 생기�
 "이 문장 더 학술적으로 고쳐줘"라고만 시키면
 문장은 좋아지는데 claim, evidence, citation 연결은 그대로 비어 있을 수 있습니다.
 ---
-[핵심 한 줄]
+[먼저 확인할 것]
 초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.
 
 1. claim이 한 문장으로 분리되는가
 2. evidence가 표, 실험, 인용 위치와 연결되는가
 3. citation이 실제로 그 claim을 받치는가
 ---
-[핵심 한 줄]
+[저장해둘 프롬프트]
 논문 읽을 때 붙여 넣을 문장:
 
 "이 초안을 claim, evidence, limitation, citation으로 나눠줘. 각 claim마다 근거 위치와 citation이 실제로 받치는 범위를 따로 표시해줘."
 ---
-[핵심 한 줄]
-참고해서 볼 만한 것:
+[참고 논문]
 https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
 - 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조
 
+[나의 견해]
 다음 논문 요약 전에는 claim 하나와 evidence 하나만 먼저 연결해보세요."""
 
 LEGACY_FORMAT_MAP = {
@@ -552,6 +554,63 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
     return entries[-limit:]
 
 
+def load_curation_log(path: Path, limit: int = 50) -> list[dict]:
+    if not path.exists():
+        return []
+
+    records = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(record, dict):
+            records.append(record)
+    return records[-limit:]
+
+
+def curation_bonus(item: dict, curation_records: list[dict]) -> int:
+    if not curation_records:
+        return 0
+
+    text = " ".join(
+        [
+            str(item.get("title") or item.get("name") or ""),
+            str(item.get("description") or ""),
+            str(item.get("readme_summary") or ""),
+            str(item.get("our_angle") or ""),
+            str(item.get("content_axis") or ""),
+            str(item.get("format_type") or ""),
+        ]
+    ).lower()
+    url = str(item.get("url") or "").strip().lower()
+    axis = str(item.get("content_axis") or "")
+    fmt = str(item.get("format_type") or "")
+    bonus = 0
+
+    for record in curation_records[-12:]:
+        if str(record.get("codex_gate_decision") or "keep").lower() not in {"keep", "publish", "draft"}:
+            continue
+        if url and url == str(record.get("codex_selected_url") or "").strip().lower():
+            bonus += 6
+        if axis and axis == record.get("selected_content_axis"):
+            bonus += 3
+        if fmt and fmt == record.get("selected_format_type"):
+            bonus += 3
+        for signal in record.get("preferred_future_signals") or []:
+            signal_text = str(signal).lower().strip()
+            if signal_text and signal_text in text:
+                bonus += 5
+        for preference in record.get("human_preference") or []:
+            preference_text = str(preference).lower().strip()
+            if preference_text and preference_text in text:
+                bonus += 2
+
+    return min(bonus, 18)
+
+
 def extract_text(payload: dict) -> str:
     choices = payload.get("choices")
     if isinstance(choices, list) and choices:
@@ -624,26 +683,25 @@ def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str
             f"{problem}"
         ),
         (
-            "[핵심 한 줄]\n"
+            "[먼저 확인할 것]\n"
             "초안보다 먼저 검증할 중간 산출물을 정해야 합니다.\n\n"
             "1. claim이 분리되는가\n"
             "2. evidence 위치가 남는가\n"
             "3. limitation과 citation 범위가 따로 보이는가"
         ),
         (
-            "[핵심 한 줄]\n"
-            "AI agent에게 이렇게 시켜보세요:\n\n"
+            "[저장해둘 프롬프트]\n\n"
             "\"이 논문 작업을 reader, synthesizer, critic, citation checker로 나눠줘. "
             "각 역할은 output, evidence, failure mode를 따로 적어줘.\"\n\n"
             f"목표는 {workflow_action}"
         ),
         (
-            "[핵심 한 줄]\n"
-            "참고해서 볼 만한 것:\n"
+            "[참고 논문]\n"
             f"{source_url}\n"
             f"- 볼 부분: {source_title}에서 source fact를 연구 workflow로 바꾸는 단서\n\n"
-            "다음 요청 전에는 source가 실제로 말한 것과\n"
-            "내가 적용하려는 해석을 한 줄씩 나눠보세요."
+            "[나의 견해]\n"
+            "다음 요청 전에는 source fact와\n"
+            "내가 적용하려는 workflow 해석을 한 줄씩 나눠보세요."
         ),
     ]
     return "\n---\n".join(parts)
@@ -660,8 +718,8 @@ def validate_thread(thread_text: str) -> None:
             raise SystemExit(f"Generated part {index} still has a drafting label such as Main: or Reply n:.")
         if len(part) > MAX_CHARS:
             raise SystemExit(f"Generated part {index} is {len(part)} chars; limit is {MAX_CHARS}.")
-        if index >= 2 and not part.startswith("[핵심 한 줄]"):
-            raise SystemExit(f"Generated part {index} must start with [핵심 한 줄].")
+        if index >= 2 and not BRACKET_HEADING_RE.match(part):
+            raise SystemExit(f"Generated part {index} must start with a role-specific bracket label.")
     if URL_RE.search(parts[0]):
         raise SystemExit("Generated main post contains a source link; move links to Reply 3.")
     if not has_practical_element(thread_text):
@@ -687,7 +745,7 @@ def validate_thread(thread_text: str) -> None:
         raise SystemExit("Generated reference reply must link an actual example, not the NotebookLM homepage.")
     if URL_RE.search(joined) and "- 볼 부분:" not in joined and "인용 원문:" not in joined:
         raise SystemExit("Generated source links must explain what to inspect with '- 볼 부분:' or cite a quote source with '인용 원문:'.")
-    if URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation"]):
+    if URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation", "[나의 견해]"]):
         raise SystemExit("Generated source reply must separate source fact from account interpretation.")
 
 
@@ -717,7 +775,7 @@ def validate_quote_selection(thread_text: str, data: dict, source_item: dict) ->
     return quote_suggestion
 
 
-def rank_candidate(item: dict, post_slot: str = "morning") -> tuple[int, int]:
+def rank_candidate(item: dict, post_slot: str = "morning", curation_records: list[dict] | None = None) -> tuple[int, int, int]:
     if post_slot == "evening":
         preferred = {"workflow_mode", "repo_teardown", "official_update", "checklist"}
     else:
@@ -725,11 +783,17 @@ def rank_candidate(item: dict, post_slot: str = "morning") -> tuple[int, int]:
 
     score = int(item.get("score", {}).get("total") or 0)
     axis_bonus = 8 if item.get("content_axis") in preferred else 0
-    return score + axis_bonus, score
+    codex_bonus = curation_bonus(item, curation_records or [])
+    return score + axis_bonus + codex_bonus, score, codex_bonus
 
 
-def choose_candidates(candidates: list[dict], post_slot: str = "morning", count: int = DEFAULT_GENERATION_CANDIDATES) -> list[dict]:
-    ranked = sorted(candidates, key=lambda item: rank_candidate(item, post_slot), reverse=True)
+def choose_candidates(
+    candidates: list[dict],
+    post_slot: str = "morning",
+    count: int = DEFAULT_GENERATION_CANDIDATES,
+    curation_records: list[dict] | None = None,
+) -> list[dict]:
+    ranked = sorted(candidates, key=lambda item: rank_candidate(item, post_slot, curation_records), reverse=True)
     selected = []
     seen_urls = set()
     for item in ranked:
@@ -787,16 +851,18 @@ def build_prompt(
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
         "- Use exactly 4 parts total. This is a hard rule.\n"
-        "- Part 1: problem hook. Rotate recent-history hook style: direct problem, failure scene, or judgment sentence. Do not include [핵심 한 줄] here.\n"
-        "- Part 2: must start with '[핵심 한 줄]' and give 3 concrete diagnosis criteria/checks by default.\n"
-        "- Part 3: must start with '[핵심 한 줄]' and include one copyable Korean prompt, checklist, or AI agent instruction.\n"
-        "- Part 4: must start with '[핵심 한 줄]', include the source URL, '- 볼 부분:', source fact/account interpretation boundary, and a closing next action.\n"
+        "- Part 1: problem hook. Rotate recent-history hook style: direct problem, failure scene, or judgment sentence. Do not include a bracket label here.\n"
+        "- Part 2: start with a role-specific Korean bracket label such as '[먼저 확인할 것]' and give 3 concrete diagnosis criteria/checks by default.\n"
+        "- Part 3: start with '[저장해둘 프롬프트]' when it contains a reusable prompt; otherwise use a role-specific bracket label for the reusable checklist or agent instruction.\n"
+        "- Part 4: start with '[참고 논문]' or another source-specific bracket label, include the source URL, '- 볼 부분:', and separate source facts from '[나의 견해]'.\n"
         "- Each part must be under 500 Korean characters.\n"
         "- Main must be easy to understand and must not contain external links.\n"
-        "- Use Korean labels. Parts 2-4 must use '[핵심 한 줄]'. Avoid English structural labels.\n"
+        "- Use Korean role labels. Avoid repeated generic '[핵심 한 줄]' labels and avoid English structural labels.\n"
+        "- The account's north star: remove the difficulty and complexity of reading papers by turning a paper's useful claim into a practical way to read, compare, draft, verify, or revise research text.\n"
+        "- Do not stop at summarizing what a paper says. Show how the source can be used in real paper-writing work.\n"
         "- Use a bad request in Part 1 only for direct-problem or failure-scene hooks. Do not force a full bad/good request card.\n"
         "- Every chain must include one reusable unit: a practical prompt, verification checklist, agent-role instruction, or source-to-workflow template.\n"
-        "- Prefer labels such as '바로 써볼 프롬프트:', '오늘 적용할 문장:', 'AI agent에게 이렇게 시켜보세요:', '논문 읽을 때 붙여 넣을 문장:', or '다음 요약 전에 써볼 질문:'. Rotate the label so it does not feel templated.\n"
+        "- Prefer concise labels such as '[저장해둘 프롬프트]', '[먼저 확인할 것]', '[참고 논문]', and '[나의 견해]'. Rotate labels so they fit the reply's role.\n"
         "- Derived questions must be practical: diagnostic question, verification question, or next-action question. Avoid philosophical questions.\n"
         "- If source links are used, put them in the final reply with full https:// URLs and '- 볼 부분: ...'.\n"
         "- Choose the first line as a sharp main-post hook. It should pull readers into the problem before the details.\n"
@@ -871,15 +937,19 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
         score -= 50
         reasons.append("Thread must use the fixed 4-part master template.")
         suggestions.append("Generate exactly 4 parts: hook, criteria, reusable action, source interpretation.")
-    if any(index >= 2 and not part.startswith("[핵심 한 줄]") for index, part in enumerate(parts, start=1)):
+    if any(index >= 2 and not BRACKET_HEADING_RE.match(part) for index, part in enumerate(parts, start=1)):
         score -= 35
-        reasons.append("Parts 2-4 must start with [핵심 한 줄].")
-        suggestions.append("Add the Korean [핵심 한 줄] label to each reply part.")
+        reasons.append("Parts 2-4 must start with role-specific bracket labels.")
+        suggestions.append("Use labels such as [먼저 확인할 것], [저장해둘 프롬프트], [참고 논문], or [나의 견해].")
+    if joined.count("[핵심 한 줄]") >= 2:
+        score -= 12
+        reasons.append("Repeated generic [핵심 한 줄] labels make the thread feel templated.")
+        suggestions.append("Replace generic labels with role-specific one-line labels.")
     if any(phrase in joined for phrase in FORBIDDEN_FALLBACK_PHRASES):
         score -= 40
         reasons.append("Thread uses a retired fallback phrase.")
         suggestions.append("Replace generic GitHub-stars caveats with a source-specific next action.")
-    if parts and URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation"]):
+    if parts and URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation", "[나의 견해]"]):
         score -= 25
         reasons.append("Source reply does not separate source fact from account interpretation.")
         suggestions.append("In Part 4, name what the source provides and how the account applies it.")
@@ -1129,6 +1199,7 @@ def main() -> int:
     parser.add_argument("--weekly-memory-path", default="daily-editor/memory/weekly-editorial-memory.md")
     parser.add_argument("--learnings-path", default="docs/learnings.md")
     parser.add_argument("--skills-library-dir", default="skills_library")
+    parser.add_argument("--curation-log-path", default="daily-editor/curation/codex-curation-log.jsonl")
     parser.add_argument("--review-dir", default="daily-editor/review")
     parser.add_argument("--run-log-dir", default="daily-editor/runs")
     parser.add_argument("--evaluation-dir", default="daily-editor/evaluations")
@@ -1169,8 +1240,9 @@ def main() -> int:
     weekly_memory = read_optional_text(Path(args.weekly_memory_path), max_chars=WEEKLY_MEMORY_PROMPT_CHARS)
     persistent_learnings = read_optional_text(Path(args.learnings_path), max_chars=LEARNINGS_PROMPT_CHARS)
     skill_library = read_skill_library(Path(args.skills_library_dir))
+    curation_records = load_curation_log(Path(args.curation_log_path))
     review_dir = Path(args.review_dir)
-    selected_candidates = choose_candidates(candidates, args.post_slot, max(1, args.generation_candidates))
+    selected_candidates = choose_candidates(candidates, args.post_slot, max(1, args.generation_candidates), curation_records)
     candidate_by_url = {item.get("url"): item for item in candidates if item.get("url")}
     generated_options = []
 
@@ -1387,6 +1459,9 @@ def main() -> int:
         "recent_history": recent_history,
         "persistent_learnings_path": args.learnings_path,
         "skills_library_dir": args.skills_library_dir,
+        "curation_log_path": args.curation_log_path,
+        "curation_records_used": len(curation_records),
+        "selected_candidate_curation_bonus": curation_bonus(selected_candidate, curation_records),
         "evaluator": {
             "score": evaluator_result.get("score", 0),
             "decision": evaluator_result.get("decision", "revise"),
@@ -1450,6 +1525,8 @@ def main() -> int:
             "weekly_memory_path": args.weekly_memory_path,
             "learnings_path": args.learnings_path,
             "skills_library_dir": args.skills_library_dir,
+            "curation_log_path": args.curation_log_path,
+            "curation_records_used": len(curation_records),
             "recent_history_count": len(recent_history),
             "recent_hook_count": len(recent_hooks),
         },

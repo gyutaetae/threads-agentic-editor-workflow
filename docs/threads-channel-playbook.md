@@ -14,6 +14,12 @@ AI agent로 논문 읽기, 요약, 리서치 정리, 초안 작성, citation 검
 
 This is not an AI news account, quote account, or generic prompt account. A good post starts from a real paper-work problem and ends with something reusable.
 
+## Editorial North Star
+
+The account's job is to remove the reading difficulty and operational complexity around papers.
+
+Each post should translate a paper's useful claim into a practical way of working: how the idea helps someone read, compare, draft, verify, or revise research text in real life. Do not stop at summarizing what a paper says. Show how to turn the paper's value into a concrete research workflow.
+
 ## Audience Problems
 
 - AI 요약이 실제 이해로 이어졌는지 확인하기 어렵다.
@@ -241,12 +247,43 @@ Persistent files:
 
 - `docs/learnings.md`: short promoted rules injected near the top of future generation prompts.
 - `skills_library/*.md`: crystallized reusable patterns from good runs.
+- `daily-editor/curation/codex-curation-log.jsonl`: Codex editor decisions about why one candidate or draft was chosen over another.
 - `daily-editor/runs/*.json`: full execution logs.
 - `daily-editor/evaluations/*.eval.json`: evaluator critique logs.
 - `daily-editor/proposals/*.md`: approval queue, not loaded by generation.
 - `daily-editor/memory/*.md`: weak metrics memory, not a hard rule.
 
 Do not let the agent rewrite prompts/code automatically yet. Proposal files must be reviewed before promotion.
+
+## Codex Curation Gate
+
+Keep this separate from automatic quality gates.
+
+Automatic gates check whether a generated thread follows the format, includes a reusable unit, avoids broken source handling, and passes basic publish safety. The Codex curation gate records editorial judgment: why a candidate was chosen, why a higher-scored candidate was skipped, how the paper's claim becomes a practical research workflow, and which human taste signals should affect future drafts.
+
+Use `daily-editor/curation/codex-curation-log.jsonl` for one record per curated post. Future automatic selection may use this as a weak bonus, but it should not override source quality, source freshness, or the channel's north star.
+
+## Human Taste Learning Loop
+
+Use this loop when a human edits an AI-generated draft before publishing.
+
+```text
+AI draft -> human revision -> diff analysis -> preference proposal -> human promotion -> next generation
+```
+
+Keep the artifacts separate from automatic evaluator feedback:
+
+- `ai-draft.txt`: the model's original draft.
+- `user-revision.txt`: the human-edited version.
+- `diff.json`: concrete changes grouped by hook, structure, wording, reusable unit, and source handling.
+- `preference.proposed.md`: durable rule candidates inferred from the edit.
+
+Promotion rules:
+
+- One-off wording changes stay as revision notes.
+- Repeated preference patterns go to `docs/learnings.md` first.
+- Channel-level rules move into this playbook only after repeated evidence.
+- Do not promote a preference if it weakens source separation, citation discipline, or the reusable unit.
 
 ## Success Criteria
 

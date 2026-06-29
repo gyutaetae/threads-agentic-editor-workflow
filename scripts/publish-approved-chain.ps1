@@ -47,43 +47,48 @@ try {
         python .\scripts\prepublish_quality_gate.py --thread-path $ThreadPath --strict
     }
 
-    $argsList = @(
-        ".\scripts\threads_auto_upload.py",
-        "publish-approved-chain",
-        "--thread-path", $ThreadPath,
-        "--topic", $Topic,
-        "--format", $Format,
-        "--content-axis", $ContentAxis,
-        "--format-type", $FormatType,
-        "--post-goal", $PostGoal,
-        "--final-candidate-score", $FinalCandidateScore,
-        "--quality-score", $QualityScore,
-        "--source-type", $SourceType,
-        "--post-slot", $PostSlot,
-        "--experiment-group", $ExperimentGroup,
-        "--model", $Model,
-        "--source-count", $SourceCount,
-        "--source-name", $SourceName,
-        "--source-url", $SourceUrl,
-        "--series", $Series,
-        "--series-part", $SeriesPart,
-        "--public-theme", $PublicTheme,
-        "--topic-pillar", $TopicPillar,
-        "--workflow-stage", $WorkflowStage,
-        "--failure-mode", $FailureMode,
-        "--solution-pattern", $SolutionPattern,
-        "--bad-request", $BadRequest,
-        "--quote-id", $QuoteId,
-        "--quote-speaker", $QuoteSpeaker,
-        "--quote-source-url", $QuoteSourceUrl,
-        "--human-signal-source", $HumanSignalSource,
-        "--human-signal-type", $HumanSignalType,
-        "--research-problem", $ResearchProblem,
-        "--hook-pattern", $HookPattern,
-        "--structure-pattern", $StructurePattern,
-        "--closer-pattern", $CloserPattern,
-        "--reusable-unit-type", $ReusableUnitType
-    )
+    $argsList = @(".\scripts\threads_auto_upload.py", "publish-approved-chain")
+
+    function Add-OptionalArg([string]$Name, [object]$Value) {
+        if ($null -ne $Value -and [string]$Value -ne "") {
+            $script:argsList += $Name
+            $script:argsList += [string]$Value
+        }
+    }
+
+    Add-OptionalArg "--thread-path" $ThreadPath
+    Add-OptionalArg "--topic" $Topic
+    Add-OptionalArg "--format" $Format
+    Add-OptionalArg "--content-axis" $ContentAxis
+    Add-OptionalArg "--format-type" $FormatType
+    Add-OptionalArg "--post-goal" $PostGoal
+    Add-OptionalArg "--final-candidate-score" $FinalCandidateScore
+    Add-OptionalArg "--quality-score" $QualityScore
+    Add-OptionalArg "--source-type" $SourceType
+    Add-OptionalArg "--post-slot" $PostSlot
+    Add-OptionalArg "--experiment-group" $ExperimentGroup
+    Add-OptionalArg "--model" $Model
+    Add-OptionalArg "--source-count" $SourceCount
+    Add-OptionalArg "--source-name" $SourceName
+    Add-OptionalArg "--source-url" $SourceUrl
+    Add-OptionalArg "--series" $Series
+    Add-OptionalArg "--series-part" $SeriesPart
+    Add-OptionalArg "--public-theme" $PublicTheme
+    Add-OptionalArg "--topic-pillar" $TopicPillar
+    Add-OptionalArg "--workflow-stage" $WorkflowStage
+    Add-OptionalArg "--failure-mode" $FailureMode
+    Add-OptionalArg "--solution-pattern" $SolutionPattern
+    Add-OptionalArg "--bad-request" $BadRequest
+    Add-OptionalArg "--quote-id" $QuoteId
+    Add-OptionalArg "--quote-speaker" $QuoteSpeaker
+    Add-OptionalArg "--quote-source-url" $QuoteSourceUrl
+    Add-OptionalArg "--human-signal-source" $HumanSignalSource
+    Add-OptionalArg "--human-signal-type" $HumanSignalType
+    Add-OptionalArg "--research-problem" $ResearchProblem
+    Add-OptionalArg "--hook-pattern" $HookPattern
+    Add-OptionalArg "--structure-pattern" $StructurePattern
+    Add-OptionalArg "--closer-pattern" $CloserPattern
+    Add-OptionalArg "--reusable-unit-type" $ReusableUnitType
 
     if ($CardUsed) {
         $argsList += "--card-used"
