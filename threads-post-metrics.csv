@@ -25,12 +25,12 @@
 4. **Limitation 체크**: 인용된 연구의 한계가 claim과 어울리는가?
 5. **출처 위치**: 논문 섹션(예: Results, Discussion)에서 인용 위치를 기록한다.
 6. **지원 강도**: 직접적인 실험 결과 vs. 간접적 논의 등 강도를 평가한다.
-*이 체크리스트를 복사해 매 논문 검증 시 바로 사용하세요.*",1,github_repo,https://github.com/Leey21/awesome-ai-research-writing,50,92,evening,manual_evening,openai/gpt-oss-120b,false,2026-06-27T23:15:55+09:00,0,0,0,0,0,0,0,0,,,0,"auto-recorded after publish | metrics skipped: 24h: 400 Client Error for url: https://graph.threads.net/v1.0/17895262446477138/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
+*이 체크리스트를 복사해 매 논문 검증 시 바로 사용하세요.*",1,github_repo,https://github.com/Leey21/awesome-ai-research-writing,50,92,evening,manual_evening,openai/gpt-oss-120b,false,2026-06-27T23:15:55+09:00,0,0,0,0,0,0,0,0,,,0,"auto-recorded after publish | metrics skipped: 24h: 400 Client Error for url: https://graph.threads.net/v1.0/17895262446477138/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error | metrics skipped: 72h: 400 Client Error for url: https://graph.threads.net/v1.0/17895262446477138/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
 2026-06-27,18168433057442701,https://www.threads.net/@arxiv.ai/post/18168433057442701,tiny_source_case,tiny_source_case,official_update,share,agent_role_confusion,AI에게 논문 작업을 맡길 때,"AI에게 논문 작업을 맡길 때
 가장 먼저 정할 것은 모델이 아니라 작업 경계입니다.
 
 오늘 문제는 이것입니다.
-하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.",1,official_feed,https://github.blog/ai-and-ml/llms/accelerating-researchers-and-developers-building-multilingual-ai-with-a-new-open-dataset/,40,92,evening,manual_evening,openrouter/free,false,2026-06-27T23:34:00+09:00,3561,0,3,3,0,0,3,2,,,0,auto-recorded after publish | metrics collected: 24h
+하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.",1,official_feed,https://github.blog/ai-and-ml/llms/accelerating-researchers-and-developers-building-multilingual-ai-with-a-new-open-dataset/,40,92,evening,manual_evening,openrouter/free,false,2026-06-27T23:34:00+09:00,3629,0,3,3,0,0,3,2,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-06-28,18104256953020400,https://www.threads.net/@arxiv.ai/post/18104256953020400,workflow_observation,workflow_observation,opinion,comment,citation_doubt,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
@@ -47,11 +47,11 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 
 예전 가정, 바뀐 실험 설정, 수정 전 claim이 섞이면
 agent는 ""기억을 많이 한 것""처럼 보이면서도
-지금 써야 할 사실을 놓칠 수 있습니다.",1,official_feed,https://arxiv.org/abs/2606.27472,46,manual_pass,evening,manual_evening,codex-manual,false,2026-06-29T17:07:46+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+지금 써야 할 사실을 놓칠 수 있습니다.",1,official_feed,https://arxiv.org/abs/2606.27472,46,manual_pass,evening,manual_evening,codex-manual,false,2026-06-29T17:07:46+09:00,1014,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-06-29,17889401166569630,https://www.threads.net/@arxiv.ai/post/17889401166569630,tiny_source_case,tiny_source_case,official_update,share,evidence_missing,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-주장은 있지만 evidence가 표, 그림, 실험, 데이터와 연결되지 않는다.",1,official_feed,https://arxiv.org/abs/2606.27598,51,100,evening,daily_1800_kst,openrouter/free,false,2026-06-29T22:12:03+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+주장은 있지만 evidence가 표, 그림, 실험, 데이터와 연결되지 않는다.",1,official_feed,https://arxiv.org/abs/2606.27598,51,100,evening,daily_1800_kst,openrouter/free,false,2026-06-29T22:12:03+09:00,3997,0,3,3,0,0,2,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-06-30,18064338383713475,https://www.threads.net/@arxiv.ai/post/18064338383713475,tiny_source_case,tiny_source_case,official_update,share,method_understanding_gap,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
