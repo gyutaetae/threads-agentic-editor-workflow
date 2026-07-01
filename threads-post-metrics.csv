@@ -34,7 +34,7 @@
 2026-06-28,18104256953020400,https://www.threads.net/@arxiv.ai/post/18104256953020400,workflow_observation,workflow_observation,opinion,comment,citation_doubt,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.",1,github_repo,https://github.com/academic/awesome-datascience,41,92,evening,daily_1800_kst,openrouter/free,false,2026-06-28T20:13:00+09:00,5867,0,3,3,0,0,6,0,,,0,auto-recorded after publish | metrics collected: 24h
+AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.",1,github_repo,https://github.com/academic/awesome-datascience,41,92,evening,daily_1800_kst,openrouter/free,false,2026-06-28T20:13:00+09:00,5921,16,3,3,0,0,6,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-06-28,18115217950872584,https://www.threads.net/@arxiv.ai/post/18115217950872584,manual,workflow_observation,workflow_mode,save,AI 초안 diff 학습,만약 AI가 쓴 논문 초안을,"만약 AI가 쓴 논문 초안을
 문장만 예쁘게 다듬고 끝내고 있나요?
 
@@ -55,7 +55,7 @@ agent는 ""기억을 많이 한 것""처럼 보이면서도
 2026-06-30,18064338383713475,https://www.threads.net/@arxiv.ai/post/18064338383713475,tiny_source_case,tiny_source_case,official_update,share,method_understanding_gap,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2606.28562,48,100,evening,daily_1800_kst,openrouter/free,false,2026-06-30T20:49:59+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2606.28562,48,100,evening,daily_1800_kst,openrouter/free,false,2026-06-30T20:49:59+09:00,6807,11,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-07-01,18010633424870122,https://www.threads.net/@arxiv.ai/post/18010633424870122,research_checklist,research_checklist,official_update,save,claim_evidence_mapping,LLM 논문에서,"LLM 논문에서
 ""모델이 뭔가를 배웠다""는 문장을 봤는데
 내가 그 근거를 실험으로 설명 못하면,
