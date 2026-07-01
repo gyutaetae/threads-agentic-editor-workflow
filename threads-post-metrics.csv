@@ -41,7 +41,7 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 그렇다면 잘못 푼 답안지에 빨간펜만 예쁘게 긋고 있는 겁니다.
 
 내가 왜 고쳤는지 설명하지 못하면,
-그건 편집이 아니라 다음 초안을 또 맡기는 대리 작성입니다.",1,official_docs,https://platform.openai.com/docs/guides/evals,,,evening,human_taste_loop,manual,false,2026-06-28T13:28:11+09:00,11305,2,3,3,0,0,15,1,,,0,auto-recorded after publish | metrics collected: 24h
+그건 편집이 아니라 다음 초안을 또 맡기는 대리 작성입니다.",1,official_docs,https://platform.openai.com/docs/guides/evals,,,evening,human_taste_loop,manual,false,2026-06-28T13:28:11+09:00,11349,2,3,3,0,0,15,1,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-06-29,18366569587230193,https://www.threads.net/@arxiv.ai/post/18366569587230193,manual_codex_curation,tiny_source_case,official_update,save,AI agent memory,"AI agent에게 오래된 대화까지 전부 넣으면 더 똑똑해질 것 같지만,","AI agent에게 오래된 대화까지 전부 넣으면 더 똑똑해질 것 같지만,
 논문 작업에서는 반대로 위험할 때가 있습니다.
 
