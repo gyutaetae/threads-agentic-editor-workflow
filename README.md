@@ -95,7 +95,13 @@ $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw |
   -Model $metadata.model `
   -SourceCount ([int]$metadata.source_count) `
   -SourceName $metadata.source_name `
-  -SourceUrl $metadata.source_url
+  -SourceUrl $metadata.source_url `
+  -WorkflowStage $metadata.workflow_stage `
+  -FailureMode $metadata.failure_mode `
+  -ResearchProblem $metadata.research_problem `
+  -ArtifactType $metadata.artifact_type `
+  -HookPattern $metadata.hook_pattern `
+  -ReusableUnitType $metadata.reusable_unit_type
 ```
 
 ## Auto Publish

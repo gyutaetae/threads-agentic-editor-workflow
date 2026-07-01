@@ -29,6 +29,7 @@ param(
     [string]$HumanSignalSource = "",
     [string]$HumanSignalType = "",
     [string]$ResearchProblem = "",
+    [string]$ArtifactType = "",
     [string]$HookPattern = "",
     [string]$StructurePattern = "",
     [string]$CloserPattern = "",
@@ -85,6 +86,7 @@ try {
     Add-OptionalArg "--human-signal-source" $HumanSignalSource
     Add-OptionalArg "--human-signal-type" $HumanSignalType
     Add-OptionalArg "--research-problem" $ResearchProblem
+    Add-OptionalArg "--artifact-type" $ArtifactType
     Add-OptionalArg "--hook-pattern" $HookPattern
     Add-OptionalArg "--structure-pattern" $StructurePattern
     Add-OptionalArg "--closer-pattern" $CloserPattern

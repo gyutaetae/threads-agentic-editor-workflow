@@ -140,6 +140,50 @@ HUMAN_SIGNAL_TYPES = {
     "reviewer_anxiety",
     "method_understanding_gap",
 }
+ARTIFACT_BY_FAILURE_MODE = {
+    "false_fluency": "summary_verification_grid",
+    "claim_reference_mismatch": "citation_support_table",
+    "claim_evidence_link_missing": "claim_evidence_map",
+    "method_steps_not_reproducible": "reproducibility_protocol",
+    "comparison_axis_missing": "literature_comparison_matrix",
+    "argument_structure_missing": "problem_gap_contribution_outline",
+    "revision_without_rule": "revision_rule_diff",
+    "weakness_not_prechecked": "reviewer_risk_checklist",
+    "roles_collapsed_into_one_agent": "agent_role_instruction",
+}
+ARTIFACT_OUTPUT_GUIDE = {
+    "summary_verification_grid": "claim, method, evidence, limitation을 분리한 검증표",
+    "citation_support_table": "claim마다 citation 원문 위치와 지지 범위를 표시한 표",
+    "claim_evidence_map": "claim을 표, 그림, 실험, 데이터에 연결한 근거 지도",
+    "reproducibility_protocol": "input, procedure, parameter, output, check로 나눈 재현 프로토콜",
+    "literature_comparison_matrix": "논문들을 같은 비교 축으로 정렬한 evidence matrix",
+    "problem_gap_contribution_outline": "problem, gap, contribution, evidence 순서의 초안 구조",
+    "revision_rule_diff": "human revision을 다음 초안 규칙으로 바꾼 diff",
+    "reviewer_risk_checklist": "reviewer가 물을 limitation과 반박 가능성 체크리스트",
+    "agent_role_instruction": "reader, synthesizer, critic, editor 역할별 output 지시문",
+}
+ARTIFACT_READER_TEST_GUIDE = {
+    "summary_verification_grid": "내가 claim, method, evidence, limitation을 설명 못하면",
+    "citation_support_table": "내가 citation이 어느 claim을 받치는지 설명 못하면",
+    "claim_evidence_map": "내가 claim을 어떤 실험, 표, 그림이 받치는지 설명 못하면",
+    "reproducibility_protocol": "내가 method를 재현 순서로 설명 못하면",
+    "literature_comparison_matrix": "내가 논문 간 차이를 같은 축으로 설명 못하면",
+    "problem_gap_contribution_outline": "내가 problem-gap-contribution을 설명 못하면",
+    "revision_rule_diff": "내가 수정 이유를 다음 초안 규칙으로 설명 못하면",
+    "reviewer_risk_checklist": "내가 reviewer가 물을 약점을 설명 못하면",
+    "agent_role_instruction": "내가 reader, critic, editor 역할을 나눠 설명 못하면",
+}
+ARTIFACT_FAILURE_JUDGMENT_GUIDE = {
+    "summary_verification_grid": "그건 요약이 아니라 대리 독서입니다.",
+    "citation_support_table": "그건 검증이 아니라 참고문헌 장식입니다.",
+    "claim_evidence_map": "그건 이해가 아니라 요약문 신뢰입니다.",
+    "reproducibility_protocol": "그건 방법론 이해가 아니라 방법론 복사입니다.",
+    "literature_comparison_matrix": "그건 literature review가 아니라 논문 목록 정리입니다.",
+    "problem_gap_contribution_outline": "그건 초안 작성이 아니라 문장 생산입니다.",
+    "revision_rule_diff": "그건 개선이 아니라 문장 수정입니다.",
+    "reviewer_risk_checklist": "그건 비판이 아니라 좋은 말 요약입니다.",
+    "agent_role_instruction": "그건 agent workflow가 아니라 한 에이전트에게 다 맡긴 것입니다.",
+}
 
 HOOK_PATTERNS = {
     "bad_usage": re.compile(r"만약|라고 사용하고 있다면|시키고 있다면"),
@@ -341,12 +385,17 @@ def classify_research_problem(candidate: dict, analysis: dict | None = None) -> 
         failure = "false_fluency"
         problem = "AI 요약이 깔끔하지만 실제 이해를 만들었는지 검증하기 어렵다."
 
+    artifact_type = ARTIFACT_BY_FAILURE_MODE.get(failure, "research_workflow_artifact")
     return {
         "human_signal_source": "inferred",
         "human_signal_type": signal,
         "workflow_stage": stage,
         "failure_mode": failure,
         "research_problem": problem,
+        "artifact_type": artifact_type,
+        "artifact_output": ARTIFACT_OUTPUT_GUIDE.get(artifact_type, "검증 가능한 연구 작업 산출물"),
+        "reader_test": ARTIFACT_READER_TEST_GUIDE.get(artifact_type, "내가 핵심 작업 단위를 설명 못하면"),
+        "failure_judgment": ARTIFACT_FAILURE_JUDGMENT_GUIDE.get(artifact_type, "그건 이해가 아니라 자동화 결과 신뢰입니다."),
         "diagnostic_question": f"지금 문제는 {problem}",
         "verification_question": "AI 결과가 claim, evidence, limitation으로 분리되어 검증 가능한가?",
         "next_action_question": "AI agent에게 다음에 맡길 가장 작은 작업 단위는 무엇인가?",
@@ -525,6 +574,7 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
             entry = json.loads(line)
         except json.JSONDecodeError:
             continue
+        artifact_type = entry.get("artifact_type") or ARTIFACT_BY_FAILURE_MODE.get(entry.get("failure_mode") or "")
         entries.append(
             {
                 "date": entry.get("date"),
@@ -535,6 +585,7 @@ def load_recent_history(path: Path, limit: int = 12) -> list[dict]:
                 "workflow_stage": entry.get("workflow_stage"),
                 "failure_mode": entry.get("failure_mode"),
                 "solution_pattern": entry.get("solution_pattern"),
+                "artifact_type": artifact_type,
                 "bad_request": entry.get("bad_request"),
                 "human_signal_source": entry.get("human_signal_source"),
                 "human_signal_type": entry.get("human_signal_type"),
@@ -858,8 +909,16 @@ def build_prompt(
         "- Each part must be under 500 Korean characters.\n"
         "- Main must be easy to understand and must not contain external links.\n"
         "- Use Korean role labels. Avoid repeated generic '[핵심 한 줄]' labels and avoid English structural labels.\n"
-        "- The account's north star: remove the difficulty and complexity of reading papers by turning a paper's useful claim into a practical way to read, compare, draft, verify, or revise research text.\n"
-        "- Do not stop at summarizing what a paper says. Show how the source can be used in real paper-writing work.\n"
+        "- The account's north star: AI가 논문을 대신 읽어주는 게 아니라, 독자가 설명할 수 있는 상태로 바꿔준다.\n"
+        "- Start from the reader test when possible: selected routing includes reader_test and failure_judgment.\n"
+        "- Strong pattern: '내가 [artifact target]을 설명 못하면, 그건 [good outcome]이 아니라 [failure judgment]입니다.'\n"
+        "- Use concrete contrast labels when they fit: 나쁜 요청/좋은 요청, 나쁜 읽기/좋은 읽기, 나쁜 검증/좋은 검증.\n"
+        "- Do not stop at summarizing what a paper says. Show what the reader can now explain, verify, reproduce, compare, or revise.\n"
+        "- Every chain must own exactly one research-work artifact from selected routing: artifact_type and artifact_output. This is the reader's reusable intermediate output.\n"
+        "- Compare against recent content-history fingerprints before writing. The new post must differ in at least two of: failure_mode, workflow_stage, artifact_type, hook_pattern, reusable_unit_type.\n"
+        "- If a recent post shares the same broad opening frame, make Part 1 start from the artifact-specific failure instead of a generic '논문 작업을 AI에게 한 번에 맡기면' frame.\n"
+        "- If a recent post shares the same failure_mode, use a clearly different artifact_type or discard that angle.\n"
+        "- Part 2 and Part 3 must name or strongly imply the artifact through checks, prompt wording, or agent instruction.\n"
         "- Use a bad request in Part 1 only for direct-problem or failure-scene hooks. Do not force a full bad/good request card.\n"
         "- Every chain must include one reusable unit: a practical prompt, verification checklist, agent-role instruction, or source-to-workflow template.\n"
         "- Prefer concise labels such as '[저장해둘 프롬프트]', '[먼저 확인할 것]', '[참고 논문]', and '[나의 견해]'. Rotate labels so they fit the reply's role.\n"
@@ -913,7 +972,12 @@ def has_practical_element(thread_text: str) -> bool:
     return any(marker in thread_text for marker in PRACTICAL_MARKERS)
 
 
-def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | None = None) -> dict:
+def quality_gate(
+    thread_text: str,
+    routing: dict,
+    recent_hooks: list[dict] | None = None,
+    recent_history: list[dict] | None = None,
+) -> dict:
     parts = [part.strip() for part in SEPARATOR_RE.split(thread_text.strip()) if part.strip()]
     score = 100
     reasons = []
@@ -932,6 +996,7 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
     main_first_line = next((line.strip() for line in main.splitlines() if line.strip()), "")
     hook_pattern = classify_hook_pattern(main)
     recent_patterns = [item.get("pattern") for item in (recent_hooks or []) if item.get("pattern")]
+    recent_history = recent_history or []
 
     if len(parts) != 4:
         score -= 50
@@ -997,6 +1062,32 @@ def quality_gate(thread_text: str, routing: dict, recent_hooks: list[dict] | Non
         score -= 8
         reasons.append(f"Factory-feel risk: hook pattern '{hook_pattern}' repeats the last 3 posts.")
         suggestions.append("Use a personal proof line, quote/idea hook, failed-request hook, or direct claim instead.")
+    same_artifact_history = [
+        item
+        for item in recent_history[-5:]
+        if item.get("failure_mode")
+        and item.get("failure_mode") == routing.get("failure_mode")
+        and item.get("artifact_type")
+        and item.get("artifact_type") == routing.get("artifact_type")
+    ]
+    if same_artifact_history:
+        score -= 8
+        artifact_type = routing.get("artifact_type") or "unknown"
+        reasons.append(f"Near-duplicate risk: recent post used the same failure_mode and artifact_type '{artifact_type}'.")
+        suggestions.append("Change the research-work artifact, or start Part 1 from a narrower artifact-specific failure.")
+    same_problem_frame_history = [
+        item
+        for item in recent_history[-5:]
+        if item.get("hook_pattern") == hook_pattern
+        and (
+            item.get("failure_mode") == routing.get("failure_mode")
+            or item.get("workflow_stage") == routing.get("workflow_stage")
+        )
+    ]
+    if same_problem_frame_history:
+        score -= 6
+        reasons.append("Near-duplicate risk: hook pattern repeats with the same failure or workflow stage.")
+        suggestions.append("Replace the generic opening frame with the artifact-specific contrast from selected routing.")
     if "오늘" not in joined and "내가" not in joined and "요즘" not in joined and "리처드 파인만" not in joined and "안드레이 카파시" not in joined and "폴 그레이엄" not in joined and routing.get("human_signal_source") != "inferred":
         score -= 5
         reasons.append("Thread has little human texture.")
@@ -1283,7 +1374,7 @@ def main() -> int:
             fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
             try:
                 validate_thread(fallback_thread_text)
-                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks)
+                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks, recent_history)
             except SystemExit as fallback_exc:
                 fallback_gate = {
                     "quality_score": 0,
@@ -1345,7 +1436,7 @@ def main() -> int:
         thread_text = normalize_thread_text(str(data.get("thread_text", "")).strip())
         try:
             validate_thread(thread_text)
-            gate = quality_gate(thread_text, routing, recent_hooks)
+            gate = quality_gate(thread_text, routing, recent_hooks, recent_history)
         except SystemExit as exc:
             gate = {
                 "quality_score": 0,
@@ -1357,7 +1448,7 @@ def main() -> int:
             fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
             try:
                 validate_thread(fallback_thread_text)
-                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks)
+                fallback_gate = quality_gate(fallback_thread_text, routing, recent_hooks, recent_history)
             except SystemExit:
                 fallback_gate = {"decision": "discard"}
             if fallback_gate.get("decision") != "discard":
@@ -1502,6 +1593,10 @@ def main() -> int:
         "human_signal_source": data.get("human_signal_source") or routing.get("human_signal_source", ""),
         "human_signal_type": data.get("human_signal_type") or routing.get("human_signal_type", ""),
         "research_problem": data.get("research_problem") or routing.get("research_problem", ""),
+        "artifact_type": data.get("artifact_type") or routing.get("artifact_type", ""),
+        "artifact_output": data.get("artifact_output") or routing.get("artifact_output", ""),
+        "reader_test": data.get("reader_test") or routing.get("reader_test", ""),
+        "failure_judgment": data.get("failure_judgment") or routing.get("failure_judgment", ""),
         "hook_pattern": data.get("hook_pattern") or classify_hook_pattern(thread_text),
         "structure_pattern": data.get("structure_pattern", ""),
         "closer_pattern": data.get("closer_pattern", ""),

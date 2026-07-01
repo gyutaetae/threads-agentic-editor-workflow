@@ -1,295 +1,181 @@
 # Threads Channel Playbook
 
-Single source of truth for `@arxiv.ai`. This file replaces the old separate PRD, ADR, and channel playbook.
+Single source of truth for `@arxiv.ai`. Keep this compact because generation agents load it as prompt context.
 
-## Channel
+## North Star
 
-`@arxiv.ai` is a Korean research workflow account for students, junior researchers, and developers who need to read or write papers with AI.
+`@arxiv.ai` helps Korean students, junior researchers, and developers turn papers into explainable research work.
 
 Core promise:
 
 ```text
-AI agent로 논문 읽기, 요약, 리서치 정리, 초안 작성, citation 검증을 더 검증 가능한 작업 단위로 바꾼다.
+AI가 논문을 대신 읽어주는 계정이 아니라,
+내가 설명할 수 있는 상태로 바꿔주는 계정.
 ```
 
-This is not an AI news account, quote account, or generic prompt account. A good post starts from a real paper-work problem and ends with something reusable.
-
-## Editorial North Star
-
-The account's job is to remove the reading difficulty and operational complexity around papers.
-
-Each post should translate a paper's useful claim into a practical way of working: how the idea helps someone read, compare, draft, verify, or revise research text in real life. Do not stop at summarizing what a paper says. Show how to turn the paper's value into a concrete research workflow.
-
-## Audience Problems
-
-- AI 요약이 실제 이해로 이어졌는지 확인하기 어렵다.
-- 논문은 많지만 비교 기준이 없어 literature review가 흐려진다.
-- 초안은 나왔지만 problem-gap-contribution 논리가 약하다.
-- `claim`, `evidence`, `limitation`, `citation` 연결이 검증되지 않는다.
-- 하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.
+Good posts start from a real paper-work failure and end with one reusable work artifact: prompt, checklist, table, protocol, matrix, role instruction, or revision rule. This is not an AI news, quote, or generic prompt account.
 
 ## Voice
 
-- 한국어로 짧고 구체적으로 쓴다.
-- 사람 이름과 일반 설명은 한국어로 쓴다.
-- English는 의미가 흐려질 때만 쓴다: `AI agent`, `claim`, `evidence`, `limitation`, `citation`, `reviewer critique`, `workflow`, `prompt`.
-- 실제 경험을 꾸며내지 않는다.
-- 근거 없는 `무조건`, `혁명`, `논문 끝`, `역대급`, `미친 생산성`, `이거 모르면 뒤처집니다`를 쓰지 않는다.
+- Korean first. Use English only when precision improves: `AI agent`, `claim`, `evidence`, `limitation`, `citation`, `reviewer critique`, `workflow`, `prompt`.
+- Short, concrete, researcher-facing.
+- Do not invent first-person experience in automatic mode.
+- Ban hype: `무조건`, `혁명`, `논문 끝`, `역대급`, `미친 생산성`, `이거 모르면 뒤처집니다`.
+- Separate source fact from account interpretation.
 
-## Content Pillars
+## Topic Gate
 
-1. Paper reading: contribution, method, evidence, limitation 추출
-2. Literature review: 논문 나열을 evidence matrix로 바꾸기
-3. Draft writing: problem-gap-contribution outline 먼저 만들기
-4. Citation discipline: reference와 claim 연결 확인
-5. Research agent architecture: reader, synthesizer, critic, editor 역할 분리
+Publish only when at least three are true:
 
-## Topic Filter
+- Vague AI request becomes a concrete research workflow.
+- Reader gets a copyable prompt, checklist, agent instruction, or artifact template.
+- Source is grounded: paper, official docs/blog, named researcher writing, useful repo, or Korean technical example.
+- A real researcher failure mode is visible.
+- Recent history differs in `failure_mode`, `artifact_type`, `hook_pattern`, or `reusable_unit_type`.
 
-Pick a topic only when it satisfies at least three:
+Block when:
 
-- vague AI request를 구체적인 research workflow로 바꾼다.
-- 독자가 바로 복사해 쓸 prompt, checklist, agent instruction, workflow가 있다.
-- source-grounded: paper, official docs, named researcher writing, useful repo.
-- 실제 연구자가 한 번쯤 겪을 failure mode가 있다.
-- 최근 글과 다른 `failure_mode`, `hook_pattern`, `solution_pattern`이다.
+- Same source URL is reused without a new angle.
+- Same `bad_request` and same fix repeat.
+- Same `failure_mode` + same `artifact_type` repeat.
+- Source fact and @arxiv.ai interpretation are mixed.
 
-Block:
+## Artifact Router
 
-- 같은 source URL의 단순 반복
-- 같은 `bad_request`와 같은 fix
-- 같은 `failure_mode` + 같은 `solution_pattern`
-- source fact와 account interpretation이 섞인 주장
+Every post owns exactly one research-work artifact. The artifact is what the reader can make after reading.
 
-## Human Signal
+| failure_mode | artifact_type | reader-test hook |
+|---|---|---|
+| `false_fluency` | `summary_verification_grid` | 내가 claim/method/evidence/limitation을 설명 못하면 |
+| `claim_reference_mismatch` | `citation_support_table` | 내가 citation이 어느 claim을 받치는지 설명 못하면 |
+| `claim_evidence_link_missing` | `claim_evidence_map` | 내가 claim을 어떤 실험/표/그림이 받치는지 설명 못하면 |
+| `method_steps_not_reproducible` | `reproducibility_protocol` | 내가 method를 재현 순서로 설명 못하면 |
+| `comparison_axis_missing` | `literature_comparison_matrix` | 내가 논문 간 차이를 같은 축으로 설명 못하면 |
+| `argument_structure_missing` | `problem_gap_contribution_outline` | 내가 problem-gap-contribution을 설명 못하면 |
+| `revision_without_rule` | `revision_rule_diff` | 내가 수정 이유를 다음 초안 규칙으로 설명 못하면 |
+| `weakness_not_prechecked` | `reviewer_risk_checklist` | 내가 reviewer가 물을 약점을 설명 못하면 |
+| `roles_collapsed_into_one_agent` | `agent_role_instruction` | 내가 reader/critic/editor 역할을 나눠 설명 못하면 |
 
-`human_signal` is the visible trace of judgment.
-
-Manual mode:
-
-- User can provide one line.
-- Turn it into a concrete research problem, practical questions, format choice, and one reusable unit.
-
-Automatic mode:
-
-- Infer only source surprise, reader friction, common confusion, verification need, or agent-workflow bottleneck.
-- Do not claim first-person experience unless the user supplied it.
-
-Normalize every topic into:
+Failure judgment examples:
 
 ```text
-human_signal_source
-human_signal_type
-workflow_stage
-failure_mode
-research_problem
+그건 요약이 아니라 대리 독서입니다.
+그건 이해가 아니라 성능 점수 신뢰입니다.
+그건 방법론 이해가 아니라 방법론 복사입니다.
+그건 검증이 아니라 참고문헌 장식입니다.
+그건 literature review가 아니라 논문 목록 정리입니다.
+그건 초안 작성이 아니라 문장 생산입니다.
 ```
 
-Initial `human_signal_type` values:
+Operational rule: if a recent post shares the same broad hook, Part 1 must start from the artifact-specific reader test.
 
-- `summary_suspicion`
-- `citation_doubt`
-- `literature_overload`
-- `draft_without_argument`
-- `evidence_missing`
-- `agent_role_confusion`
-- `reviewer_anxiety`
-- `method_understanding_gap`
+## Explainable Reading Template
 
-Derived questions must be practical:
-
-- 진단 질문: 지금 문제가 무엇인가?
-- 검증 질문: AI 결과가 맞는지 어떻게 확인할 것인가?
-- 다음 행동 질문: AI agent에게 맡길 가장 작은 작업은 무엇인가?
-
-## Format Router
-
-Use a stable 4-part master template. The format router changes the content emphasis inside each part, not the chain skeleton. This keeps the account recognizable while avoiding copy-paste prose.
-
-Thread rules:
-
-- Exactly 4 parts: problem hook, diagnosis criteria, reusable action, source interpretation.
-- Every part must stay under 500 chars.
-- Main post must not contain source links.
-- Links belong in the final reply with `- 볼 부분:` or `인용 원문:`.
-- Do not use labels like `Main:` or `Reply 1:`.
-- Keep the structure stable; rotate only the hook pattern, criteria names, prompt label, source angle, and closing action.
-- Use recent `content-history.jsonl` to avoid repeating the same Part 1 pattern twice in a row.
-
-Master template:
+Use this as the main high-performing pattern, but rotate the surface.
 
 ```text
-Part 1: Hook/problem. Rotate A) direct problem, B) failure scene, C) judgment sentence. Include a bad request in A/B when natural; avoid fake first-person claims.
-Part 2: [핵심 한 줄] + 3 criteria/checks by default, 4 only when needed.
-Part 3: [핵심 한 줄] + one copyable prompt, checklist, or agent instruction.
-Part 4: [핵심 한 줄] + source URL + "- 볼 부분:" + source fact vs account interpretation + closing next action.
+AI에게 논문을 읽혔는데 / LLM 논문을 읽었는데 / "이 논문 요약해줘"의 문제는
+내가 [artifact-specific target]을 설명 못하면,
+그건 [good outcome]이 아니라 [failure judgment]입니다.
+
+나쁜 요청/읽기:
+"..."
+
+좋은 요청/읽기:
+"..."
+"..."
+"..."
+
+좋은 논문 읽기는
+AI가 대신 읽는 게 아니라
+내가 [artifact-specific target]을 설명할 수 있게 만드는 과정입니다.
 ```
 
-Formats:
+Use this pattern for about 60-70% of posts. For the rest, rotate into direct problem, failure scene, quote/idea hook, or source-specific case so the account does not feel automated.
 
-| Format | Role |
+## Thread Contract
+
+Exactly 4 parts, each under 500 chars:
+
+1. Problem hook: reader-test, failure scene, or judgment sentence. No source link.
+2. Diagnosis: 3 concrete checks or criteria tied to the artifact.
+3. Reusable action: copyable prompt, checklist, protocol, matrix, or role instruction.
+4. Source interpretation: URL + `- 볼 부분:` or `인용 원문:` + source fact vs `[나의 견해]`.
+
+Allowed formats change emphasis, not the skeleton:
+
+| format | emphasis |
 |---|---|
-| `workflow_observation` | AI 논문 작업에서 생긴 판단을 짧게 보여준다. |
-| `failed_agent_run` | AI agent에게 잘못 맡겼을 때 무엇이 무너지는지 보여준다. |
-| `better_prompt_pattern` | 모호한 요청을 구체적인 research prompt로 바꾼다. |
-| `research_checklist` | AI 결과물을 사람이 검증할 기준을 준다. |
-| `agent_role_split` | reader, synthesizer, critic, editor처럼 역할을 나눈다. |
-| `tiny_source_case` | 논문, repo, 문서 하나를 research workflow로 번역한다. |
-| `weekly_review_advice` | 금요일 저녁, 지난 7일 글에서 핵심 조언을 뽑아 회고한다. |
+| `workflow_observation` | Part 1 judgment |
+| `failed_agent_run` | Part 1 failure scene + Part 3 correction |
+| `better_prompt_pattern` | bad request/read vs good request/read |
+| `research_checklist` | Part 2 checks |
+| `agent_role_split` | Part 3 role instruction |
+| `tiny_source_case` | Part 4 source fact vs interpretation |
+| `weekly_review_advice` | Friday evening only, advice from last 7 days |
 
-Format emphasis:
+Do not use drafting labels like `Main:` or `Reply 1:`. Avoid repeated generic `[핵심 한 줄]`.
 
-```text
-research_checklist -> Part 2 criteria/checks
-agent_role_split -> Part 3 role instruction
-better_prompt_pattern -> Part 1 bad request + Part 3 better request
-failed_agent_run -> Part 1 failure scene + Part 3 corrected instruction
-tiny_source_case -> Part 4 source fact/interpretation boundary
-workflow_observation -> Part 1 judgment
-weekly_review_advice -> Part 2-3 advice from recent history
-```
+## Source Rules
 
-Suggested starting mix:
+Use credible sources: arXiv/papers, official docs/blogs, original researcher writing, useful repos, Korean workflow examples.
 
-```text
-workflow_observation: 22%
-failed_agent_run: 18%
-better_prompt_pattern: 16%
-research_checklist: 18%
-agent_role_split: 12%
-tiny_source_case: 9%
-weekly_review_advice: 5%
-```
-
-## Reusable Unit
-
-Every chain must include at least one:
-
-- practical `prompt`
-- verification `checklist`
-- role-specific AI agent instruction
-- source-to-workflow template
-
-Rotate labels:
-
-```text
-바로 써볼 프롬프트:
-오늘 적용할 문장:
-AI agent에게 이렇게 시켜보세요:
-논문 읽을 때 붙여 넣을 문장:
-다음 요약 전에 써볼 질문:
-```
-
-## Weekly Review Advice
-
-Friday evening only:
-
-1. Review the previous 7 days of posts.
-2. Derive the strongest advice from the posts first.
-3. Find a verified quote only if it genuinely matches.
-4. Use Korean translation only.
-5. Put quote source under `인용 원문:` in the final reply.
-6. If no suitable quote exists, publish a general weekly review.
-
-Do not start from a famous person and force the week into the quote.
-
-## Source And Quote Rules
-
-Use credible sources:
-
-- arXiv or published papers
-- official docs/blogs from AI tools
-- original writing by named researchers
-- GitHub repos or Korean technical posts that show actual workflow
-
-Rules:
-
-- Separate source facts from interpretation.
-- GitHub stars are popularity signals only.
-- Do not use generic product homepages as source replies.
-- Famous-person quotes are optional and only from `data/verified-quotes.json`.
-- No quote is better than a forced quote.
+- Main post has no links.
+- Final reply explains why the source belongs with `- 볼 부분:`.
+- GitHub stars are popularity only.
+- Famous quotes are optional and only from `data/verified-quotes.json`; no quote is better than a forced quote.
 
 ## Fingerprint Memory
 
-Track repetition as state:
+Track repetition through:
 
 ```text
 format
-human_signal_source
 human_signal_type
 workflow_stage
 failure_mode
 research_problem
+artifact_type
 hook_pattern
 structure_pattern
 closer_pattern
 reusable_unit_type
 ```
 
-Initial constraints:
+Constraints:
 
-- Same `format`: no more than twice in 7 days.
-- Same `hook_pattern`: avoid reuse within 7 days.
-- Same `closer_pattern`: avoid reuse within 14 days.
-- `bad_request_good_request`: at most once per week.
+- Same `hook_pattern`: avoid within 7 days.
+- Same `closer_pattern`: avoid within 14 days.
+- Same `failure_mode` + same `artifact_type`: reject or change artifact.
 - `weekly_review_advice`: Friday evening only.
 
-## Self-Improvement Loop
+## Learning Loop
 
-Phase 1 uses a lightweight GenericAgent-style loop:
+Generation loop:
 
 ```text
 generate -> evaluate -> publish/log -> propose learnings -> human promotion -> next generation
 ```
 
-Persistent files:
-
-- `docs/learnings.md`: short promoted rules injected near the top of future generation prompts.
-- `skills_library/*.md`: crystallized reusable patterns from good runs.
-- `daily-editor/curation/codex-curation-log.jsonl`: Codex editor decisions about why one candidate or draft was chosen over another.
-- `daily-editor/runs/*.json`: full execution logs.
-- `daily-editor/evaluations/*.eval.json`: evaluator critique logs.
-- `daily-editor/proposals/*.md`: approval queue, not loaded by generation.
-- `daily-editor/memory/*.md`: weak metrics memory, not a hard rule.
-
-Do not let the agent rewrite prompts/code automatically yet. Proposal files must be reviewed before promotion.
-
-## Codex Curation Gate
-
-Keep this separate from automatic quality gates.
-
-Automatic gates check whether a generated thread follows the format, includes a reusable unit, avoids broken source handling, and passes basic publish safety. The Codex curation gate records editorial judgment: why a candidate was chosen, why a higher-scored candidate was skipped, how the paper's claim becomes a practical research workflow, and which human taste signals should affect future drafts.
-
-Use `daily-editor/curation/codex-curation-log.jsonl` for one record per curated post. Future automatic selection may use this as a weak bonus, but it should not override source quality, source freshness, or the channel's north star.
-
-## Human Taste Learning Loop
-
-Use this loop when a human edits an AI-generated draft before publishing.
+Human revision loop:
 
 ```text
-AI draft -> human revision -> diff analysis -> preference proposal -> human promotion -> next generation
+ai-draft.txt -> user-revision.txt -> diff.json -> preference.proposed.md -> docs/learnings.md after repeated evidence
 ```
 
-Keep the artifacts separate from automatic evaluator feedback:
+Files:
 
-- `ai-draft.txt`: the model's original draft.
-- `user-revision.txt`: the human-edited version.
-- `diff.json`: concrete changes grouped by hook, structure, wording, reusable unit, and source handling.
-- `preference.proposed.md`: durable rule candidates inferred from the edit.
+- `docs/learnings.md`: short promoted rules loaded near the top of prompts.
+- `skills_library/*.md`: crystallized reusable patterns.
+- `daily-editor/runs/*.json`, `daily-editor/evaluations/*.eval.json`: execution evidence.
+- `daily-editor/curation/codex-curation-log.jsonl`: human/Codex editorial judgment.
+- `daily-editor/proposals/*.md`: approval queue, not automatic truth.
 
-Promotion rules:
-
-- One-off wording changes stay as revision notes.
-- Repeated preference patterns go to `docs/learnings.md` first.
-- Channel-level rules move into this playbook only after repeated evidence.
-- Do not promote a preference if it weakens source separation, citation discipline, or the reusable unit.
+Promote only durable preferences. Do not promote one-off wording unless it reveals a repeated pattern.
 
 ## Success Criteria
 
-- Posts feel like research-work judgments, not template-filled lessons.
-- Each chain contains a reusable prompt, checklist, or agent instruction.
-- Automatic posts remain honest about inferred context.
-- The same hook, structure, and closer do not dominate a week.
-- Friday review compresses the week's work into one useful research workflow lesson.
-- Metrics guide weakly until enough 24h/72h data exists; views alone should not drive strategy.
+- Post feels like a research-work judgment, not a template lesson.
+- Reader can explain one paper-work artifact after reading.
+- Source fact and account interpretation stay separate.
+- Recent hook, artifact, structure, and closer do not dominate a week.

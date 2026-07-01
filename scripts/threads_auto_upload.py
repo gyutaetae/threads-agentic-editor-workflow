@@ -477,6 +477,7 @@ def append_content_history(
     human_signal_source: str = "",
     human_signal_type: str = "",
     research_problem: str = "",
+    artifact_type: str = "",
     hook_pattern: str = "",
     structure_pattern: str = "",
     closer_pattern: str = "",
@@ -496,6 +497,7 @@ def append_content_history(
             quote_id,
             human_signal_type,
             research_problem,
+            artifact_type,
             reusable_unit_type,
         ]
     ):
@@ -527,6 +529,7 @@ def append_content_history(
         "human_signal_source": human_signal_source,
         "human_signal_type": human_signal_type,
         "research_problem": research_problem,
+        "artifact_type": artifact_type,
         "hook_pattern": hook_pattern,
         "structure_pattern": structure_pattern,
         "closer_pattern": closer_pattern,
@@ -710,6 +713,7 @@ def main() -> int:
     approved.add_argument("--human-signal-source", default="")
     approved.add_argument("--human-signal-type", default="")
     approved.add_argument("--research-problem", default="")
+    approved.add_argument("--artifact-type", default="")
     approved.add_argument("--hook-pattern", default="")
     approved.add_argument("--structure-pattern", default="")
     approved.add_argument("--closer-pattern", default="")
@@ -852,6 +856,7 @@ def main() -> int:
             human_signal_source=args.human_signal_source,
             human_signal_type=args.human_signal_type,
             research_problem=args.research_problem,
+            artifact_type=args.artifact_type,
             hook_pattern=args.hook_pattern,
             structure_pattern=args.structure_pattern,
             closer_pattern=args.closer_pattern,

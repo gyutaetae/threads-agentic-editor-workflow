@@ -16,6 +16,7 @@ from scripts.generate_auto_thread import (
     curation_bonus,
     extract_json,
     extract_text,
+    load_recent_history,
     load_curation_log,
     main,
     quality_gate,
@@ -86,6 +87,39 @@ class FormatRouterTests(unittest.TestCase):
         routing = select_content_format(candidate, {}, "2026-06-26", "evening")
         self.assertEqual(routing["format_type"], "weekly_review_advice")
 
+    def test_method_gap_routes_to_reproducibility_artifact(self) -> None:
+        candidate = {
+            "title": "paper method reproduction workflow",
+            "description": "Turn method sections into reproducible steps.",
+            "post_goal": "save",
+        }
+        routing = select_content_format(candidate, {}, "2026-06-30", "morning")
+        self.assertEqual(routing["human_signal_type"], "method_understanding_gap")
+        self.assertEqual(routing["failure_mode"], "method_steps_not_reproducible")
+        self.assertEqual(routing["artifact_type"], "reproducibility_protocol")
+        self.assertIn("재현 프로토콜", routing["artifact_output"])
+        self.assertIn("재현 순서", routing["reader_test"])
+        self.assertIn("방법론 복사", routing["failure_judgment"])
+
+    def test_recent_history_infers_artifact_type_from_old_failure_mode(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "history.jsonl"
+            path.write_text(
+                json.dumps(
+                    {
+                        "date": "2026-06-28",
+                        "failure_mode": "claim_reference_mismatch",
+                        "hook": "논문 작업을 AI에게 한 번에 맡기면",
+                    },
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            recent = load_recent_history(path)
+
+        self.assertEqual(recent[0]["artifact_type"], "citation_support_table")
+
 
 class ThreadValidationTests(unittest.TestCase):
     def test_two_part_chain_fails_fixed_master_template(self) -> None:
@@ -154,6 +188,49 @@ class ThreadValidationTests(unittest.TestCase):
         )
         self.assertEqual(gate["decision"], "publish")
         self.assertEqual(gate["quality_score"], 92)
+
+    def test_same_recent_artifact_warns_without_hard_blocking(self) -> None:
+        thread = (
+            "방법론 설명과 재현 가능한 절차는 다릅니다.\n\n"
+            "AI가 방법을 잘 요약해도 input, 순서, 설정값이 빠지면 다시 실행할 수 없습니다.\n"
+            "---\n"
+            "[먼저 확인할 것]\n"
+            "재현 프로토콜은 설명보다 실행 조건을 봅니다.\n\n"
+            "1. input이 분리되는가\n"
+            "2. procedure가 순서대로 남는가\n"
+            "3. output check가 보이는가\n"
+            "---\n"
+            "[저장해둘 프롬프트]\n"
+            "논문 읽을 때 붙여 넣을 문장:\n\n"
+            "\"방법론을 input, procedure, parameter, output, check로 나눠줘.\"\n"
+            "---\n"
+            "[참고 논문]\n"
+            "https://github.com/example/research-skills\n"
+            "- 볼 부분: source fact를 재현 절차로 바꾸는 단서\n\n"
+            "[나의 견해]\n"
+            "source가 실제로 제공한 절차와 우리 해석을 분리하세요."
+        )
+        routing = {
+            "format_type": "better_prompt_pattern",
+            "human_signal_source": "inferred",
+            "workflow_stage": "method_understanding",
+            "failure_mode": "method_steps_not_reproducible",
+            "artifact_type": "reproducibility_protocol",
+        }
+        gate = quality_gate(
+            thread,
+            routing,
+            recent_history=[
+                {
+                    "workflow_stage": "method_understanding",
+                    "failure_mode": "method_steps_not_reproducible",
+                    "artifact_type": "reproducibility_protocol",
+                    "hook_pattern": "direct_claim",
+                }
+            ],
+        )
+        self.assertEqual(gate["decision"], "publish")
+        self.assertIn("Near-duplicate risk", " ".join(gate["reasons"]))
 
 
 class SelfImprovementLoopTests(unittest.TestCase):
@@ -403,6 +480,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertEqual(metadata["provider"], "openrouter")
         self.assertEqual(metadata["model"], "openrouter/free")
         self.assertEqual(metadata["quality_decision"], "publish")
+        self.assertEqual(metadata["artifact_type"], "summary_verification_grid")
+        self.assertIn("설명 못하면", metadata["reader_test"])
 
 
 if __name__ == "__main__":

@@ -56,3 +56,8 @@ agent는 ""기억을 많이 한 것""처럼 보이면서도
 
 ""이 논문 정리해줘""라고만 시키면
 방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2606.28562,48,100,evening,daily_1800_kst,openrouter/free,false,2026-06-30T20:49:59+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-01,18010633424870122,https://www.threads.net/@arxiv.ai/post/18010633424870122,research_checklist,research_checklist,official_update,save,claim_evidence_mapping,LLM 논문에서,"LLM 논문에서
+""모델이 뭔가를 배웠다""는 문장을 봤는데
+내가 그 근거를 실험으로 설명 못하면,
+
+그건 이해가 아니라 성능 점수만 믿은 겁니다.",1,official_feed,https://arxiv.org/abs/2606.30815,,,evening,manual_evening,manual_after_openrouter_429,false,2026-07-01T16:28:13+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
