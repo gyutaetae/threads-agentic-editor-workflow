@@ -40,6 +40,8 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL || 'openrouter/free' }}
       LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '500' }}
+      AUTO_PUBLISH_QUALITY_SCORE: ${{ vars.AUTO_PUBLISH_QUALITY_SCORE || '85' }}
+      DRAFT_QUALITY_SCORE: ${{ vars.DRAFT_QUALITY_SCORE || '70' }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
       GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}
@@ -92,6 +94,42 @@ jobs:
             --posts-per-day ([int]$env:POSTS_PER_DAY) `
             --post-slot $env:POST_SLOT `
             --experiment-group $env:EXPERIMENT_GROUP
+
+      - name: Summarize review draft
+        if: failure()
+        shell: pwsh
+        run: |
+          "## Auto thread stopped before publish" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          if (Test-Path ".\daily-editor\review") {
+            "### Review drafts" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            Get-ChildItem ".\daily-editor\review" -Filter "*.txt" |
+              Sort-Object LastWriteTime -Descending |
+              Select-Object -First 5 |
+              ForEach-Object { "- $($_.FullName)" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append }
+          } else {
+            "No review draft directory was created." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }
+          if (Test-Path ".\daily-editor\auto-thread-metadata.json") {
+            "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "### Metadata" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "````json" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw |
+              Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "````" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }
+
+      - name: Upload review drafts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-thread-review-drafts
+          path: |
+            daily-editor/review/**
+            daily-editor/auto-thread-metadata.json
+            daily-editor/runs/**
+            daily-editor/evaluations/**
+          if-no-files-found: ignore
 
       - name: Validate generated chain
         shell: pwsh
