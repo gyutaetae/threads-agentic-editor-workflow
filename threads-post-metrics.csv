@@ -55,7 +55,7 @@ agent는 ""기억을 많이 한 것""처럼 보이면서도
 2026-06-30,18064338383713475,https://www.threads.net/@arxiv.ai/post/18064338383713475,tiny_source_case,tiny_source_case,official_update,share,method_understanding_gap,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2606.28562,48,100,evening,daily_1800_kst,openrouter/free,false,2026-06-30T20:49:59+09:00,6807,11,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h
+방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2606.28562,48,100,evening,daily_1800_kst,openrouter/free,false,2026-06-30T20:49:59+09:00,6860,12,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-07-01,18052772012771821,https://www.threads.net/@arxiv.ai/post/18052772012771821,tiny_source_case,tiny_source_case,official_update,share,citation_doubt,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
@@ -71,7 +71,7 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 
 ""그 능력을 어떤 실험이 직접 보여줬지?""
 ""저자의 claim보다 evidence가 좁지는 않나?""
-까지 물어봐야 합니다.",1,official_feed,https://arxiv.org/abs/2606.30815,,,evening,manual_evening,manual_after_openrouter_429,false,2026-07-01T16:43:07+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+까지 물어봐야 합니다.",1,official_feed,https://arxiv.org/abs/2606.30815,,,evening,manual_evening,manual_after_openrouter_429,false,2026-07-01T16:43:07+09:00,773,2,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-07-03,18067942508436415,https://www.threads.net/@arxiv.ai/post/18067942508436415,research_checklist,research_checklist,official_update,save,metric_framing_error_detection,"LLM 평가 논문에서 ""F1이 올랐다""는 문장을 봤는데","LLM 평가 논문에서 ""F1이 올랐다""는 문장을 봤는데
 그 점수가 실제 오류 위치를 더 잘 찾았다는 뜻인지 설명 못하면,
 
