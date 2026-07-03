@@ -166,7 +166,7 @@ ai-draft.txt -> user-revision.txt -> diff.json -> preference.proposed.md -> docs
 Files:
 
 - `docs/learnings.md`: short promoted rules loaded near the top of prompts.
-- `skills_library/*.md`: crystallized reusable patterns.
+- `docs/thread-pattern-library.md`: crystallized reusable patterns.
 - `daily-editor/runs/*.json`, `daily-editor/evaluations/*.eval.json`: execution evidence.
 - `daily-editor/curation/codex-curation-log.jsonl`: human/Codex editorial judgment.
 - `daily-editor/proposals/*.md`: approval queue, not automatic truth.

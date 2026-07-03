@@ -676,7 +676,7 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
     lines = [
         f"# Daily Research AI Editor Brief: {date}",
         "",
-        "Use this with `$threads-agentic-editor` to draft A/B Threads options.",
+        "Use this with `$threads-agentic-editor` to choose one strongest candidate and draft one publishable Threads chain.",
         "",
         "## Top Candidates",
         "",
@@ -702,8 +702,8 @@ def write_outputs(candidates: list[dict], output_dir: Path, date: str) -> None:
                 f"- Our angle: {item['our_angle']}",
                 f"- Reliability: {item.get('reliability', 'unknown')}",
                 f"- Facts vs interpretation: {item.get('fact_boundary', 'Separate source facts from our angle.')}",
-                f"- A안: {item['draft_angles']['A_broad']}",
-                f"- B안: {item['draft_angles']['B_deep']}",
+                f"- Broad angle: {item['draft_angles']['A_broad']}",
+                f"- Technical angle: {item['draft_angles']['B_deep']}",
                 f"- Risk: {item['risk']}",
                 (
                     "- Optional verified quote: "
@@ -735,7 +735,7 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
         "",
         "Task:",
         "",
-        "Create A/B Threads drafts from today's candidates. A안 should be broad and punchy. B안 should be deeper and more technical. Include source notes, optional image/card idea, and risk notes. Do not publish.",
+        "Choose one strongest candidate and create one publishable Korean Threads chain. Include source notes, optional image/card idea, risk notes, and the reason this candidate should be preferred. Do not publish.",
         "",
         "Candidates:",
         "",
@@ -752,8 +752,8 @@ def write_prompt(output_dir: Path, date: str, top_items: list[dict]) -> None:
                 f"   Format reason: {item.get('format_reason', '')}",
                 f"   Description: {item.get('description') or ''}",
                 f"   README: {item.get('readme_summary') or 'Not collected'}",
-                f"   A angle: {item['draft_angles']['A_broad']}",
-                f"   B angle: {item['draft_angles']['B_deep']}",
+                f"   Broad angle: {item['draft_angles']['A_broad']}",
+                f"   Technical angle: {item['draft_angles']['B_deep']}",
                 f"   Facts vs interpretation: {item.get('fact_boundary', 'Separate source facts from our angle.')}",
                 f"   Risk: {item['risk']}",
                 (

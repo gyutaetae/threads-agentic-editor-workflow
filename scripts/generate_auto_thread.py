@@ -224,7 +224,11 @@ def read_optional_text(path: Path, max_chars: int = 4000) -> str:
 
 
 def read_skill_library(path: Path, max_files: int = 4, max_chars: int = SKILL_LIBRARY_PROMPT_CHARS) -> str:
-    if not path.exists() or not path.is_dir():
+    if not path.exists():
+        return ""
+    if path.is_file():
+        return path.read_text(encoding="utf-8").strip()[:max_chars]
+    if not path.is_dir():
         return ""
     chunks = []
     for item in sorted(path.glob("*.md"))[:max_files]:
@@ -1140,7 +1144,7 @@ def build_evaluator_prompt(
         "}\n\n"
         "Persistent learnings:\n"
         f"{persistent_learnings or 'No persistent learnings yet.'}\n\n"
-        "Existing skill library:\n"
+        "Existing pattern library:\n"
         f"{skill_library or 'No skills yet.'}\n\n"
         "Routing:\n"
         f"{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
@@ -1289,7 +1293,7 @@ def main() -> int:
     parser.add_argument("--quote-bank-path", default="data/quote_bank.json")
     parser.add_argument("--weekly-memory-path", default="daily-editor/memory/weekly-editorial-memory.md")
     parser.add_argument("--learnings-path", default="docs/learnings.md")
-    parser.add_argument("--skills-library-dir", default="skills_library")
+    parser.add_argument("--skills-library-dir", default="docs/thread-pattern-library.md", help="Pattern library path. Accepts the consolidated docs file or a legacy directory.")
     parser.add_argument("--curation-log-path", default="daily-editor/curation/codex-curation-log.jsonl")
     parser.add_argument("--review-dir", default="daily-editor/review")
     parser.add_argument("--run-log-dir", default="daily-editor/runs")
@@ -1549,7 +1553,7 @@ def main() -> int:
         "recent_hooks": recent_hooks,
         "recent_history": recent_history,
         "persistent_learnings_path": args.learnings_path,
-        "skills_library_dir": args.skills_library_dir,
+        "pattern_library_path": args.skills_library_dir,
         "curation_log_path": args.curation_log_path,
         "curation_records_used": len(curation_records),
         "selected_candidate_curation_bonus": curation_bonus(selected_candidate, curation_records),
@@ -1619,7 +1623,7 @@ def main() -> int:
             "metrics_path": args.metrics_path,
             "weekly_memory_path": args.weekly_memory_path,
             "learnings_path": args.learnings_path,
-            "skills_library_dir": args.skills_library_dir,
+            "pattern_library_path": args.skills_library_dir,
             "curation_log_path": args.curation_log_path,
             "curation_records_used": len(curation_records),
             "recent_history_count": len(recent_history),

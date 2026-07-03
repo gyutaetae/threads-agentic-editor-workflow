@@ -18,8 +18,8 @@ docs/learnings.md
 docs/ops.md
   사람이 publish, pause, learning promotion, token/API 운영을 결정할 때 보는 문서.
 
-skills_library/
-  잘된 실행 경로를 결정화한 reusable skill.
+docs/thread-pattern-library.md
+  잘된 실행 경로를 결정화한 reusable pattern.
 
 daily-editor/runs/
 daily-editor/evaluations/
@@ -144,14 +144,14 @@ Review:
 
 ```text
 daily-editor/proposals/learnings.proposed.md
-skills_library/*.proposed.md
+daily-editor/proposals/*.pattern.proposed.md
 ```
 
 Promote only durable rules into:
 
 ```text
 docs/learnings.md
-skills_library/*.md
+docs/thread-pattern-library.md
 ```
 
 ## Metrics

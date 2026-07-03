@@ -248,7 +248,7 @@ def build_skill_candidates(records: list[dict], min_score: int) -> list[dict]:
             {
                 "name": name,
                 "summary": summary,
-                "target": f"skills_library/{name}.proposed.md",
+                "target": "docs/thread-pattern-library.md",
                 "evidence": [proposal_evidence(record, min_score) for record in grouped_records],
                 "records": grouped_records,
             }
@@ -286,13 +286,13 @@ def render_learnings_markdown(proposals: dict, min_score: int) -> str:
         f"생성 시각: {proposals['generated_at']}",
         f"분석한 기록 수: {proposals['records_analyzed']}",
         "",
-        "이 파일은 승인 대기열입니다. 사람이 `docs/learnings.md` 또는 `skills_library/`로 승격하기 전까지 생성 규칙으로 읽지 않습니다.",
+        "이 파일은 승인 대기열입니다. 사람이 `docs/learnings.md` 또는 `docs/thread-pattern-library.md`로 승격하기 전까지 생성 규칙으로 읽지 않습니다.",
         "",
         "## 승격 기준",
         "",
         f"- evaluator score가 {min_score} 이상이고 decision이 publish/approved/keep이며 기존 규칙과 중복되지 않을 때 승격합니다.",
         "- 반복 수정 제안은 일회성 문장 문제가 아니라 지속적인 작성 규칙일 때만 승격합니다.",
-        "- skill 후보는 여러 글에서 재사용 가능한 실행 경로일 때 승격합니다.",
+        "- 패턴 후보는 여러 글에서 재사용 가능한 실행 경로일 때 `docs/thread-pattern-library.md`로 승격합니다.",
         "",
         "## Learning 후보",
         "",
@@ -333,9 +333,9 @@ def render_learnings_markdown(proposals: dict, min_score: int) -> str:
             ]
         )
 
-    lines.extend(["## Skill 후보", ""])
+    lines.extend(["## Pattern 후보", ""])
     if not proposals["skill_candidates"]:
-        lines.append("- 결정화할 skill 후보가 없습니다.")
+        lines.append("- 결정화할 pattern 후보가 없습니다.")
     for candidate in proposals["skill_candidates"]:
         lines.extend(
             [
@@ -356,11 +356,11 @@ def final_thread_excerpt(record: dict, max_parts: int = 3) -> list[str]:
 
 def render_skill_markdown(candidate: dict) -> str:
     lines = [
-        f"# 제안된 Skill: {candidate['name']}",
+        f"# 제안된 Pattern: {candidate['name']}",
         "",
         "상태: proposed",
         "",
-        "검토 후 유용한 부분을 기존 skill에 병합하거나 안정된 skill 파일로 이름을 바꿔 승격합니다.",
+        "검토 후 유용한 부분만 `docs/thread-pattern-library.md`에 승격합니다.",
         "",
         "## 요약",
         "",
@@ -399,10 +399,10 @@ def render_skill_markdown(candidate: dict) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def write_skill_proposals(skill_candidates: list[dict], skills_library_dir: Path) -> list[Path]:
+def write_skill_proposals(skill_candidates: list[dict], pattern_proposals_dir: Path) -> list[Path]:
     written = []
     for candidate in skill_candidates:
-        path = skills_library_dir / f"{candidate['name']}.proposed.md"
+        path = pattern_proposals_dir / f"{candidate['name']}.pattern.proposed.md"
         write_text(path, render_skill_markdown(candidate))
         written.append(path)
     return written
@@ -415,7 +415,8 @@ def main() -> int:
     parser.add_argument("--metrics-path", default="threads-post-metrics.csv")
     parser.add_argument("--learnings-path", default="docs/learnings.md")
     parser.add_argument("--output-path", default="daily-editor/proposals/learnings.proposed.md")
-    parser.add_argument("--skills-library-dir", default="skills_library")
+    parser.add_argument("--pattern-proposals-dir", default="daily-editor/proposals")
+    parser.add_argument("--skills-library-dir", default="", help="Deprecated. Pattern proposals now go to --pattern-proposals-dir.")
     parser.add_argument("--min-score", type=int, default=85)
     parser.add_argument("--skip-skill-proposals", action="store_true")
     args = parser.parse_args()
@@ -427,7 +428,8 @@ def main() -> int:
     print(f"Wrote {args.output_path}")
 
     if not args.skip_skill_proposals:
-        written = write_skill_proposals(proposals["skill_candidates"], Path(args.skills_library_dir))
+        pattern_dir = Path(args.pattern_proposals_dir or args.skills_library_dir or "daily-editor/proposals")
+        written = write_skill_proposals(proposals["skill_candidates"], pattern_dir)
         for path in written:
             print(f"Wrote {path}")
 

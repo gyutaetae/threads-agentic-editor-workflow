@@ -57,7 +57,7 @@ Review:
 
 ```text
 daily-editor/proposals/learnings.proposed.md
-skills_library/*.proposed.md
+daily-editor/proposals/*.pattern.proposed.md
 ```
 
 Promote to `docs/learnings.md` when:
@@ -67,7 +67,7 @@ Promote to `docs/learnings.md` when:
 - the rule is durable across more than one post,
 - it is not already covered by the playbook or existing learnings.
 
-Promote to `skills_library/` when:
+Promote to `docs/thread-pattern-library.md` when:
 
 - the execution path can be reused,
 - it contains a practical prompt/checklist/agent instruction pattern,

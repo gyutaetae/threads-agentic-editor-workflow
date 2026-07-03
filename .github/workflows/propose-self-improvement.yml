@@ -23,9 +23,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Propose learnings and skills
+      - name: Propose learnings and patterns
         shell: pwsh
-        run: python .\scripts\propose_learnings.py --run-log-dir ".\daily-editor\runs" --evaluation-dir ".\daily-editor\evaluations" --metrics-path ".\threads-post-metrics.csv" --learnings-path ".\docs\learnings.md" --output-path ".\daily-editor\proposals\learnings.proposed.md" --skills-library-dir ".\skills_library"
+        run: python .\scripts\propose_learnings.py --run-log-dir ".\daily-editor\runs" --evaluation-dir ".\daily-editor\evaluations" --metrics-path ".\threads-post-metrics.csv" --learnings-path ".\docs\learnings.md" --output-path ".\daily-editor\proposals\learnings.proposed.md" --pattern-proposals-dir ".\daily-editor\proposals"
 
       - name: Commit proposal updates
         shell: pwsh
@@ -33,7 +33,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add daily-editor/proposals/learnings.proposed.md
-          Get-ChildItem skills_library -Filter *.proposed.md | ForEach-Object { git add $_.FullName }
+          Get-ChildItem daily-editor/proposals -Filter *.pattern.proposed.md | ForEach-Object { git add $_.FullName }
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
             git commit -m "Propose Threads self-improvement learnings"

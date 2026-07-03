@@ -247,6 +247,14 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertIn("검증 규칙", text)
         self.assertNotIn("ignore", text)
 
+    def test_read_skill_library_accepts_consolidated_file(self) -> None:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "thread-pattern-library.md"
+            path.write_text("# Pattern Library\ncitation 검증", encoding="utf-8")
+            text = read_skill_library(path)
+        self.assertIn("Pattern Library", text)
+        self.assertIn("citation 검증", text)
+
     def test_evaluator_prompt_contains_thread_and_learning_context(self) -> None:
         prompt = build_evaluator_prompt(
             thread_text="바로 써볼 프롬프트:\n\"claim과 citation을 분리해줘.\"",
