@@ -1,52 +1,40 @@
 # Weekly Editorial Memory
 
-Updated: 2026-06-29T05:27:27+00:00
-Window: last 7 days; analyzed posts: 7
+Updated: 2026-07-06T05:07:53+00:00
+Window: last 7 days; analyzed posts: 6
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 5
+- Posts with collected metrics: 6
 
 ## Winning Slots
 
-- morning: 9
-- evening: 5
-- unknown: 1
+- evening: 10
 
 ## Winning Experiments
 
-- morning_extra_two_post_day: 9
-- manual_evening: 5
-- unknown: 1
-- evening_primary: 0
-- daily_1800_kst: 0
+- daily_1800_kst: 8
+- manual_evening: 2
 
 ## Winning Formats
 
-- agent_role_split: 9
-- tiny_source_case: 5
-- unknown: 1
-- research_checklist: 0
-- workflow_observation: 0
+- tiny_source_case: 8
+- research_checklist: 2
 
 ## Winning Content Axes
 
-- workflow_mode: 9
-- official_update: 5
-- unknown: 1
-- checklist: 0
-- opinion: 0
+- official_update: 10
 
 ## Top Posts
 
-- score 9 | morning | agent_role_split | Literature review | AI에게 논문 작업을 맡길 때
-- score 5 | evening | tiny_source_case | agent_role_confusion | AI에게 논문 작업을 맡길 때
-- score 1 | unknown | workflow_mode | research ai workflow | AI agent skill 모음집을 볼 때
-- score 0 | evening | agent_role_split | citation_verification | 논문 검증 workflow 구축하는 방법은 없나요? 요즘 AI가 붙인 citation을 믿고 넘어가는 오류가 발생하는 것 같습니다.
-- score 0 | evening | tiny_source_case | citation_verification | 논문 검증 workflow 구축하는 방법은 없나요? 요즘 AI가 붙인 citation을 믿고 넘어가는 오류가 발생하는 것 같습니다.
+- score 5 | evening | tiny_source_case | method_understanding_gap | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 2 | evening | tiny_source_case | evidence_missing | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 2 | evening | research_checklist | claim_evidence_mapping | LLM 논문에서
+- score 1 | evening | tiny_source_case | citation_doubt | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 0 | evening | tiny_source_case | AI agent memory | AI agent에게 오래된 대화까지 전부 넣으면 더 똑똑해질 것 같지만,
 
 ## Editorial Decisions
 
