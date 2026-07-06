@@ -1,15 +1,15 @@
 # 제안된 Learnings
 
-생성 시각: 2026-06-29T06:06:31+00:00
+생성 시각: 2026-07-06T05:38:14+00:00
 분석한 기록 수: 2
 
-이 파일은 승인 대기열입니다. 사람이 `docs/learnings.md` 또는 `skills_library/`로 승격하기 전까지 생성 규칙으로 읽지 않습니다.
+이 파일은 승인 대기열입니다. 사람이 `docs/learnings.md` 또는 `docs/thread-pattern-library.md`로 승격하기 전까지 생성 규칙으로 읽지 않습니다.
 
 ## 승격 기준
 
 - evaluator score가 85 이상이고 decision이 publish/approved/keep이며 기존 규칙과 중복되지 않을 때 승격합니다.
 - 반복 수정 제안은 일회성 문장 문제가 아니라 지속적인 작성 규칙일 때만 승격합니다.
-- skill 후보는 여러 글에서 재사용 가능한 실행 경로일 때 승격합니다.
+- 패턴 후보는 여러 글에서 재사용 가능한 실행 경로일 때 `docs/thread-pattern-library.md`로 승격합니다.
 
 ## Learning 후보
 
@@ -25,7 +25,7 @@
 
 - 아직 반복되는 수정 패턴이 없습니다.
 
-## Skill 후보
+## Pattern 후보
 
-- `skills_library/citation_verification.proposed.md`
+- `docs/thread-pattern-library.md`
   요약: claim-citation-evidence table을 중심으로 citation 검증 글을 구성한다.
