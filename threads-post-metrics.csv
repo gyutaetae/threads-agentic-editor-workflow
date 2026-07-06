@@ -82,4 +82,4 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 좋은 요청:
 ""F1 상승이 count 개선인지 span localization 개선인지 나눠줘.""
 ""prompt condition별로 성능이 어떻게 달라졌는지 비교해줘.""
-""저자의 claim을 직접 지지하는 표와 실험만 연결해줘.""",1,official_feed,https://arxiv.org/abs/2607.01240,,,evening,manual_evening,manual_after_openrouter_429,false,2026-07-03T15:08:09+09:00,443,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+""저자의 claim을 직접 지지하는 표와 실험만 연결해줘.""",1,official_feed,https://arxiv.org/abs/2607.01240,,,evening,manual_evening,manual_after_openrouter_429,false,2026-07-03T15:08:09+09:00,451,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
