@@ -778,12 +778,17 @@ def main() -> int:
     parser.add_argument("--quote-catalog-path", default="data/verified-quotes.json")
     parser.add_argument("--quote-threshold", type=int, default=8)
     parser.add_argument("--skip-quote-url-verification", action="store_true")
+    parser.add_argument("--allow-empty", action="store_true")
     parser.add_argument("--date", default=datetime.now(timezone.utc).astimezone().strftime("%Y-%m-%d"))
     args = parser.parse_args()
 
     raw_candidates = collect_github(args.per_query) + collect_official_feeds(args.per_feed)
     raw_candidates = filter_used_sources(raw_candidates, Path(args.history_path))
     if not raw_candidates:
+        if args.allow_empty:
+            write_outputs([], Path(args.output_dir), args.date)
+            print("No unused candidates found; wrote empty candidate artifacts.")
+            return 0
         raise SystemExit("No unused candidates found. Add new source queries or review content-history.jsonl.")
     candidates = [score_candidate(item) for item in raw_candidates]
     candidates = enrich_readmes(candidates, args.readme_top)

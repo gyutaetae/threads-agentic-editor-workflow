@@ -76,12 +76,24 @@ jobs:
           }
 
       - name: Collect candidates
+        id: collect
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
-          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 10 -PerFeed 10 -ReadmeTop 10 -Date $date
+          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 10 -PerFeed 10 -ReadmeTop 10 -Date $date -AllowEmpty
+          $candidatesPath = ".\daily-editor\$date-candidates.json"
+          $candidates = Get-Content $candidatesPath -Raw | ConvertFrom-Json -NoEnumerate
+          if ($candidates.Count -eq 0) {
+            "skip_auto_publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "## Auto thread skipped" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "No unused candidates were found for $date, so generation and publishing were skipped." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          } else {
+            "skip_auto_publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          }
 
       - name: Generate approved chain
+        if: steps.collect.outputs.skip_auto_publish != 'true'
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
@@ -132,11 +144,12 @@ jobs:
           if-no-files-found: ignore
 
       - name: Validate generated chain
+        if: steps.collect.outputs.skip_auto_publish != 'true'
         shell: pwsh
         run: .\scripts\publish-approved-chain.ps1 -Topic "auto generated" -SourceCount 0 -DryRun
 
       - name: Publish generated chain
-        if: ${{ github.event_name == 'schedule' || inputs.publish == true }}
+        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
         shell: pwsh
         run: |
           $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw | ConvertFrom-Json
@@ -177,7 +190,7 @@ jobs:
             -CardUsed:([bool]$env:THREADS_IMAGE_URL)
 
       - name: Commit publish records
-        if: ${{ github.event_name == 'schedule' || inputs.publish == true }}
+        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"

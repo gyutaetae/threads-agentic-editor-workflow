@@ -2,6 +2,7 @@ param(
     [int]$PerQuery = 5,
     [int]$PerFeed = 5,
     [int]$ReadmeTop = 5,
+    [switch]$AllowEmpty,
     [string]$Date = (Get-Date -Format "yyyy-MM-dd")
 )
 
@@ -10,7 +11,17 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $repoRoot
 try {
-    python .\scripts\agentic_daily_pipeline.py --per-query $PerQuery --per-feed $PerFeed --readme-top $ReadmeTop --date $Date
+    $args = @(
+        ".\scripts\agentic_daily_pipeline.py",
+        "--per-query", $PerQuery,
+        "--per-feed", $PerFeed,
+        "--readme-top", $ReadmeTop,
+        "--date", $Date
+    )
+    if ($AllowEmpty) {
+        $args += "--allow-empty"
+    }
+    python @args
 }
 finally {
     Pop-Location
