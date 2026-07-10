@@ -86,7 +86,7 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 2026-07-07,17955390969169414,https://www.threads.net/@arxiv.ai/post/17955390969169414,tiny_source_case,tiny_source_case,official_update,share,draft_without_argument,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-초안 문장은 나왔지만 problem-gap-contribution 논리가 약하다.",1,official_feed,https://arxiv.org/abs/2607.02757,48,92,evening,daily_1800_kst,openrouter/free,false,2026-07-07T20:55:53+09:00,7181,19,3,3,0,0,6,0,,,0,auto-recorded after publish | metrics collected: 24h
+초안 문장은 나왔지만 problem-gap-contribution 논리가 약하다.",1,official_feed,https://arxiv.org/abs/2607.02757,48,92,evening,daily_1800_kst,openrouter/free,false,2026-07-07T20:55:53+09:00,7244,19,3,3,0,0,6,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-07-08,18063022331493432,https://www.threads.net/@arxiv.ai/post/18063022331493432,tiny_source_case,tiny_source_case,official_update,share,literature_overload,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
@@ -94,4 +94,4 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 2026-07-09,18103327255894485,https://www.threads.net/@arxiv.ai/post/18103327255894485,tiny_source_case,tiny_source_case,official_update,share,method_understanding_gap,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
-방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2607.06974,49,92,evening,daily_1800_kst,openrouter/free,false,2026-07-09T21:10:20+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2607.06974,49,92,evening,daily_1800_kst,openrouter/free,false,2026-07-09T21:10:20+09:00,7134,9,3,3,0,0,3,0,,,0,auto-recorded after publish | metrics collected: 24h
