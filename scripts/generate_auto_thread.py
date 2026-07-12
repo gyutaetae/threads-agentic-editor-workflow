@@ -23,7 +23,7 @@ MAX_CHARS = 500
 AUTO_PUBLISH_QUALITY_SCORE = int(os.environ.get("AUTO_PUBLISH_QUALITY_SCORE", "85"))
 DRAFT_QUALITY_SCORE = int(os.environ.get("DRAFT_QUALITY_SCORE", "70"))
 DEFAULT_GENERATION_CANDIDATES = 1
-DEFAULT_MAX_OUTPUT_TOKENS = 500
+DEFAULT_MAX_OUTPUT_TOKENS = 900
 PLAYBOOK_PROMPT_CHARS = 1200
 LEARNINGS_PROMPT_CHARS = 800
 SKILL_LIBRARY_PROMPT_CHARS = 600
@@ -1397,6 +1397,7 @@ def main() -> int:
         text = ""
         data = None
         json_error = None
+        generation_error = ""
         generation_provider = args.provider
         generation_model = args.model
         provider_chain = fallback_provider_chain(args.provider, args.model)
@@ -1404,20 +1405,27 @@ def main() -> int:
             generation_provider = provider_config["provider"]
             generation_model = provider_config["model"]
             for parse_attempt in range(1, 3):
-                payload = call_llm(
-                    generation_provider,
-                    provider_config["api_key"],
-                    generation_model,
-                    prompt,
-                    args.max_output_tokens,
-                )
+                try:
+                    payload = call_llm(
+                        generation_provider,
+                        provider_config["api_key"],
+                        generation_model,
+                        prompt,
+                        args.max_output_tokens,
+                    )
+                except SystemExit as exc:
+                    generation_error = f"{generation_provider} generation failed: {exc}"
+                    print(generation_error)
+                    break
                 text = extract_text(payload)
                 try:
                     data = extract_json(text)
                     json_error = None
+                    generation_error = ""
                     break
                 except json.JSONDecodeError as exc:
                     json_error = exc
+                    generation_error = f"{generation_provider} returned malformed JSON: {exc}"
                     if parse_attempt < 2:
                         print(f"{generation_provider} returned malformed JSON; retrying generation once.")
             if data is not None:
@@ -1427,7 +1435,11 @@ def main() -> int:
                 print(f"{generation_provider} returned malformed JSON after retries; trying {next_provider}.")
 
         if data is None:
-            exc = json_error or json.JSONDecodeError("empty model response", text, 0)
+            failure_reason = generation_error
+            if not failure_reason and json_error:
+                failure_reason = f"{generation_provider} returned malformed JSON: {json_error}"
+            if not failure_reason:
+                failure_reason = "model returned no extractable thread JSON"
             fallback_thread_text = build_fallback_thread(selected_candidate, routing, analysis)
             try:
                 validate_thread(fallback_thread_text)
@@ -1437,7 +1449,7 @@ def main() -> int:
                     "quality_score": 0,
                     "decision": "discard",
                     "reasons": [
-                        f"{args.provider} returned malformed JSON: {exc}",
+                        failure_reason,
                         f"Fallback thread failed validation: {fallback_exc}",
                     ],
                     "revision_suggestions": ["Review the raw model output and regenerate manually."],
@@ -1467,7 +1479,7 @@ def main() -> int:
                         "quality_score": fallback_gate["quality_score"],
                         "quality_decision": fallback_gate["decision"],
                         "quality_reasons": [
-                            f"{generation_provider} returned malformed JSON: {exc}",
+                            failure_reason,
                             *fallback_gate["reasons"],
                         ],
                         "revision_suggestions": fallback_gate["revision_suggestions"],
@@ -1486,7 +1498,7 @@ def main() -> int:
                     "candidate_url": selected_candidate.get("url"),
                     "quality_score": 0,
                     "quality_decision": "discard",
-                    "quality_reasons": [f"{generation_provider} returned malformed JSON: {exc}"],
+                    "quality_reasons": [failure_reason],
                     "raw_text_preview": text[:1200],
                     "writer_prompt": prompt,
                     "model_output_raw": text,

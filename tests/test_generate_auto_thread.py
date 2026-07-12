@@ -617,6 +617,82 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertEqual(metadata["requested_provider"], "openrouter")
         self.assertEqual(metadata["quality_decision"], "publish")
 
+    def test_provider_api_error_uses_fallback_thread(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates_path = root / "candidates.json"
+            output_path = root / "approved-thread-chain.txt"
+            metadata_path = root / "metadata.json"
+            playbook_path = root / "playbook.md"
+            metrics_path = root / "metrics.csv"
+            candidates_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "research summary verification",
+                            "url": "https://github.com/example/research-summary-verification",
+                            "source_type": "github_repo",
+                            "content_axis": "checklist",
+                            "format_type": "research_checklist",
+                            "post_goal": "save",
+                            "score": {"total": 42},
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
+
+            argv = [
+                "generate_auto_thread.py",
+                "--date",
+                "2026-06-27",
+                "--candidates-path",
+                str(candidates_path),
+                "--playbook-path",
+                str(playbook_path),
+                "--output-path",
+                str(output_path),
+                "--metadata-path",
+                str(metadata_path),
+                "--metrics-path",
+                str(metrics_path),
+                "--history-path",
+                str(root / "missing-history.jsonl"),
+                "--quote-bank-path",
+                str(root / "missing-quotes.json"),
+                "--weekly-memory-path",
+                str(root / "missing-memory.md"),
+                "--learnings-path",
+                str(root / "missing-learnings.md"),
+                "--skills-library-dir",
+                str(root / "missing-skills"),
+                "--curation-log-path",
+                str(root / "missing-curation.jsonl"),
+                "--review-dir",
+                str(root / "review"),
+                "--run-log-dir",
+                str(root / "runs"),
+                "--evaluation-dir",
+                str(root / "evaluations"),
+                "--skip-evaluator",
+            ]
+
+            with patch.dict(
+                os.environ,
+                {"OPENROUTER_API_KEY": "test-key", "LLM_FALLBACK_PROVIDER": ""},
+            ), patch.object(sys, "argv", argv), patch(
+                "scripts.generate_auto_thread.call_llm", side_effect=SystemExit("openrouter API error 400")
+            ):
+                self.assertEqual(main(), 0)
+
+            thread = output_path.read_text(encoding="utf-8")
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+
+        validate_thread(thread)
+        self.assertIn("openrouter generation failed", metadata["quality_reasons"][0])
+        self.assertEqual(metadata["quality_decision"], "publish")
+
 
 if __name__ == "__main__":
     unittest.main()
