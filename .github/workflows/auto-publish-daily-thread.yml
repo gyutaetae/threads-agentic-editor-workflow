@@ -44,7 +44,7 @@ jobs:
       DRAFT_QUALITY_SCORE: ${{ vars.DRAFT_QUALITY_SCORE || '70' }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
-      GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}
+      GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '3' }}
       POSTS_PER_DAY: ${{ github.event_name == 'schedule' && '1' || inputs.posts_per_day || vars.POSTS_PER_DAY || '1' }}
       POST_SLOT: ${{ inputs.post_slot || 'morning' }}
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
@@ -93,6 +93,7 @@ jobs:
           }
 
       - name: Generate approved chain
+        id: generate
         if: steps.collect.outputs.skip_auto_publish != 'true'
         shell: pwsh
         run: |
@@ -106,12 +107,33 @@ jobs:
             --posts-per-day ([int]$env:POSTS_PER_DAY) `
             --post-slot $env:POST_SLOT `
             --experiment-group $env:EXPERIMENT_GROUP
+          $exitCode = $LASTEXITCODE
+          if ($exitCode -eq 0) {
+            "auto_publish_status=publish" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "should_publish=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+          if ($exitCode -eq 2) {
+            "auto_publish_status=draft" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "should_publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+          if ($exitCode -eq 3) {
+            "auto_publish_status=rejected" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "should_publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            exit 0
+          }
+          "auto_publish_status=error" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "should_publish=false" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          exit $exitCode
 
       - name: Summarize review draft
-        if: failure()
+        if: ${{ always() && steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish != 'true' }}
         shell: pwsh
         run: |
-          "## Auto thread stopped before publish" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "## Auto thread pending review" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "Status: ${{ steps.generate.outputs.auto_publish_status || 'error' }}" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           if (Test-Path ".\daily-editor\review") {
             "### Review drafts" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -132,7 +154,7 @@ jobs:
           }
 
       - name: Upload review drafts
-        if: failure()
+        if: ${{ always() && steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: auto-thread-review-drafts
@@ -144,12 +166,12 @@ jobs:
           if-no-files-found: ignore
 
       - name: Validate generated chain
-        if: steps.collect.outputs.skip_auto_publish != 'true'
+        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish == 'true' }}
         shell: pwsh
         run: .\scripts\publish-approved-chain.ps1 -Topic "auto generated" -SourceCount 0 -DryRun
 
       - name: Publish generated chain
-        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
+        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish == 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
         shell: pwsh
         run: |
           $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw | ConvertFrom-Json
@@ -190,7 +212,7 @@ jobs:
             -CardUsed:([bool]$env:THREADS_IMAGE_URL)
 
       - name: Commit publish records
-        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
+        if: ${{ steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish == 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
         shell: pwsh
         run: |
           git config user.name "github-actions[bot]"

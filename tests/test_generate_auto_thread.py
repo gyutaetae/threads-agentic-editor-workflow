@@ -474,7 +474,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
                 "--skip-evaluator",
             ]
 
-            with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch.object(sys, "argv", argv), patch(
+            with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key", "LLM_FALLBACK_PROVIDER": ""}), patch.object(sys, "argv", argv), patch(
                 "scripts.generate_auto_thread.call_llm", side_effect=fake_call_llm
             ):
                 self.assertEqual(main(), 0)
@@ -490,6 +490,132 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertEqual(metadata["quality_decision"], "publish")
         self.assertEqual(metadata["artifact_type"], "summary_verification_grid")
         self.assertIn("설명 못하면", metadata["reader_test"])
+
+    def test_openrouter_malformed_json_falls_back_to_groq(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates_path = root / "candidates.json"
+            output_path = root / "approved-thread-chain.txt"
+            metadata_path = root / "metadata.json"
+            playbook_path = root / "playbook.md"
+            metrics_path = root / "metrics.csv"
+            candidates_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "Claim evidence workflow",
+                            "url": "https://github.com/example/claim-evidence-workflow",
+                            "source_type": "github_repo",
+                            "content_axis": "checklist",
+                            "format_type": "research_checklist",
+                            "post_goal": "save",
+                            "score": {"total": 42},
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
+            thread_text = (
+                "논문 요약을 AI에게 맡길 때 먼저 봐야 할 기준이 있습니다.\n\n"
+                "문장보다 claim과 evidence 연결이 먼저입니다.\n"
+                "---\n"
+                "[먼저 확인할 것]\n"
+                "1. claim이 한 문장으로 분리되는가\n"
+                "2. evidence가 표나 실험과 연결되는가\n"
+                "3. limitation이 남아 있는가\n"
+                "---\n"
+                "[저장해둘 프롬프트]\n"
+                "AI agent에게 이렇게 시켜보세요.\n\n"
+                "\"이 요약을 claim, evidence, limitation으로 나누고 각 claim의 근거 위치를 표시해줘.\"\n"
+                "---\n"
+                "[나의 견해]\n"
+                "source fact: claim과 evidence를 분리해 보는 workflow 자료입니다.\n"
+                "우리 해석: 초안 전에 검증표를 먼저 만들면 citation 오류를 줄일 수 있습니다.\n"
+                "https://github.com/example/claim-evidence-workflow"
+            )
+
+            calls = []
+
+            def fake_call_llm(provider, api_key, model, prompt, max_output_tokens=500):
+                calls.append(provider)
+                if provider == "openrouter":
+                    return {"choices": [{"message": {"content": "not json at all"}}]}
+                return {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "thread_text": thread_text,
+                                        "topic": "claim_evidence_mapping",
+                                        "source_count": 1,
+                                        "format": "research_checklist",
+                                        "source_name": "Claim evidence workflow",
+                                        "source_url": "https://github.com/example/claim-evidence-workflow",
+                                        "quote_used": False,
+                                        "quote_id": "",
+                                    },
+                                    ensure_ascii=False,
+                                )
+                            }
+                        }
+                    ]
+                }
+
+            argv = [
+                "generate_auto_thread.py",
+                "--date",
+                "2026-06-27",
+                "--candidates-path",
+                str(candidates_path),
+                "--playbook-path",
+                str(playbook_path),
+                "--output-path",
+                str(output_path),
+                "--metadata-path",
+                str(metadata_path),
+                "--metrics-path",
+                str(metrics_path),
+                "--history-path",
+                str(root / "missing-history.jsonl"),
+                "--quote-bank-path",
+                str(root / "missing-quotes.json"),
+                "--weekly-memory-path",
+                str(root / "missing-memory.md"),
+                "--learnings-path",
+                str(root / "missing-learnings.md"),
+                "--skills-library-dir",
+                str(root / "missing-skills"),
+                "--curation-log-path",
+                str(root / "missing-curation.jsonl"),
+                "--review-dir",
+                str(root / "review"),
+                "--run-log-dir",
+                str(root / "runs"),
+                "--evaluation-dir",
+                str(root / "evaluations"),
+                "--skip-evaluator",
+            ]
+
+            with patch.dict(
+                os.environ,
+                {
+                    "OPENROUTER_API_KEY": "openrouter-key",
+                    "GROQ_API_KEY": "groq-key",
+                    "LLM_FALLBACK_PROVIDER": "groq",
+                },
+            ), patch.object(sys, "argv", argv), patch(
+                "scripts.generate_auto_thread.call_llm", side_effect=fake_call_llm
+            ):
+                self.assertEqual(main(), 0)
+
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(calls, ["openrouter", "openrouter", "groq"])
+        self.assertEqual(metadata["provider"], "groq")
+        self.assertEqual(metadata["requested_provider"], "openrouter")
+        self.assertEqual(metadata["quality_decision"], "publish")
 
 
 if __name__ == "__main__":

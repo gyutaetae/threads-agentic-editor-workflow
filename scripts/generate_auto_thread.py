@@ -16,6 +16,7 @@ OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions
 DEFAULT_PROVIDER = "openrouter"
 DEFAULT_MODEL = "openrouter/free"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+DEFAULT_FALLBACK_PROVIDER = "groq"
 MIN_PARTS = 4
 MAX_PARTS = 4
 MAX_CHARS = 500
@@ -1211,6 +1212,44 @@ def request_options(provider: str, model: str) -> dict:
     return options
 
 
+def api_key_for_provider(provider: str) -> str:
+    if provider == "openrouter":
+        return os.environ.get("OPENROUTER_API_KEY", "")
+    if provider == "groq":
+        return os.environ.get("GROQ_API_KEY", "")
+    return ""
+
+
+def default_model_for_provider(provider: str) -> str:
+    if provider == "openrouter":
+        return os.environ.get("OPENROUTER_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_MODEL
+    if provider == "groq":
+        return os.environ.get("GROQ_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_GROQ_MODEL
+    raise SystemExit(f"Unsupported LLM provider: {provider}")
+
+
+def fallback_provider_chain(provider: str, model: str) -> list[dict]:
+    provider = provider.lower()
+    chain = [
+        {
+            "provider": provider,
+            "model": model,
+            "api_key": api_key_for_provider(provider),
+        }
+    ]
+    fallback_provider = os.environ.get("LLM_FALLBACK_PROVIDER", DEFAULT_FALLBACK_PROVIDER).lower().strip()
+    if fallback_provider and fallback_provider != provider and api_key_for_provider(fallback_provider):
+        fallback_model = os.environ.get("LLM_FALLBACK_MODEL") or default_model_for_provider(fallback_provider)
+        chain.append(
+            {
+                "provider": fallback_provider,
+                "model": fallback_model,
+                "api_key": api_key_for_provider(fallback_provider),
+            }
+        )
+    return chain
+
+
 def call_llm(
     provider: str,
     api_key: str,
@@ -1313,12 +1352,9 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.model is None:
-        if args.provider == "openrouter":
-            args.model = os.environ.get("OPENROUTER_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_MODEL
-        else:
-            args.model = os.environ.get("GROQ_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_GROQ_MODEL
+        args.model = default_model_for_provider(args.provider)
 
-    api_key = os.environ.get("OPENROUTER_API_KEY") if args.provider == "openrouter" else os.environ.get("GROQ_API_KEY")
+    api_key = api_key_for_provider(args.provider)
     if not api_key:
         env_name = "OPENROUTER_API_KEY" if args.provider == "openrouter" else "GROQ_API_KEY"
         raise SystemExit(f"{env_name} is required.")
@@ -1361,17 +1397,34 @@ def main() -> int:
         text = ""
         data = None
         json_error = None
-        for parse_attempt in range(1, 3):
-            payload = call_llm(args.provider, api_key, args.model, prompt, args.max_output_tokens)
-            text = extract_text(payload)
-            try:
-                data = extract_json(text)
-                json_error = None
+        generation_provider = args.provider
+        generation_model = args.model
+        provider_chain = fallback_provider_chain(args.provider, args.model)
+        for provider_index, provider_config in enumerate(provider_chain):
+            generation_provider = provider_config["provider"]
+            generation_model = provider_config["model"]
+            for parse_attempt in range(1, 3):
+                payload = call_llm(
+                    generation_provider,
+                    provider_config["api_key"],
+                    generation_model,
+                    prompt,
+                    args.max_output_tokens,
+                )
+                text = extract_text(payload)
+                try:
+                    data = extract_json(text)
+                    json_error = None
+                    break
+                except json.JSONDecodeError as exc:
+                    json_error = exc
+                    if parse_attempt < 2:
+                        print(f"{generation_provider} returned malformed JSON; retrying generation once.")
+            if data is not None:
                 break
-            except json.JSONDecodeError as exc:
-                json_error = exc
-                if parse_attempt < 2:
-                    print(f"{args.provider} returned malformed JSON; retrying generation once.")
+            if provider_index + 1 < len(provider_chain):
+                next_provider = provider_chain[provider_index + 1]["provider"]
+                print(f"{generation_provider} returned malformed JSON after retries; trying {next_provider}.")
 
         if data is None:
             exc = json_error or json.JSONDecodeError("empty model response", text, 0)
@@ -1394,6 +1447,8 @@ def main() -> int:
                 generated_options.append(
                     {
                         "option": index,
+                        "provider": generation_provider,
+                        "model": generation_model,
                         "candidate": selected_candidate,
                         "analysis": analysis,
                         "routing": routing,
@@ -1412,7 +1467,7 @@ def main() -> int:
                         "quality_score": fallback_gate["quality_score"],
                         "quality_decision": fallback_gate["decision"],
                         "quality_reasons": [
-                            f"{args.provider} returned malformed JSON: {exc}",
+                            f"{generation_provider} returned malformed JSON: {exc}",
                             *fallback_gate["reasons"],
                         ],
                         "revision_suggestions": fallback_gate["revision_suggestions"],
@@ -1425,11 +1480,13 @@ def main() -> int:
             generated_options.append(
                 {
                     "option": index,
+                    "provider": generation_provider,
+                    "model": generation_model,
                     "candidate_title": selected_candidate.get("title"),
                     "candidate_url": selected_candidate.get("url"),
                     "quality_score": 0,
                     "quality_decision": "discard",
-                    "quality_reasons": [f"{args.provider} returned malformed JSON: {exc}"],
+                    "quality_reasons": [f"{generation_provider} returned malformed JSON: {exc}"],
                     "raw_text_preview": text[:1200],
                     "writer_prompt": prompt,
                     "model_output_raw": text,
@@ -1462,6 +1519,8 @@ def main() -> int:
         generated_options.append(
             {
                 "option": index,
+                "provider": generation_provider,
+                "model": generation_model,
                 "candidate": selected_candidate,
                 "analysis": analysis,
                 "routing": routing,
@@ -1492,6 +1551,8 @@ def main() -> int:
     routing = best["routing"]
     data = best["data"]
     thread_text = best["thread_text"]
+    selected_provider = best.get("provider") or args.provider
+    selected_model = best.get("model") or args.model
     gate = {
         "quality_score": best["quality_score"],
         "decision": best["quality_decision"],
@@ -1518,7 +1579,13 @@ def main() -> int:
             skill_library=skill_library,
         )
         try:
-            evaluator_payload = call_llm(args.provider, api_key, args.model, evaluator_prompt, min(args.max_output_tokens, 800))
+            evaluator_payload = call_llm(
+                selected_provider,
+                api_key_for_provider(selected_provider),
+                selected_model,
+                evaluator_prompt,
+                min(args.max_output_tokens, 800),
+            )
             evaluator_text = extract_text(evaluator_payload)
             evaluator_result = extract_json(evaluator_text)
             evaluator_result["model_output_raw"] = evaluator_text
@@ -1529,8 +1596,10 @@ def main() -> int:
 
     metadata = {
         "date": args.date,
-        "provider": args.provider,
-        "model": args.model,
+        "provider": selected_provider,
+        "model": selected_model,
+        "requested_provider": args.provider,
+        "requested_model": args.model,
         "post_slot": args.post_slot,
         "posts_per_day": args.posts_per_day,
         "experiment_group": args.experiment_group,
@@ -1570,6 +1639,8 @@ def main() -> int:
         "generated_options": [
             {
                 "option": option.get("option"),
+                "provider": option.get("provider"),
+                "model": option.get("model"),
                 "candidate_title": (option.get("candidate") or {}).get("title") or option.get("candidate_title"),
                 "candidate_url": (option.get("candidate") or {}).get("url") or option.get("candidate_url"),
                 "content_axis": (option.get("routing") or {}).get("content_axis"),
