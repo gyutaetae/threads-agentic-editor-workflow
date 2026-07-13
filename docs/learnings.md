@@ -10,6 +10,7 @@ This file is loaded near the top of the generation prompt. Keep it short. Add on
 - Checklist items should explain when a researcher would use the criterion, not only what the criterion is.
 - For citation posts, focus on whether a citation directly supports the claim, not only whether the reference exists.
 - When linking a methodology source, explain why it belongs in the post before giving the URL.
+- For reviewer critique posts, replace vague role prompts like "리뷰어처럼" with venue + paper type + criteria + decision stage.
 
 ## Avoid
 
