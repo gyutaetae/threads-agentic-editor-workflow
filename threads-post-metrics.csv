@@ -95,3 +95,16 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 
 ""이 논문 정리해줘""라고만 시키면
 방법론을 요약했지만 재현 가능한 단계로 설명하지 못한다.",1,official_feed,https://arxiv.org/abs/2607.06974,49,92,evening,daily_1800_kst,openrouter/free,false,2026-07-09T21:10:20+09:00,7154,9,3,3,0,0,3,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
+2026-07-13,18137971330541008,https://www.threads.net/@arxiv.ai/post/18137971330541008,A,,,,research ai workflow,AI에게 method paper 초안을 검토시킬 때 “리뷰어처럼 봐줘”라고 하면 답이 너무 흐립니다.,"AI에게 method paper 초안을 검토시킬 때 “리뷰어처럼 봐줘”라고 하면 답이 너무 흐립니다.
+
+나쁜 요청:
+“리뷰어처럼 평가해줘.”
+
+좋은 요청:
+“핵심 claim 3개와 필요한 evidence를 분리해줘.”
+“ICML 기준으로 soundness를 흔들 반례 질문을 써줘.”
+“AC가 볼 때 치명적인 약점을 우선순위로 표시해줘.”
+“표현 지적과 reject 근거가 될 구조적 약점을 나눠줘.”
+
+AI reviewer는 점수 예측기가 아니라
+제출 전 위험 위치를 찾는 도구입니다.",2,,https://icml.cc/Conferences/2026/ReviewerInstructions,,,,,,false,2026-07-13T23:28:33+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
