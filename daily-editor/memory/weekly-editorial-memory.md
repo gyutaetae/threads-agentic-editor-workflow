@@ -1,14 +1,14 @@
 # Weekly Editorial Memory
 
-Updated: 2026-07-06T05:07:53+00:00
-Window: last 7 days; analyzed posts: 6
+Updated: 2026-07-13T04:27:28+00:00
+Window: last 7 days; analyzed posts: 3
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 6
+- Posts with collected metrics: 3
 
 ## Winning Slots
 
@@ -16,13 +16,11 @@ Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Winning Experiments
 
-- daily_1800_kst: 8
-- manual_evening: 2
+- daily_1800_kst: 10
 
 ## Winning Formats
 
-- tiny_source_case: 8
-- research_checklist: 2
+- tiny_source_case: 10
 
 ## Winning Content Axes
 
@@ -30,11 +28,9 @@ Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Top Posts
 
-- score 5 | evening | tiny_source_case | method_understanding_gap | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
-- score 2 | evening | tiny_source_case | evidence_missing | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
-- score 2 | evening | research_checklist | claim_evidence_mapping | LLM 논문에서
-- score 1 | evening | tiny_source_case | citation_doubt | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
-- score 0 | evening | tiny_source_case | AI agent memory | AI agent에게 오래된 대화까지 전부 넣으면 더 똑똑해질 것 같지만,
+- score 6 | evening | tiny_source_case | draft_without_argument | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 3 | evening | tiny_source_case | method_understanding_gap | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 1 | evening | tiny_source_case | literature_overload | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ## Editorial Decisions
 
