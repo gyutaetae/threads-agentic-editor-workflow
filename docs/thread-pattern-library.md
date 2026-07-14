@@ -19,6 +19,31 @@ Promote a pattern here when:
 - it does not force one fixed post template,
 - it keeps source facts separate from @arxiv.ai interpretation.
 
+## Cross-Pattern Rule: Concrete Anchors
+
+Use this rule inside existing patterns; do not create a separate post format just to use a famous name.
+
+Strong posts often turn a generic AI instruction into a concrete paper-writing situation by naming a recognizable anchor:
+
+- venue or review context: `ICML`, `NeurIPS`, `ACL`, `reviewer`, `AC`, `camera-ready`
+- paper type: `method paper`, `benchmark paper`, `survey`, `system paper`, `LLM eval`
+- evaluation criterion: `soundness`, `novelty`, `ablation`, `baseline`, `citation support`
+- respected source: official docs, reviewer instructions, named researcher writing, widely used benchmark or eval framework
+
+The anchor should make the prompt more usable:
+
+```text
+Weak:
+"리뷰어처럼 평가해줘."
+
+Better:
+"ICML 기준으로 soundness를 흔들 반례 질문을 써줘."
+"AC가 볼 때 치명적인 약점을 우선순위로 표시해줘."
+"표현 지적과 reject 근거가 될 구조적 약점을 나눠줘."
+```
+
+Avoid name-dropping. If the anchor does not change the reader's next action, remove it.
+
 ## Citation Verification
 
 Use when `human_signal_type` is `citation_doubt` or `workflow_stage` is `citation_verification`.
@@ -77,4 +102,3 @@ Learning rule:
 Only promote a lesson into docs/learnings.md or this file when it is durable and likely to improve future runs.
 Keep raw evidence in daily-editor/runs/*.json and daily-editor/evaluations/*.eval.json.
 ```
-

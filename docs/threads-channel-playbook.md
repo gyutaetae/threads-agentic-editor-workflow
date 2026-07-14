@@ -22,6 +22,7 @@ Good posts start from a real paper-work failure and end with one reusable work a
 - Do not invent first-person experience in automatic mode.
 - Ban hype: `무조건`, `혁명`, `논문 끝`, `역대급`, `미친 생산성`, `이거 모르면 뒤처집니다`.
 - Separate source fact from account interpretation.
+- Prefer recognizable concrete anchors when they make the workflow feel real: named venues, reviewer roles, named researchers, official docs, famous benchmarks, or widely respected examples. Use them to make the prompt more usable, not to borrow prestige.
 
 ## Topic Gate
 
@@ -32,6 +33,7 @@ Publish only when at least three are true:
 - Source is grounded: paper, official docs/blog, named researcher writing, useful repo, or Korean technical example.
 - A real researcher failure mode is visible.
 - Recent history differs in `failure_mode`, `artifact_type`, `hook_pattern`, or `reusable_unit_type`.
+- A generic AI tip is converted into a concrete paper-writing context, such as `ICML soundness`, `ACL related work`, `AC decision risk`, `OpenAI Evals`, or another recognizable anchor.
 
 Block when:
 
@@ -92,6 +94,20 @@ AI가 대신 읽는 게 아니라
 ```
 
 Use this pattern for about 60-70% of posts. For the rest, rotate into direct problem, failure scene, quote/idea hook, or source-specific case so the account does not feel automated.
+
+When writing examples, prefer concrete anchors over generic roles:
+
+```text
+Weak:
+"리뷰어처럼 평가해줘."
+
+Stronger:
+"ICML 기준으로 soundness를 흔들 반례 질문을 써줘."
+"AC가 볼 때 치명적인 약점을 우선순위로 표시해줘."
+"표현 지적과 reject 근거가 될 구조적 약점을 나눠줘."
+```
+
+The anchor can be a venue, role, named person, benchmark, paper type, official rubric, or famous workflow. Keep the post broadly useful for people writing papers with AI; do not make it insider-only.
 
 ## Thread Contract
 
