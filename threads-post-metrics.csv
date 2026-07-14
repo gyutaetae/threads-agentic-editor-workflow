@@ -107,7 +107,7 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 “표현 지적과 reject 근거가 될 구조적 약점을 나눠줘.”
 
 AI reviewer는 점수 예측기가 아니라
-제출 전 위험 위치를 찾는 도구입니다.",2,,https://icml.cc/Conferences/2026/ReviewerInstructions,,,,,,false,2026-07-13T23:28:33+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+제출 전 위험 위치를 찾는 도구입니다.",2,,https://icml.cc/Conferences/2026/ReviewerInstructions,,,,,,false,2026-07-13T23:28:33+09:00,8055,67,3,3,0,0,26,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-07-14,18167558416447270,https://www.threads.net/@arxiv.ai/post/18167558416447270,tiny_source_case,tiny_source_case,official_update,share,Agent role 분리와 작업 흐름 설계,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
 
 ""이 논문 정리해줘""라고만 시키면
