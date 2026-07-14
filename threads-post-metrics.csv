@@ -108,3 +108,7 @@ AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.
 
 AI reviewer는 점수 예측기가 아니라
 제출 전 위험 위치를 찾는 도구입니다.",2,,https://icml.cc/Conferences/2026/ReviewerInstructions,,,,,,false,2026-07-13T23:28:33+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-14,18167558416447270,https://www.threads.net/@arxiv.ai/post/18167558416447270,tiny_source_case,tiny_source_case,official_update,share,Agent role 분리와 작업 흐름 설계,논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.,"논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+
+""이 논문 정리해줘""라고만 시키면
+하나의 AI agent에게 읽기, 비교, 비판, 작성을 다 맡겨 결과가 흐려진다.",1,official_feed,https://arxiv.org/abs/2607.09908,44,100,evening,daily_1800_kst,openai/gpt-oss-120b,false,2026-07-14T19:53:24+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
