@@ -21,6 +21,7 @@ threads-hosted-assets.json
 threads-post-metrics.csv
 !threads-post-metrics.csv
 approved-thread-chain.txt
+approved-thread-spec.json
 approved-thread-post.txt
 *.png
 

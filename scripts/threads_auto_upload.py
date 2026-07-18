@@ -2,7 +2,6 @@ import argparse
 import csv
 import json
 import os
-import re
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -10,12 +9,15 @@ from urllib.parse import urlencode
 
 import requests
 
+try:
+    from scripts.thread_spec import raise_for_report, render_parts, split_thread_text, validate_thread_text
+except ModuleNotFoundError:
+    from thread_spec import raise_for_report, render_parts, split_thread_text, validate_thread_text
+
 
 GRAPH_BASE = "https://graph.threads.net"
 API_VERSION = "v1.0"
 ACCOUNT_TIMEZONE = timezone(timedelta(hours=9), "KST")
-SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
-SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
 
 
 def raise_for_status_with_body(response: requests.Response) -> None:
@@ -41,26 +43,6 @@ def read_text(path: str) -> str:
 
 def account_now() -> datetime:
     return datetime.now(ACCOUNT_TIMEZONE)
-
-
-def strip_section_label(text: str) -> str:
-    lines = text.strip().splitlines()
-    while lines and SECTION_LABEL_RE.fullmatch(lines[0].strip()):
-        lines.pop(0)
-    if lines:
-        lines[0] = SECTION_LABEL_RE.sub("", lines[0], count=1)
-    return "\n".join(lines).strip()
-
-
-def normalize_part(part: str) -> str:
-    part = strip_section_label(part)
-    text = "\n".join(line.rstrip() for line in part.splitlines()).strip()
-    return re.sub(r"\n{3,}", "\n\n", text)
-
-
-def normalize_thread_text(raw: str) -> str:
-    parts = [normalize_part(part) for part in SEPARATOR_RE.split(raw.strip()) if part.strip()]
-    return "\n---\n".join(part for part in parts if part)
 
 
 def build_auth_url(app_id: str, redirect_uri: str, scopes: str, state: str) -> str:
@@ -281,19 +263,12 @@ def publish_post(
 
 
 def read_thread_parts(path: str) -> list[str]:
-    raw = normalize_thread_text(read_text(path))
-    return [part.strip() for part in SEPARATOR_RE.split(raw) if part.strip()]
+    return split_thread_text(read_text(path))
 
 
 def validate_thread_parts(parts: list[str]) -> None:
-    too_long = [(index, len(part)) for index, part in enumerate(parts, start=1) if len(part) > 500]
-    if too_long:
-        detail = ", ".join(f"part {index}: {length} chars" for index, length in too_long)
-        raise SystemExit(f"Threads text posts should be 500 characters or less. Too long: {detail}")
-    labeled = [index for index, part in enumerate(parts, start=1) if SECTION_LABEL_RE.match(part)]
-    if labeled:
-        detail = ", ".join(f"part {index}" for index in labeled)
-        raise SystemExit(f"Remove drafting labels such as Main: or Reply n: before publishing: {detail}")
+    report = validate_thread_text(render_parts(parts))
+    raise_for_report(report, strict=True)
 
 
 def print_thread_dry_run(parts: list[str], image_url: str | None = None) -> None:
@@ -482,6 +457,9 @@ def append_content_history(
     structure_pattern: str = "",
     closer_pattern: str = "",
     reusable_unit_type: str = "",
+    origin: str = "unknown",
+    model: str = "",
+    main_text: str = "",
 ) -> None:
     if not any(
         [
@@ -507,11 +485,14 @@ def append_content_history(
     entry = {
         "date": now.strftime("%Y-%m-%d"),
         "posted_at": now.isoformat(timespec="seconds"),
+        "origin": origin,
+        "model": model,
         "source_name": source_name,
         "source_url": source_url,
         "topic": topic,
         "format": format_name,
         "hook": hook,
+        "main_text": main_text,
         "post_ids": post_ids,
         "thread_url": thread_url,
         "series": series,
@@ -718,6 +699,7 @@ def main() -> int:
     approved.add_argument("--structure-pattern", default="")
     approved.add_argument("--closer-pattern", default="")
     approved.add_argument("--reusable-unit-type", default="")
+    approved.add_argument("--origin", default="unknown")
     approved.add_argument("--card-used", action="store_true")
     approved.add_argument("--dry-run", action="store_true")
 
@@ -861,6 +843,9 @@ def main() -> int:
             structure_pattern=args.structure_pattern,
             closer_pattern=args.closer_pattern,
             reusable_unit_type=args.reusable_unit_type,
+            origin=args.origin,
+            model=args.model,
+            main_text=main_text,
         )
         print(published)
         print(f"Recorded metrics row in {args.metrics_path}")

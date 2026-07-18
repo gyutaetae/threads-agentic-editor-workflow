@@ -10,56 +10,90 @@ from pathlib import Path
 
 import requests
 
+try:
+    from scripts.thread_spec import (
+        BRACKET_HEADING_RE,
+        HYPE_WORDS,
+        MAX_CHARS,
+        PART_ROLES,
+        PRACTICAL_MARKERS,
+        PROMPT_CONTRACT_VERSION,
+        QUOTE_LINE_RE,
+        SECTION_LABEL_RE,
+        SEPARATOR_RE,
+        URL_RE,
+        build_thread_spec,
+        raise_for_report,
+        validate_thread_spec,
+        validate_thread_text,
+        write_spec,
+    )
+except ModuleNotFoundError:
+    from thread_spec import (
+        BRACKET_HEADING_RE,
+        HYPE_WORDS,
+        MAX_CHARS,
+        PART_ROLES,
+        PRACTICAL_MARKERS,
+        PROMPT_CONTRACT_VERSION,
+        QUOTE_LINE_RE,
+        SECTION_LABEL_RE,
+        SEPARATOR_RE,
+        URL_RE,
+        build_thread_spec,
+        raise_for_report,
+        validate_thread_spec,
+        validate_thread_text,
+        write_spec,
+    )
+
 
 GROQ_CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
 OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_PROVIDER = "openrouter"
-DEFAULT_MODEL = "openrouter/free"
+DEFAULT_MODEL = "google/gemma-4-26b-a4b-it:free"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
-DEFAULT_FALLBACK_PROVIDER = "groq"
-MIN_PARTS = 4
-MAX_PARTS = 4
-MAX_CHARS = 500
+DEFAULT_FALLBACK_PROVIDER = ""
+MIN_PARTS = len(PART_ROLES)
+MAX_PARTS = len(PART_ROLES)
 AUTO_PUBLISH_QUALITY_SCORE = int(os.environ.get("AUTO_PUBLISH_QUALITY_SCORE", "85"))
 DRAFT_QUALITY_SCORE = int(os.environ.get("DRAFT_QUALITY_SCORE", "70"))
+EVALUATOR_PUBLISH_SCORE = int(os.environ.get("EVALUATOR_PUBLISH_SCORE", "85"))
 DEFAULT_GENERATION_CANDIDATES = 1
 DEFAULT_MAX_OUTPUT_TOKENS = 900
 PLAYBOOK_PROMPT_CHARS = 1200
 LEARNINGS_PROMPT_CHARS = 800
 SKILL_LIBRARY_PROMPT_CHARS = 600
 WEEKLY_MEMORY_PROMPT_CHARS = 500
-SECTION_LABEL_RE = re.compile(r"(?im)^\s*(?:main|reply\s*\d+|reply\s*n|답글\s*\d+)\s*:\s*")
-SEPARATOR_RE = re.compile(r"(?m)^\s*---\s*$")
-URL_RE = re.compile(r"https?://\S+")
-QUOTE_LINE_RE = re.compile(r"(?m)^\s*[\"“][^\"”]+[\"”]\s*$")
-BRACKET_HEADING_RE = re.compile(r"^\[[^\]\n]{4,80}\]\s*(?:\n|$)")
-HYPE_WORDS = ["무조건", "혁명", "논문 끝", "개발자 끝", "역대급", "미친 생산성", "뒤처집니다", "끝입니다"]
-PRACTICAL_MARKERS = [
-    "예시 프롬프트",
-    "바로 써볼 프롬프트",
-    "저장해둘 프롬프트",
-    "저장해두고 적용해볼 프롬프트",
-    "오늘 적용할 문장",
-    "AI agent에게 이렇게 시켜보세요",
-    "논문 읽을 때 붙여 넣을 문장",
-    "다음 요약 전에 써볼 질문",
-    "체크리스트",
-    "기준",
-    "모드",
-    "규칙",
-    "이런 방식으로 요청해보세요",
-    "claim",
-    "evidence",
-    "citation",
-    "limitation",
-    "1.",
-    "2.",
-    "3.",
-]
 FORBIDDEN_FALLBACK_PHRASES = [
     "GitHub stars는 인기 신호일 뿐이고",
     "연구 품질 증거로 쓰면 안 됩니다",
 ]
+THREAD_CANDIDATE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "hook": {
+            "type": "string",
+            "description": "Publishable Korean text for the problem-hook main post.",
+        },
+        "diagnosis": {
+            "type": "string",
+            "description": "Publishable Korean text with three concrete diagnostic checks.",
+        },
+        "action": {
+            "type": "string",
+            "description": "Publishable Korean reusable prompt, checklist, protocol, matrix, or role instruction.",
+        },
+        "source": {
+            "type": "string",
+            "description": "Publishable Korean source interpretation with the supplied URL and fact/opinion boundary.",
+        },
+        "quote_used": {"type": "boolean"},
+        "quote_id": {"type": "string"},
+    },
+    "required": ["hook", "diagnosis", "action", "source", "quote_used", "quote_id"],
+    "additionalProperties": False,
+}
 CONTENT_AXES = {
     "prompt_habit",
     "workflow_mode",
@@ -724,6 +758,37 @@ def normalize_thread_text(thread_text: str) -> str:
     return "\n---\n".join(parts)
 
 
+def normalize_thread_candidate(payload: dict, candidate: dict, routing: dict) -> dict:
+    if not isinstance(payload, dict):
+        raise ValueError("Thread candidate response must be a JSON object.")
+
+    missing = [key for key in THREAD_CANDIDATE_SCHEMA["required"] if key not in payload]
+    extra = [key for key in payload if key not in THREAD_CANDIDATE_SCHEMA["properties"]]
+    if missing or extra:
+        details = []
+        if missing:
+            details.append(f"missing={','.join(missing)}")
+        if extra:
+            details.append(f"unexpected={','.join(extra)}")
+        raise ValueError(f"ThreadCandidate v1 shape mismatch ({'; '.join(details)}).")
+
+    parts = [normalize_part(str(payload[role])) for role in PART_ROLES]
+    if any(not part for part in parts):
+        raise ValueError("ThreadCandidate v1 parts must be non-empty strings.")
+
+    normalized = {
+        "thread_text": "\n---\n".join(parts),
+        "topic": routing.get("human_signal_type") or "research workflow",
+        "source_count": 1 if candidate.get("url") else 0,
+        "format": routing.get("format_type") or "research_checklist",
+        "source_name": candidate.get("title") or candidate.get("name") or "",
+        "source_url": candidate.get("url") or "",
+        "quote_used": payload.get("quote_used") is True,
+        "quote_id": str(payload.get("quote_id") or "").strip(),
+    }
+    return normalized
+
+
 def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str:
     source_title = clip_text(candidate.get("title") or candidate.get("name") or "오늘의 source", 80)
     source_url = str(candidate.get("url") or "").strip()
@@ -764,45 +829,11 @@ def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str
 
 
 def validate_thread(thread_text: str) -> None:
-    parts = [part.strip() for part in SEPARATOR_RE.split(thread_text.strip()) if part.strip()]
-    if not parts:
-        raise SystemExit("Generated thread has no parts.")
-    if len(parts) < MIN_PARTS or len(parts) > MAX_PARTS:
-        raise SystemExit(f"Generated thread has {len(parts)} parts; expected {MIN_PARTS}-{MAX_PARTS} parts.")
-    for index, part in enumerate(parts, start=1):
-        if SECTION_LABEL_RE.match(part):
-            raise SystemExit(f"Generated part {index} still has a drafting label such as Main: or Reply n:.")
-        if len(part) > MAX_CHARS:
-            raise SystemExit(f"Generated part {index} is {len(part)} chars; limit is {MAX_CHARS}.")
-        if index >= 2 and not BRACKET_HEADING_RE.match(part):
-            raise SystemExit(f"Generated part {index} must start with a role-specific bracket label.")
-    if URL_RE.search(parts[0]):
-        raise SystemExit("Generated main post contains a source link; move links to Reply 3.")
-    if not has_practical_element(thread_text):
-        raise SystemExit("Generated thread is missing a copyable prompt, checklist, criteria, workflow mode, or failure-prevention rule.")
-    if any(word in thread_text for word in HYPE_WORDS):
-        raise SystemExit("Generated thread contains banned hype language.")
-    joined = "\n".join(parts)
-    for forbidden in FORBIDDEN_TEXT:
-        if forbidden in joined:
-            raise SystemExit(f"Generated thread contains forbidden label: {forbidden}")
+    report = validate_thread_text(thread_text)
     for forbidden in FORBIDDEN_FALLBACK_PHRASES:
-        if forbidden in joined:
-            raise SystemExit(f"Generated thread contains retired fallback phrase: {forbidden}")
-    if "```" in joined or '{"role"' in joined or '"tools"' in joined:
-        raise SystemExit("Generated thread uses a code block or JSON-style prompt; use natural quoted Korean prompt text.")
-    if "좋은 요청:" in joined:
-        quoted_good_lines = QUOTE_LINE_RE.findall(joined.split("좋은 요청:", 1)[1])
-        if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_good_lines):
-            raise SystemExit("Generated good-request lines should not include 1./2./3./4. numbering inside the quotes.")
-    if "왜 좋은 요청일까요?" in joined:
-        raise SystemExit("Generated thread should use practical framing, not '왜 좋은 요청일까요?'.")
-    if any(part.lower().find("notebooklm.google") >= 0 for part in parts):
-        raise SystemExit("Generated reference reply must link an actual example, not the NotebookLM homepage.")
-    if URL_RE.search(joined) and "- 볼 부분:" not in joined and "인용 원문:" not in joined:
-        raise SystemExit("Generated source links must explain what to inspect with '- 볼 부분:' or cite a quote source with '인용 원문:'.")
-    if URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation", "[나의 견해]"]):
-        raise SystemExit("Generated source reply must separate source fact from account interpretation.")
+        if forbidden in thread_text:
+            report.errors.append(f"Generated thread contains retired fallback phrase: {forbidden}")
+    raise_for_report(report)
 
 
 def validate_quote_selection(thread_text: str, data: dict, source_item: dict) -> dict | None:
@@ -900,11 +931,10 @@ def build_prompt(
         "Reusable crystallized skills from previous good runs:\n"
         f"{skill_library or 'No crystallized skills yet.'}\n\n"
         "Hard constraints:\n"
-        "- Return JSON only.\n"
-        "- JSON keys: thread_text, topic, source_count, format, source_name, source_url, quote_used, quote_id.\n"
-        "- Keep JSON compact. Do not include optional empty metadata fields.\n"
-        "- thread_text must use --- between main and replies.\n"
-        "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목: in thread_text.\n"
+        "- Return one ThreadCandidate v1 JSON object only.\n"
+        "- JSON keys are exactly: hook, diagnosis, action, source, quote_used, quote_id.\n"
+        "- Each of hook, diagnosis, action, and source is one publishable part. Do not include --- separators in a field.\n"
+        "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목:.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
         "- Use exactly 4 parts total. This is a hard rule.\n"
         "- Part 1: problem hook. Rotate recent-history hook style: direct problem, failure scene, or judgment sentence. Do not include a bracket label here.\n"
@@ -1003,52 +1033,30 @@ def quality_gate(
     recent_patterns = [item.get("pattern") for item in (recent_hooks or []) if item.get("pattern")]
     recent_history = recent_history or []
 
-    if len(parts) != 4:
-        score -= 50
-        reasons.append("Thread must use the fixed 4-part master template.")
-        suggestions.append("Generate exactly 4 parts: hook, criteria, reusable action, source interpretation.")
-    if any(index >= 2 and not BRACKET_HEADING_RE.match(part) for index, part in enumerate(parts, start=1)):
-        score -= 35
-        reasons.append("Parts 2-4 must start with role-specific bracket labels.")
-        suggestions.append("Use labels such as [먼저 확인할 것], [저장해둘 프롬프트], [참고 논문], or [나의 견해].")
-    if joined.count("[핵심 한 줄]") >= 2:
-        score -= 12
-        reasons.append("Repeated generic [핵심 한 줄] labels make the thread feel templated.")
-        suggestions.append("Replace generic labels with role-specific one-line labels.")
+    contract_report = validate_thread_text(thread_text)
+    if contract_report.errors:
+        return {
+            "quality_score": 0,
+            "decision": "discard",
+            "reasons": contract_report.errors,
+            "revision_suggestions": ["Repair the canonical ThreadSpec contract before editorial scoring."],
+        }
+    if contract_report.warnings:
+        score -= min(20, len(contract_report.warnings) * 4)
+        reasons.extend(f"Contract warning: {warning}" for warning in contract_report.warnings)
+        suggestions.append("Resolve contract warnings before strict prepublish validation.")
     if any(phrase in joined for phrase in FORBIDDEN_FALLBACK_PHRASES):
         score -= 40
         reasons.append("Thread uses a retired fallback phrase.")
         suggestions.append("Replace generic GitHub-stars caveats with a source-specific next action.")
-    if parts and URL_RE.search(parts[-1]) and not any(marker in parts[-1] for marker in ["source fact", "source가 실제로", "우리 해석", "내가 적용하려는 해석", "account interpretation", "[나의 견해]"]):
-        score -= 25
-        reasons.append("Source reply does not separate source fact from account interpretation.")
-        suggestions.append("In Part 4, name what the source provides and how the account applies it.")
     if len(main_first_line) < 8:
         score -= 12
         reasons.append("First line is weak or too short.")
         suggestions.append("Open with a sharper paper-workflow mistake or research-note contrast.")
-    if not has_practical_element(joined):
-        score -= 25
-        reasons.append("Thread has no copyable prompt/checklist/criteria/workflow mode/failure rule.")
-        suggestions.append("Add a reusable prompt, checklist, decision criteria, workflow mode, or failure-prevention rule.")
-    if URL_RE.search(main):
-        score -= 18
-        reasons.append("Main contains an external link.")
-        suggestions.append("Move source links to Reply 3.")
-    if any(word in joined for word in HYPE_WORDS):
-        score -= 25
-        reasons.append("Thread contains banned hype language.")
-        suggestions.append("Replace hype with concrete research workflow impact.")
     if "AI가 중요" in joined or "AI 시대" in main and "기준" not in joined:
         score -= 12
         reasons.append("Thread risks generic AI advice.")
         suggestions.append("Ground the point in one concrete work unit or failure mode.")
-    if len(parts) > MAX_PARTS:
-        score -= 30
-        reasons.append("Thread has too many replies.")
-    if any(len(part) > MAX_CHARS for part in parts):
-        score -= 30
-        reasons.append("At least one part exceeds Threads length limits.")
     if routing.get("format_type") == "tiny_source_case" and "적용" not in joined and "AI agent" not in joined:
         score -= 10
         reasons.append("Source case has no application note.")
@@ -1105,6 +1113,8 @@ def quality_gate(
         decision = "draft"
     else:
         decision = "discard"
+    if contract_report.warnings and decision == "publish":
+        decision = "draft"
 
     if not reasons:
         reasons.append("Quality gate passed.")
@@ -1170,6 +1180,35 @@ def fallback_evaluation(reason: str) -> dict:
     }
 
 
+def apply_evaluator_gate(gate: dict, evaluator_result: dict, minimum_score: int = EVALUATOR_PUBLISH_SCORE) -> dict:
+    combined = {
+        "quality_score": gate.get("quality_score", 0),
+        "decision": gate.get("decision", "discard"),
+        "reasons": list(gate.get("reasons", [])),
+        "revision_suggestions": list(gate.get("revision_suggestions", [])),
+    }
+    if combined["decision"] != "publish":
+        return combined
+
+    evaluator_decision = str(evaluator_result.get("decision") or "revise").lower()
+    try:
+        evaluator_score = int(evaluator_result.get("score") or 0)
+    except (TypeError, ValueError):
+        evaluator_score = 0
+
+    if evaluator_decision == "discard":
+        combined["decision"] = "discard"
+    elif evaluator_decision != "publish" or evaluator_score < minimum_score:
+        combined["decision"] = "draft"
+
+    if combined["decision"] != "publish":
+        combined["reasons"].append(
+            f"Evaluator veto: decision={evaluator_decision}, score={evaluator_score}, required={minimum_score}."
+        )
+        combined["revision_suggestions"].extend(evaluator_result.get("revision_suggestions", []))
+    return combined
+
+
 def write_review_artifact(review_dir: Path, date: str, post_slot: str, label: str, thread_text: str) -> Path:
     review_dir.mkdir(parents=True, exist_ok=True)
     path = review_dir / f"{date}-{post_slot}-{label}-thread.txt"
@@ -1202,10 +1241,22 @@ def is_size_limit(response: requests.Response) -> bool:
     )
 
 
-def request_options(provider: str, model: str) -> dict:
-    options = {
-        "response_format": {"type": "json_object"},
-    }
+def request_options(provider: str, model: str, response_schema: dict | None = None) -> dict:
+    if response_schema:
+        options = {
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "thread_candidate_v1",
+                    "strict": True,
+                    "schema": response_schema,
+                },
+            },
+        }
+        if provider == "openrouter":
+            options["provider"] = {"require_parameters": True}
+    else:
+        options = {"response_format": {"type": "json_object"}}
     if provider == "groq" and model.startswith("openai/gpt-oss-"):
         options["include_reasoning"] = False
         options["reasoning_effort"] = "low"
@@ -1256,6 +1307,7 @@ def call_llm(
     model: str,
     prompt: str,
     max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS,
+    response_schema: dict | None = None,
 ) -> dict:
     provider = provider.lower()
     endpoint = {
@@ -1280,7 +1332,7 @@ def call_llm(
                 },
             ],
             "max_completion_tokens": output_tokens,
-            **request_options(provider, model),
+            **request_options(provider, model, response_schema),
         }
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -1327,6 +1379,7 @@ def main() -> int:
     parser.add_argument("--playbook-path", default="docs/threads-channel-playbook.md")
     parser.add_argument("--history-path", default="content-history.jsonl")
     parser.add_argument("--output-path", default="approved-thread-chain.txt")
+    parser.add_argument("--spec-output-path")
     parser.add_argument("--metadata-path", default="daily-editor/auto-thread-metadata.json")
     parser.add_argument("--metrics-path", default="threads-post-metrics.csv")
     parser.add_argument("--quote-bank-path", default="data/quote_bank.json")
@@ -1338,6 +1391,8 @@ def main() -> int:
     parser.add_argument("--run-log-dir", default="daily-editor/runs")
     parser.add_argument("--evaluation-dir", default="daily-editor/evaluations")
     parser.add_argument("--skip-evaluator", action="store_true")
+    parser.add_argument("--evaluator-provider", choices=["groq", "openrouter"], default=os.environ.get("EVALUATOR_PROVIDER"))
+    parser.add_argument("--evaluator-model", default=os.environ.get("EVALUATOR_MODEL"))
     parser.add_argument("--post-slot", choices=["morning", "evening"], default=os.environ.get("POST_SLOT", "morning"))
     parser.add_argument("--posts-per-day", type=int, choices=[1, 2], default=int(os.environ.get("POSTS_PER_DAY", "1")))
     parser.add_argument("--experiment-group", default=os.environ.get("EXPERIMENT_GROUP", "manual"))
@@ -1400,6 +1455,7 @@ def main() -> int:
         generation_error = ""
         generation_provider = args.provider
         generation_model = args.model
+        generation_actual_model = args.model
         provider_chain = fallback_provider_chain(args.provider, args.model)
         for provider_index, provider_config in enumerate(provider_chain):
             generation_provider = provider_config["provider"]
@@ -1412,18 +1468,20 @@ def main() -> int:
                         generation_model,
                         prompt,
                         args.max_output_tokens,
+                        response_schema=THREAD_CANDIDATE_SCHEMA,
                     )
                 except SystemExit as exc:
                     generation_error = f"{generation_provider} generation failed: {exc}"
                     print(generation_error)
                     break
+                generation_actual_model = str(payload.get("model") or generation_model)
                 text = extract_text(payload)
                 try:
-                    data = extract_json(text)
+                    data = normalize_thread_candidate(extract_json(text), selected_candidate, routing)
                     json_error = None
                     generation_error = ""
                     break
-                except json.JSONDecodeError as exc:
+                except (json.JSONDecodeError, ValueError) as exc:
                     json_error = exc
                     generation_error = f"{generation_provider} returned malformed JSON: {exc}"
                     if parse_attempt < 2:
@@ -1456,11 +1514,16 @@ def main() -> int:
                 }
 
             if fallback_gate.get("decision") != "discard":
+                fallback_gate["decision"] = "draft"
+                fallback_gate.setdefault("reasons", []).append(
+                    "Fallback content is review-only and can never replace the pinned Gemma writer for auto-publishing."
+                )
                 generated_options.append(
                     {
                         "option": index,
                         "provider": generation_provider,
                         "model": generation_model,
+                        "actual_model": generation_actual_model,
                         "candidate": selected_candidate,
                         "analysis": analysis,
                         "routing": routing,
@@ -1494,6 +1557,7 @@ def main() -> int:
                     "option": index,
                     "provider": generation_provider,
                     "model": generation_model,
+                    "actual_model": generation_actual_model,
                     "candidate_title": selected_candidate.get("title"),
                     "candidate_url": selected_candidate.get("url"),
                     "quality_score": 0,
@@ -1526,6 +1590,10 @@ def main() -> int:
                 fallback_gate = {"decision": "discard"}
             if fallback_gate.get("decision") != "discard":
                 thread_text = fallback_thread_text
+                fallback_gate["decision"] = "draft"
+                fallback_gate.setdefault("reasons", []).append(
+                    "Fallback content is review-only after the model candidate failed the canonical contract."
+                )
                 gate = fallback_gate
 
         generated_options.append(
@@ -1533,6 +1601,7 @@ def main() -> int:
                 "option": index,
                 "provider": generation_provider,
                 "model": generation_model,
+                "actual_model": generation_actual_model,
                 "candidate": selected_candidate,
                 "analysis": analysis,
                 "routing": routing,
@@ -1565,6 +1634,7 @@ def main() -> int:
     thread_text = best["thread_text"]
     selected_provider = best.get("provider") or args.provider
     selected_model = best.get("model") or args.model
+    selected_actual_model = best.get("actual_model") or selected_model
     gate = {
         "quality_score": best["quality_score"],
         "decision": best["quality_decision"],
@@ -1579,6 +1649,8 @@ def main() -> int:
 
     evaluator_prompt = ""
     evaluator_result = {}
+    evaluator_provider = args.evaluator_provider or selected_provider
+    evaluator_model = args.evaluator_model or selected_model
     if args.skip_evaluator:
         evaluator_result = fallback_evaluation("Evaluator skipped by --skip-evaluator.")
     else:
@@ -1592,9 +1664,9 @@ def main() -> int:
         )
         try:
             evaluator_payload = call_llm(
-                selected_provider,
-                api_key_for_provider(selected_provider),
-                selected_model,
+                evaluator_provider,
+                api_key_for_provider(evaluator_provider),
+                evaluator_model,
                 evaluator_prompt,
                 min(args.max_output_tokens, 800),
             )
@@ -1606,10 +1678,14 @@ def main() -> int:
         except Exception as exc:
             evaluator_result = fallback_evaluation(f"Evaluator failed: {exc}")
 
+    if not args.skip_evaluator:
+        gate = apply_evaluator_gate(gate, evaluator_result)
+
     metadata = {
         "date": args.date,
         "provider": selected_provider,
         "model": selected_model,
+        "actual_model": selected_actual_model,
         "requested_provider": args.provider,
         "requested_model": args.model,
         "post_slot": args.post_slot,
@@ -1639,6 +1715,8 @@ def main() -> int:
         "curation_records_used": len(curation_records),
         "selected_candidate_curation_bonus": curation_bonus(selected_candidate, curation_records),
         "evaluator": {
+            "provider": evaluator_provider,
+            "model": evaluator_model,
             "score": evaluator_result.get("score", 0),
             "decision": evaluator_result.get("decision", "revise"),
             "strengths": evaluator_result.get("strengths", []),
@@ -1693,6 +1771,43 @@ def main() -> int:
         "quote_speaker": quote_suggestion.get("speaker", "") if quote_suggestion else "",
         "quote_source_url": quote_suggestion.get("source_url", "") if quote_suggestion else "",
     }
+
+    spec_path = Path(args.spec_output_path) if args.spec_output_path else Path(args.output_path).with_name("approved-thread-spec.json")
+    spec_metadata = {
+        "topic": metadata["topic"],
+        "format": metadata["format"],
+        "workflow_stage": metadata["workflow_stage"],
+        "failure_mode": metadata["failure_mode"],
+        "artifact_type": metadata["artifact_type"],
+        "reusable_unit_type": metadata["reusable_unit_type"],
+        "hook_pattern": metadata["hook_pattern"],
+        "source_name": metadata["source_name"],
+        "source_urls": [metadata["source_url"]] if metadata["source_url"] else [],
+    }
+    thread_spec = build_thread_spec(
+        thread_text,
+        metadata=spec_metadata,
+        origin=f"auto_{selected_provider}",
+        generation={
+            "provider": selected_provider,
+            "requested_model": selected_model,
+            "actual_model": selected_actual_model,
+            "prompt_contract_version": PROMPT_CONTRACT_VERSION,
+        },
+    )
+    spec_report = validate_thread_spec(thread_spec, require_metadata=True)
+    if spec_report.errors:
+        gate["decision"] = "discard"
+        gate["reasons"].extend(spec_report.errors)
+    metadata_warnings = [warning for warning in spec_report.warnings if warning.startswith("ThreadSpec metadata")]
+    if metadata_warnings and gate["decision"] == "publish":
+        gate["decision"] = "draft"
+        gate["reasons"].extend(f"ThreadSpec warning: {warning}" for warning in metadata_warnings)
+    metadata["quality_decision"] = gate["decision"]
+    metadata["quality_reasons"] = gate["reasons"]
+    metadata["revision_suggestions"] = gate["revision_suggestions"]
+    metadata["thread_spec_path"] = str(spec_path)
+    write_spec(spec_path, thread_spec)
 
     run_slug = safe_slug(f"{args.date}-{args.post_slot}-{metadata['format']}-{metadata['topic']}")
     run_log = {

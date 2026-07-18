@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arxiv.ai/schemas/thread-candidate-v1.schema.json",
+  "title": "ThreadCandidate v1",
+  "type": "object",
+  "properties": {
+    "hook": {
+      "type": "string",
+      "description": "Publishable Korean text for the problem-hook main post."
+    },
+    "diagnosis": {
+      "type": "string",
+      "description": "Publishable Korean text with three concrete diagnostic checks."
+    },
+    "action": {
+      "type": "string",
+      "description": "Publishable Korean reusable prompt, checklist, protocol, matrix, or role instruction."
+    },
+    "source": {
+      "type": "string",
+      "description": "Publishable Korean source interpretation with the supplied URL and fact/opinion boundary."
+    },
+    "quote_used": {
+      "type": "boolean"
+    },
+    "quote_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "hook",
+    "diagnosis",
+    "action",
+    "source",
+    "quote_used",
+    "quote_id"
+  ],
+  "additionalProperties": false
+}

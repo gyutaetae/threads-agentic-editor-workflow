@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from scripts.generate_auto_thread import (
+    THREAD_CANDIDATE_SCHEMA,
     build_evaluator_prompt,
     build_fallback_thread,
     classify_hook_pattern,
@@ -19,6 +20,7 @@ from scripts.generate_auto_thread import (
     load_recent_history,
     load_curation_log,
     main,
+    normalize_thread_candidate,
     quality_gate,
     read_skill_library,
     safe_slug,
@@ -276,6 +278,25 @@ class SelfImprovementLoopTests(unittest.TestCase):
         data = extract_json('{"thread_text":"첫 줄\\\n둘째 줄"}')
         self.assertEqual(data["thread_text"], "첫 줄\n둘째 줄")
 
+    def test_thread_candidate_uses_deterministic_source_metadata(self) -> None:
+        payload = {
+            "hook": "문제를 확인해야 합니다.",
+            "diagnosis": "[먼저 확인할 것]\n1. claim\n2. evidence\n3. limitation",
+            "action": "[저장해둘 프롬프트]\nclaim과 evidence를 연결해줘.",
+            "source": "[참고 자료]\nhttps://example.com\n- 볼 부분: 근거 구조\n[나의 견해] 검증표로 바꿉니다.",
+            "quote_used": False,
+            "quote_id": "",
+        }
+        candidate = {"title": "Trusted source", "url": "https://example.com"}
+        routing = {"human_signal_type": "evidence", "format_type": "research_checklist"}
+
+        normalized = normalize_thread_candidate(payload, candidate, routing)
+
+        self.assertEqual(normalized["source_name"], "Trusted source")
+        self.assertEqual(normalized["source_url"], "https://example.com")
+        self.assertEqual(normalized["source_count"], 1)
+        self.assertEqual(len(normalized["thread_text"].split("\n---\n")), 4)
+
     def test_fallback_thread_passes_quality_gate(self) -> None:
         routing = {
             "research_problem": "AI가 붙인 citation이 claim을 실제로 받치는지 검증하기 어렵다.",
@@ -381,7 +402,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertFalse(body["include_reasoning"])
         self.assertEqual(body["reasoning_effort"], "low")
 
-    def test_openrouter_free_uses_openrouter_endpoint_and_headers(self) -> None:
+    def test_pinned_gemma_uses_strict_schema_and_required_parameters(self) -> None:
         class FakeResponse:
             ok = True
             status_code = 200
@@ -397,12 +418,23 @@ class SelfImprovementLoopTests(unittest.TestCase):
             return FakeResponse()
 
         with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
-            call_llm("openrouter", "key", "openrouter/free", "prompt", max_output_tokens=500)
+            call_llm(
+                "openrouter",
+                "key",
+                "google/gemma-4-26b-a4b-it:free",
+                "prompt",
+                max_output_tokens=500,
+                response_schema=THREAD_CANDIDATE_SCHEMA,
+            )
 
         args, kwargs = calls[0]
         self.assertEqual(args[0], "https://openrouter.ai/api/v1/chat/completions")
-        self.assertEqual(kwargs["json"]["model"], "openrouter/free")
-        self.assertEqual(kwargs["json"]["response_format"], {"type": "json_object"})
+        self.assertEqual(kwargs["json"]["model"], "google/gemma-4-26b-a4b-it:free")
+        response_format = kwargs["json"]["response_format"]
+        self.assertEqual(response_format["type"], "json_schema")
+        self.assertTrue(response_format["json_schema"]["strict"])
+        self.assertEqual(response_format["json_schema"]["schema"], THREAD_CANDIDATE_SCHEMA)
+        self.assertEqual(kwargs["json"]["provider"], {"require_parameters": True})
         self.assertEqual(kwargs["headers"]["Authorization"], "Bearer key")
         self.assertIn("HTTP-Referer", kwargs["headers"])
         self.assertIn("X-Title", kwargs["headers"])
@@ -477,17 +509,17 @@ class SelfImprovementLoopTests(unittest.TestCase):
             with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key", "LLM_FALLBACK_PROVIDER": ""}), patch.object(sys, "argv", argv), patch(
                 "scripts.generate_auto_thread.call_llm", side_effect=fake_call_llm
             ):
-                self.assertEqual(main(), 0)
+                self.assertEqual(main(), 2)
 
-            thread = output_path.read_text(encoding="utf-8")
+            thread = (root / "review" / "2026-06-27-morning-draft-thread.txt").read_text(encoding="utf-8")
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
         validate_thread(thread)
         self.assertEqual(len(llm_calls), 2)
         self.assertIn("openrouter returned malformed JSON", metadata["quality_reasons"][0])
         self.assertEqual(metadata["provider"], "openrouter")
-        self.assertEqual(metadata["model"], "openrouter/free")
-        self.assertEqual(metadata["quality_decision"], "publish")
+        self.assertEqual(metadata["model"], "google/gemma-4-26b-a4b-it:free")
+        self.assertEqual(metadata["quality_decision"], "draft")
         self.assertEqual(metadata["artifact_type"], "summary_verification_grid")
         self.assertIn("설명 못하면", metadata["reader_test"])
 
@@ -537,7 +569,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
 
             calls = []
 
-            def fake_call_llm(provider, api_key, model, prompt, max_output_tokens=500):
+            def fake_call_llm(provider, api_key, model, prompt, max_output_tokens=500, response_schema=None):
                 calls.append(provider)
                 if provider == "openrouter":
                     return {"choices": [{"message": {"content": "not json at all"}}]}
@@ -547,12 +579,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
                             "message": {
                                 "content": json.dumps(
                                     {
-                                        "thread_text": thread_text,
-                                        "topic": "claim_evidence_mapping",
-                                        "source_count": 1,
-                                        "format": "research_checklist",
-                                        "source_name": "Claim evidence workflow",
-                                        "source_url": "https://github.com/example/claim-evidence-workflow",
+                                        **dict(zip(("hook", "diagnosis", "action", "source"), thread_text.split("\n---\n"))),
                                         "quote_used": False,
                                         "quote_id": "",
                                     },
@@ -608,14 +635,14 @@ class SelfImprovementLoopTests(unittest.TestCase):
             ), patch.object(sys, "argv", argv), patch(
                 "scripts.generate_auto_thread.call_llm", side_effect=fake_call_llm
             ):
-                self.assertEqual(main(), 0)
+                self.assertEqual(main(), 2)
 
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
         self.assertEqual(calls, ["openrouter", "openrouter", "groq"])
         self.assertEqual(metadata["provider"], "groq")
         self.assertEqual(metadata["requested_provider"], "openrouter")
-        self.assertEqual(metadata["quality_decision"], "publish")
+        self.assertEqual(metadata["quality_decision"], "draft")
 
     def test_provider_api_error_uses_fallback_thread(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -684,14 +711,14 @@ class SelfImprovementLoopTests(unittest.TestCase):
             ), patch.object(sys, "argv", argv), patch(
                 "scripts.generate_auto_thread.call_llm", side_effect=SystemExit("openrouter API error 400")
             ):
-                self.assertEqual(main(), 0)
+                self.assertEqual(main(), 2)
 
-            thread = output_path.read_text(encoding="utf-8")
+            thread = (root / "review" / "2026-06-27-morning-draft-thread.txt").read_text(encoding="utf-8")
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
         validate_thread(thread)
         self.assertIn("openrouter generation failed", metadata["quality_reasons"][0])
-        self.assertEqual(metadata["quality_decision"], "publish")
+        self.assertEqual(metadata["quality_decision"], "draft")
 
 
 if __name__ == "__main__":

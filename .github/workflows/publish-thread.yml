@@ -25,7 +25,27 @@ on:
       format:
         description: "Metrics format label"
         required: true
-        default: "A"
+        default: "research_checklist"
+        type: string
+      workflow_stage:
+        description: "Research workflow stage, for example evidence_mapping"
+        required: true
+        type: string
+      failure_mode:
+        description: "Failure being prevented, for example claim_evidence_link_missing"
+        required: true
+        type: string
+      artifact_type:
+        description: "Reusable artifact produced, for example claim_evidence_map"
+        required: true
+        type: string
+      reusable_unit_type:
+        description: "Reusable unit in part 3, for example verification_checklist"
+        required: true
+        type: string
+      hook_pattern:
+        description: "Hook pattern, for example direct_claim"
+        required: true
         type: string
       source_name:
         description: "Source name or repo, used for duplicate prevention"
@@ -53,6 +73,10 @@ on:
         default: false
         type: boolean
 
+concurrency:
+  group: threads-daily-publish
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: windows-latest
@@ -65,6 +89,16 @@ jobs:
       THREADS_IMAGE_URL: ${{ inputs.image_url }}
       THREADS_ALT_TEXT: ${{ inputs.alt_text }}
       THREAD_TEXT: ${{ inputs.thread_text }}
+      THREAD_TOPIC: ${{ inputs.topic }}
+      THREAD_FORMAT: ${{ inputs.format }}
+      THREAD_SOURCE_COUNT: ${{ inputs.source_count }}
+      THREAD_SOURCE_NAME: ${{ inputs.source_name }}
+      THREAD_SOURCE_URL: ${{ inputs.source_url }}
+      THREAD_WORKFLOW_STAGE: ${{ inputs.workflow_stage }}
+      THREAD_FAILURE_MODE: ${{ inputs.failure_mode }}
+      THREAD_ARTIFACT_TYPE: ${{ inputs.artifact_type }}
+      THREAD_REUSABLE_UNIT_TYPE: ${{ inputs.reusable_unit_type }}
+      THREAD_HOOK_PATTERN: ${{ inputs.hook_pattern }}
     steps:
       - name: Check out repo
         uses: actions/checkout@v7
@@ -82,18 +116,39 @@ jobs:
         run: |
           Set-Content -Path approved-thread-chain.txt -Value $env:THREAD_TEXT -Encoding utf8
 
+      - name: Build ThreadSpec
+        shell: pwsh
+        run: |
+          $sourceUrls = @()
+          if ($env:THREAD_SOURCE_URL) {
+            $sourceUrls += $env:THREAD_SOURCE_URL
+          }
+          $metadata = [ordered]@{
+            topic = $env:THREAD_TOPIC
+            format = $env:THREAD_FORMAT
+            workflow_stage = $env:THREAD_WORKFLOW_STAGE
+            failure_mode = $env:THREAD_FAILURE_MODE
+            artifact_type = $env:THREAD_ARTIFACT_TYPE
+            reusable_unit_type = $env:THREAD_REUSABLE_UNIT_TYPE
+            hook_pattern = $env:THREAD_HOOK_PATTERN
+            source_name = $env:THREAD_SOURCE_NAME
+            source_urls = $sourceUrls
+          }
+          $metadata | ConvertTo-Json -Depth 4 | Set-Content -Path approved-thread-metadata.json -Encoding utf8
+          python .\scripts\thread_spec.py build --thread-path approved-thread-chain.txt --metadata-path approved-thread-metadata.json --output-path approved-thread-spec.json --origin manual_human
+
       - name: Validate and publish
         shell: pwsh
         run: |
-          $sourceCount = [int]"${{ inputs.source_count }}"
+          $sourceCount = [int]$env:THREAD_SOURCE_COUNT
           $cardUsed = "${{ inputs.card_used }}" -eq "true"
           if ("${{ inputs.dry_run }}" -eq "true") {
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -CardUsed:$cardUsed -DryRun
+            .\scripts\publish-approved-chain.ps1 -SpecPath .\approved-thread-spec.json -Topic $env:THREAD_TOPIC -Format $env:THREAD_FORMAT -SourceCount $sourceCount -SourceName $env:THREAD_SOURCE_NAME -SourceUrl $env:THREAD_SOURCE_URL -WorkflowStage $env:THREAD_WORKFLOW_STAGE -FailureMode $env:THREAD_FAILURE_MODE -ArtifactType $env:THREAD_ARTIFACT_TYPE -ReusableUnitType $env:THREAD_REUSABLE_UNIT_TYPE -HookPattern $env:THREAD_HOOK_PATTERN -Origin "manual_human" -CardUsed:$cardUsed -DryRun
           } else {
             if (-not $env:THREADS_ACCESS_TOKEN) {
               throw "THREADS_ACCESS_TOKEN secret is required when dry_run is false."
             }
-            .\scripts\publish-approved-chain.ps1 -Topic "${{ inputs.topic }}" -Format "${{ inputs.format }}" -SourceCount $sourceCount -SourceName "${{ inputs.source_name }}" -SourceUrl "${{ inputs.source_url }}" -CardUsed:$cardUsed
+            .\scripts\publish-approved-chain.ps1 -SpecPath .\approved-thread-spec.json -Topic $env:THREAD_TOPIC -Format $env:THREAD_FORMAT -SourceCount $sourceCount -SourceName $env:THREAD_SOURCE_NAME -SourceUrl $env:THREAD_SOURCE_URL -WorkflowStage $env:THREAD_WORKFLOW_STAGE -FailureMode $env:THREAD_FAILURE_MODE -ArtifactType $env:THREAD_ARTIFACT_TYPE -ReusableUnitType $env:THREAD_REUSABLE_UNIT_TYPE -HookPattern $env:THREAD_HOOK_PATTERN -Origin "manual_human" -CardUsed:$cardUsed
           }
 
       - name: Commit publish records
@@ -121,6 +176,7 @@ jobs:
           name: thread-publish-run
           path: |
             approved-thread-chain.txt
+            approved-thread-spec.json
             content-history.jsonl
             threads-post-metrics.csv
           if-no-files-found: ignore

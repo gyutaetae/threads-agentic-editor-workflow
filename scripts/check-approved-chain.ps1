@@ -1,5 +1,6 @@
 param(
     [string]$ThreadPath = ".\approved-thread-chain.txt",
+    [string]$SpecPath = "",
     [switch]$Strict
 )
 
@@ -12,6 +13,13 @@ try {
         ".\scripts\prepublish_quality_gate.py",
         "--thread-path", $ThreadPath
     )
+
+    if ($SpecPath) {
+        $argsList += @(
+            "--spec-path", $SpecPath,
+            "--require-metadata"
+        )
+    }
 
     if ($Strict) {
         $argsList += "--strict"

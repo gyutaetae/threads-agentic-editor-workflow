@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arxiv.ai/schemas/thread-spec-v1.schema.json",
+  "title": "ThreadSpec v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["spec_version", "origin", "parts", "metadata"],
+  "properties": {
+    "spec_version": { "const": "1.0" },
+    "origin": {
+      "enum": ["auto_openrouter", "auto_groq", "manual_codex", "manual_human", "legacy_import"]
+    },
+    "parts": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        { "$ref": "#/$defs/hookPart" },
+        { "$ref": "#/$defs/diagnosisPart" },
+        { "$ref": "#/$defs/actionPart" },
+        { "$ref": "#/$defs/sourcePart" }
+      ],
+      "items": false
+    },
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "generation": { "$ref": "#/$defs/generation" }
+  },
+  "$defs": {
+    "partBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "text"],
+      "properties": {
+        "role": { "type": "string" },
+        "text": { "type": "string", "minLength": 40, "maxLength": 500 }
+      }
+    },
+    "hookPart": {
+      "allOf": [
+        { "$ref": "#/$defs/partBase" },
+        { "properties": { "role": { "const": "hook" } } }
+      ]
+    },
+    "diagnosisPart": {
+      "allOf": [
+        { "$ref": "#/$defs/partBase" },
+        { "properties": { "role": { "const": "diagnosis" } } }
+      ]
+    },
+    "actionPart": {
+      "allOf": [
+        { "$ref": "#/$defs/partBase" },
+        { "properties": { "role": { "const": "action" } } }
+      ]
+    },
+    "sourcePart": {
+      "allOf": [
+        { "$ref": "#/$defs/partBase" },
+        { "properties": { "role": { "const": "source" } } }
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["topic", "format", "workflow_stage", "failure_mode", "artifact_type", "reusable_unit_type", "hook_pattern", "source_name", "source_urls"],
+      "properties": {
+        "topic": { "type": "string" },
+        "format": { "type": "string" },
+        "workflow_stage": { "type": "string" },
+        "failure_mode": { "type": "string" },
+        "artifact_type": { "type": "string" },
+        "reusable_unit_type": { "type": "string" },
+        "hook_pattern": { "type": "string" },
+        "source_name": { "type": "string" },
+        "source_urls": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "generation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "provider": { "type": "string" },
+        "requested_model": { "type": "string" },
+        "actual_model": { "type": "string" },
+        "prompt_contract_version": { "type": "string" }
+      }
+    }
+  }
+}

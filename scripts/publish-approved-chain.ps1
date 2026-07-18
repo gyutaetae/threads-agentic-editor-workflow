@@ -1,5 +1,6 @@
 param(
     [string]$ThreadPath = ".\approved-thread-chain.txt",
+    [string]$SpecPath = "",
     [string]$Topic = "research ai workflow",
     [string]$Format = "A",
     [string]$ContentAxis = "",
@@ -34,6 +35,7 @@ param(
     [string]$StructurePattern = "",
     [string]$CloserPattern = "",
     [string]$ReusableUnitType = "",
+    [string]$Origin = "unknown",
     [switch]$CardUsed,
     [switch]$SkipQualityGate,
     [switch]$DryRun
@@ -45,7 +47,11 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 Push-Location $repoRoot
 try {
     if (-not $SkipQualityGate) {
-        python .\scripts\prepublish_quality_gate.py --thread-path $ThreadPath --strict
+        $qualityArgs = @(".\scripts\prepublish_quality_gate.py", "--thread-path", $ThreadPath, "--strict")
+        if ($SpecPath) {
+            $qualityArgs += @("--spec-path", $SpecPath, "--require-metadata")
+        }
+        python @qualityArgs
     }
 
     $argsList = @(".\scripts\threads_auto_upload.py", "publish-approved-chain")
@@ -91,6 +97,7 @@ try {
     Add-OptionalArg "--structure-pattern" $StructurePattern
     Add-OptionalArg "--closer-pattern" $CloserPattern
     Add-OptionalArg "--reusable-unit-type" $ReusableUnitType
+    Add-OptionalArg "--origin" $Origin
 
     if ($CardUsed) {
         $argsList += "--card-used"
