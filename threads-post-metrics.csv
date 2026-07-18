@@ -118,3 +118,16 @@ AI reviewer는 점수 예측기가 아니라
 ""이 논문 정리해줘""라고만 시키면
 초안 문장은 나왔지만 problem-gap-contribution 논리가 약하다.",1,official_feed,https://github.blog/ai-and-ml/github-copilot/better-tools-made-copilot-code-review-worse-heres-how-we-actually-improved-it/,55,100,evening,daily_1800_kst,openai/gpt-oss-120b,false,2026-07-16T20:07:32+09:00,5596,14,4,3,0,1,6,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-07-17,18189842779386057,https://www.threads.net/@arxiv.ai/post/18189842779386057,weekly_review_advice,weekly_review_advice,official_update,share,claim_evidence_map,"내가 claim을 어떤 실험, 표, 그림이 받치는지 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.","내가 claim을 어떤 실험, 표, 그림이 받치는지 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.",1,official_feed,https://arxiv.org/abs/2607.14104,48,100,evening,daily_1800_kst,openai/gpt-oss-120b,false,2026-07-17T19:53:19+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-18,18211969318341439,https://www.threads.net/@arxiv.ai/post/18211969318341439,research_checklist,,,,ablation_rebuttal,"ICML·NeurIPS·ICLR rebuttal 직전에 ablation 표만 훑으면, reviewer가 물을 “무엇을 통제했나?”가 비어 버립니다.","ICML·NeurIPS·ICLR rebuttal 직전에 ablation 표만 훑으면, reviewer가 물을 “무엇을 통제했나?”가 비어 버립니다.
+
+나쁜 요청:
+“이 표가 우리 방법의 효과를 증명하는지 봐줘.”
+
+좋은 요청:
+“한 번에 하나의 변수만 바뀐 행끼리 묶어줘.”
+“각 비교가 검증하려는 가설을 한 문장으로 써줘.”
+“reviewer가 ‘다른 조건도 바뀐 것 아닌가?’라고 물을 행을 표시해줘.”
+“추가 확인이 필요한 seed·split·hyperparameter를 남겨줘.”
+
+좋은 rebuttal 준비는 성능을 더 크게 말하는 일이 아니라
+reviewer가 반박할 빈칸을 실험표에서 먼저 찾는 일입니다.",1,,https://neurips.cc/public/guides/PaperChecklist,,,,,,false,2026-07-18T19:51:00+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
