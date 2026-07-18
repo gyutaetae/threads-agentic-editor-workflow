@@ -4,7 +4,8 @@ $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $targetRoot = Join-Path $HOME ".codex\skills"
 $skills = @(
     "threads-agentic-editor",
-    "threads-post-publisher"
+    "threads-post-publisher",
+    "threads-editor-feedback-loop"
 )
 
 New-Item -ItemType Directory -Force -Path $targetRoot | Out-Null

@@ -15,7 +15,7 @@ Create one useful Threads chain for `@arxiv.ai`: Korean posts that turn papers i
 2. Check recent `content-history.jsonl` before choosing a source or angle.
 3. Use credible sources: papers, official docs/blogs, named researcher writing, useful repos, or concrete Korean technical examples.
 4. Select one strongest angle and draft one chain.
-5. Draft exactly 4 parts: problem hook, diagnosis, reusable action, source interpretation.
+5. Draft exactly 4 parts: hook, diagnosis, reusable action, source interpretation.
 6. Keep every part under 500 characters.
 7. Do not publish unless the user directly asks to upload/post/publish.
 
@@ -23,13 +23,13 @@ Create one useful Threads chain for `@arxiv.ai`: Korean posts that turn papers i
 
 - Start from a real paper-work failure, not AI news or generic prompt advice.
 - Make the reader able to produce one artifact: prompt, checklist, table, protocol, matrix, role instruction, or revision rule.
-- Prefer role-specific labels such as `[먼저 확인할 것]`, `[저장해둘 프롬프트]`, `[참고 논문]`, and `[나의 견해]`.
-- For better-prompt posts, use one bad request and several better requests only when that structure naturally fits the hook.
+- Part 1 is the canonical compact card: concrete problem hook, `나쁜 요청:` with one standalone quote, `좋은 요청:` with three or four standalone quotes, then a short judgment closer. It has no bracket heading or source link.
+- Parts 2-4 use role-specific labels such as `[먼저 확인할 것]`, `[저장해둘 프롬프트]`, `[참고 논문]`, and `[나의 견해]`.
 - Put source links only in the final reply, with `- 볼 부분:` or a verified quote source labeled `인용 원문:`.
 - Separate source fact from @arxiv.ai interpretation.
 - Avoid `Main:`, `Reply 1:`, `[한 줄 원칙]`, `[초안 작성 모드]`, JSON, and fenced code blocks in publishable text.
 - Use English only when precision improves: `claim`, `evidence`, `limitation`, `citation`, `workflow`, `prompt`, `AI agent`.
-- Use `docs/thread-pattern-library.md` for durable patterns, but do not force a pattern if it makes the post feel templated.
+- Use `docs/thread-pattern-library.md` for durable patterns. Vary the research failure, concrete requests, artifact, and closer inside the fixed main-post card.
 
 ## Handoff
 

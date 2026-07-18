@@ -1,0 +1,4 @@
+interface:
+  display_name: "Threads Editorial Feedback Loop"
+  short_description: "Draft, capture feedback, and run the playbook."
+  default_prompt: "Use $threads-editor-feedback-loop to draft a Threads post, capture my feedback, and prepare the revised next draft."
