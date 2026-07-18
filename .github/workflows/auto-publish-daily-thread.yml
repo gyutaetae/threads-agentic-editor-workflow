@@ -122,7 +122,7 @@ jobs:
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
-          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 10 -PerFeed 10 -ReadmeTop 10 -Date $date -AllowEmpty
+          .\scripts\run-daily-agentic-editor.ps1 -PerQuery 30 -PerFeed 30 -ReadmeTop 15 -Date $date -AllowEmpty
           $candidatesPath = ".\daily-editor\$date-candidates.json"
           $candidates = Get-Content $candidatesPath -Raw | ConvertFrom-Json -NoEnumerate
           if ($candidates.Count -eq 0) {

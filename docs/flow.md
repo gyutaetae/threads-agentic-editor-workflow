@@ -4,7 +4,7 @@
 
 1. At the 18:00 KST scheduled run, query Threads for authored top-level posts since KST midnight and sync newly observed manual posts into history.
 2. If a post already exists, skip the run. If platform state cannot be verified, fail closed and write a failure record.
-3. Collect and rank a source candidate.
+3. Collect and rank a source candidate from a broad search window, then remove every source already present in publication history. If no unused source remains, skip rather than recycle one.
 4. Build routing metadata and recent-history context.
 5. Ask the pinned OpenRouter Gemma model for strict `ThreadCandidate v1` JSON.
 6. Derive routing/source metadata in code and build `ThreadSpec v1`.
