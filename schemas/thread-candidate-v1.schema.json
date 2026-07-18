@@ -6,7 +6,7 @@
   "properties": {
     "hook": {
       "type": "string",
-      "description": "Publishable Korean text for the problem-hook main post."
+      "description": "Publishable Korean main post: problem hook, 나쁜 요청 with 1 quote, 좋은 요청 with 3-4 quotes, and a short judgment closer."
     },
     "diagnosis": {
       "type": "string",

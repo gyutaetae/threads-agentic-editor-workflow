@@ -134,6 +134,35 @@ def _diagnosis_item_count(text: str) -> int:
     return len([line for line in lines if len(line) >= 8])
 
 
+def _validate_main_request_template(hook: str, report: ValidationReport) -> None:
+    bad_label = "나쁜 요청:"
+    good_label = "좋은 요청:"
+    if bad_label not in hook or good_label not in hook:
+        report.errors.append("Part 1 must contain '나쁜 요청:' and '좋은 요청:'.")
+        return
+    if hook.index(bad_label) > hook.index(good_label):
+        report.errors.append("Part 1 must place '나쁜 요청:' before '좋은 요청:'.")
+        return
+
+    before_bad, remainder = hook.split(bad_label, 1)
+    bad_section, good_section = remainder.split(good_label, 1)
+    bad_quotes = QUOTE_LINE_RE.findall(bad_section)
+    good_quotes = QUOTE_LINE_RE.findall(good_section)
+    if not before_bad.strip():
+        report.errors.append("Part 1 needs a concrete problem hook before '나쁜 요청:'.")
+    if len(bad_quotes) != 1:
+        report.errors.append("Part 1 must contain exactly 1 standalone quoted line under '나쁜 요청:'.")
+    if not 3 <= len(good_quotes) <= 4:
+        report.errors.append("Part 1 must contain 3-4 standalone quoted lines under '좋은 요청:'.")
+    if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in good_quotes):
+        report.errors.append("Good-request lines should not include 1./2./3./4. numbering inside the quotes.")
+
+    last_quote = list(QUOTE_LINE_RE.finditer(good_section))[-1] if good_quotes else None
+    closer = good_section[last_quote.end():].strip() if last_quote else ""
+    if len(closer) < 20:
+        report.errors.append("Part 1 needs a short judgment closer after the good-request lines.")
+
+
 def _validate_quote_catalog(joined: str, catalog_path: Path, report: ValidationReport) -> None:
     if not catalog_path.exists():
         return
@@ -193,6 +222,7 @@ def validate_thread_spec(
 
     if BRACKET_HEADING_RE.match(hook):
         report.errors.append("Part 1 must start with the problem hook, not a bracket heading.")
+    _validate_main_request_template(hook, report)
     for index, text in enumerate(texts[1:], start=2):
         if not BRACKET_HEADING_RE.match(text):
             report.errors.append(f"Part {index} must start with a role-specific Korean bracket heading.")
@@ -223,11 +253,6 @@ def validate_thread_spec(
         report.errors.append("Use practical framing, not '왜 좋은 요청일까요?'.")
     if "notebooklm.google" in joined.lower():
         report.errors.append("Reference reply must link to an actual example, not the NotebookLM product homepage.")
-
-    if "좋은 요청:" in hook:
-        quoted_lines = QUOTE_LINE_RE.findall(hook.split("좋은 요청:", 1)[1])
-        if any(re.match(r'^\s*["“]\s*\d+\.', line) for line in quoted_lines):
-            report.errors.append("Good-request lines should not include 1./2./3./4. numbering inside the quotes.")
 
     if not any(marker in hook for marker in HOOK_CONSEQUENCE_MARKERS):
         report.warnings.append("Part 1 may be flat; name a concrete research-work consequence.")

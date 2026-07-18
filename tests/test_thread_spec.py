@@ -11,9 +11,19 @@ from scripts.thread_spec import (
 )
 
 
-VALID_THREAD = """AI가 만든 논문 요약에서 근거 위치를 설명 못하면, 그건 검증 가능한 연구 노트가 아닙니다.
+VALID_THREAD = """AI에게 논문 요약을 맡길 때 “정리해줘”라고 하면 근거 위치가 흐려집니다.
 
-문장이 자연스러운지보다 claim과 evidence 연결부터 확인해야 합니다.
+나쁜 요청:
+“이 논문을 요약해줘.”
+
+좋은 요청:
+“핵심 claim을 세 문장으로 분리해줘.”
+“각 claim을 받치는 evidence 위치를 표시해줘.”
+“limitation이 claim 범위를 어떻게 제한하는지 써줘.”
+“citation이 실제로 지지하는 범위를 구분해줘.”
+
+좋은 논문 요약은 매끄러운 문장이 아니라
+근거를 다시 확인할 수 있는 연구 노트입니다.
 ---
 [먼저 확인할 것]
 요약 검증은 세 가지 연결을 봅니다.
@@ -80,6 +90,24 @@ class ThreadSpecTests(unittest.TestCase):
         repeated = VALID_THREAD.replace("[먼저 확인할 것]", "[핵심 한 줄]").replace("[저장해둘 프롬프트]", "[핵심 한 줄]")
         report = validate_thread_text(repeated)
         self.assertIn("feel templated", " ".join(report.warnings))
+
+    def test_main_post_requires_bad_and_good_request_labels(self) -> None:
+        report = validate_thread_text(VALID_THREAD.replace("나쁜 요청:", "피해야 할 요청:"))
+        self.assertIn("나쁜 요청", " ".join(report.errors))
+
+    def test_main_post_requires_three_or_four_good_requests(self) -> None:
+        shortened = VALID_THREAD.replace("“citation이 실제로 지지하는 범위를 구분해줘.”\n", "").replace(
+            "“limitation이 claim 범위를 어떻게 제한하는지 써줘.”\n", ""
+        )
+        report = validate_thread_text(shortened)
+        self.assertIn("3-4", " ".join(report.errors))
+
+    def test_main_post_requires_judgment_closer(self) -> None:
+        shortened = VALID_THREAD.replace(
+            "\n\n좋은 논문 요약은 매끄러운 문장이 아니라\n근거를 다시 확인할 수 있는 연구 노트입니다.", ""
+        )
+        report = validate_thread_text(shortened)
+        self.assertIn("judgment closer", " ".join(report.errors))
 
 
 class EvaluatorGateTests(unittest.TestCase):

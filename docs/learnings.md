@@ -6,7 +6,7 @@ This file is loaded near the top of the generation prompt. Keep it short. Add on
 
 - Strong paper-reading posts start from the reader test: "내가 무엇을 설명할 수 있게 되었는가?"
 - Use the explainable-reading frame often: `내가 [artifact target]을 설명 못하면, 그건 [좋은 결과]가 아니라 [실패 판단]입니다.`
-- Prefer concrete contrast labels that fit the task: `나쁜 요청/좋은 요청`, `나쁜 읽기/좋은 읽기`, `나쁜 검증/좋은 검증`.
+- Keep the proven main-post labels fixed as `나쁜 요청:` and `좋은 요청:`; vary the concrete research failure and requested checks.
 - Checklist items should explain when a researcher would use the criterion, not only what the criterion is.
 - For citation posts, focus on whether a citation directly supports the claim, not only whether the reference exists.
 - When linking a methodology source, explain why it belongs in the post before giving the URL.

@@ -74,7 +74,7 @@ THREAD_CANDIDATE_SCHEMA = {
     "properties": {
         "hook": {
             "type": "string",
-            "description": "Publishable Korean text for the problem-hook main post.",
+            "description": "Publishable Korean main post: problem hook, 나쁜 요청 with 1 quote, 좋은 요청 with 3-4 quotes, and a short judgment closer.",
         },
         "diagnosis": {
             "type": "string",
@@ -113,29 +113,19 @@ FORMAT_TYPES = {
     "weekly_review_advice",
 }
 POST_GOALS = {"save", "comment", "share", "follow", "profile_visit"}
-CANONICAL_STYLE_EXAMPLE = """논문 초안을 AI에게 맡길 때 자주 생기는 문제가 있습니다.
+CANONICAL_STYLE_EXAMPLE = """AI에게 method paper 초안을 검토시킬 때 “리뷰어처럼 봐줘”라고 하면 답이 너무 흐립니다.
 
-"이 문장 더 학술적으로 고쳐줘"라고만 시키면
-문장은 좋아지는데 claim, evidence, citation 연결은 그대로 비어 있을 수 있습니다.
----
-[먼저 확인할 것]
-초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.
+나쁜 요청:
+“리뷰어처럼 평가해줘.”
 
-1. claim이 한 문장으로 분리되는가
-2. evidence가 표, 실험, 인용 위치와 연결되는가
-3. citation이 실제로 그 claim을 받치는가
----
-[저장해둘 프롬프트]
-논문 읽을 때 붙여 넣을 문장:
+좋은 요청:
+“핵심 claim 3개와 필요한 evidence를 분리해줘.”
+“ICML 기준으로 soundness를 흔들 반례 질문을 써줘.”
+“AC가 볼 때 치명적인 약점을 우선순위로 표시해줘.”
+“표현 지적과 reject 근거가 될 구조적 약점을 나눠줘.”
 
-"이 초안을 claim, evidence, limitation, citation으로 나눠줘. 각 claim마다 근거 위치와 citation이 실제로 받치는 범위를 따로 표시해줘."
----
-[참고 논문]
-https://github.com/gagyeomkim/Deep-Learning-Paper-Review-and-Practice
-- 볼 부분: 리뷰를 요약, 코드, 발표 자료로 잇는 기록 구조
-
-[나의 견해]
-다음 논문 요약 전에는 claim 하나와 evidence 하나만 먼저 연결해보세요."""
+AI reviewer는 점수 예측기가 아니라
+제출 전 위험 위치를 찾는 도구입니다."""
 
 LEGACY_FORMAT_MAP = {
     "bad_to_better": "better_prompt_pattern",
@@ -799,9 +789,16 @@ def build_fallback_thread(candidate: dict, routing: dict, analysis: dict) -> str
 
     parts = [
         (
-            "논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.\n\n"
-            "\"이 논문 정리해줘\"라고만 시키면\n"
-            f"{problem}"
+            f"논문 작업을 AI에게 한 번에 맡기면 {problem}\n\n"
+            "나쁜 요청:\n"
+            "“이 논문 정리해줘.”\n\n"
+            "좋은 요청:\n"
+            "“핵심 claim과 필요한 evidence를 분리해줘.”\n"
+            "“각 claim을 받치는 원문 위치를 표시해줘.”\n"
+            "“limitation과 추가 검증 항목을 나눠줘.”\n"
+            "“결과를 표로 만들고 판단 이유를 남겨줘.”\n\n"
+            "좋은 research agent는 답을 대신 만드는 도구가 아니라\n"
+            "검증할 위치와 판단 근거를 남기는 도구입니다."
         ),
         (
             "[먼저 확인할 것]\n"
@@ -937,7 +934,7 @@ def build_prompt(
         "- Do not include labels such as Main:, Reply 1:, Reply n:, or 제목:.\n"
         "- Use short, sharp Korean Threads style: practical, calm, researcher/student-facing.\n"
         "- Use exactly 4 parts total. This is a hard rule.\n"
-        "- Part 1: problem hook. Rotate recent-history hook style: direct problem, failure scene, or judgment sentence. Do not include a bracket label here.\n"
+        "- Part 1 must use this compact main-post template: concrete problem hook -> '나쁜 요청:' -> exactly 1 standalone quoted vague request -> '좋은 요청:' -> 3-4 standalone quoted concrete requests -> short judgment closer. Do not include a bracket label here.\n"
         "- Part 2: start with a role-specific Korean bracket label such as '[먼저 확인할 것]' and give 3 concrete diagnosis criteria/checks by default.\n"
         "- Part 3: start with '[저장해둘 프롬프트]' when it contains a reusable prompt; otherwise use a role-specific bracket label for the reusable checklist or agent instruction.\n"
         "- Part 4: start with '[참고 논문]' or another source-specific bracket label, include the source URL, '- 볼 부분:', and separate source facts from '[나의 견해]'.\n"
@@ -947,14 +944,14 @@ def build_prompt(
         "- The account's north star: AI가 논문을 대신 읽어주는 게 아니라, 독자가 설명할 수 있는 상태로 바꿔준다.\n"
         "- Start from the reader test when possible: selected routing includes reader_test and failure_judgment.\n"
         "- Strong pattern: '내가 [artifact target]을 설명 못하면, 그건 [good outcome]이 아니라 [failure judgment]입니다.'\n"
-        "- Use concrete contrast labels when they fit: 나쁜 요청/좋은 요청, 나쁜 읽기/좋은 읽기, 나쁜 검증/좋은 검증.\n"
+        "- Use the labels exactly as '나쁜 요청:' and '좋은 요청:'. Put each example request on its own quoted line with no numbering inside the quote.\n"
         "- Do not stop at summarizing what a paper says. Show what the reader can now explain, verify, reproduce, compare, or revise.\n"
         "- Every chain must own exactly one research-work artifact from selected routing: artifact_type and artifact_output. This is the reader's reusable intermediate output.\n"
         "- Compare against recent content-history fingerprints before writing. The new post must differ in at least two of: failure_mode, workflow_stage, artifact_type, hook_pattern, reusable_unit_type.\n"
         "- If a recent post shares the same broad opening frame, make Part 1 start from the artifact-specific failure instead of a generic '논문 작업을 AI에게 한 번에 맡기면' frame.\n"
         "- If a recent post shares the same failure_mode, use a clearly different artifact_type or discard that angle.\n"
         "- Part 2 and Part 3 must name or strongly imply the artifact through checks, prompt wording, or agent instruction.\n"
-        "- Use a bad request in Part 1 only for direct-problem or failure-scene hooks. Do not force a full bad/good request card.\n"
+        "- The full bad/good request card is required in Part 1 for every format. Vary the concrete failure, requests, and closer rather than removing the card.\n"
         "- Every chain must include one reusable unit: a practical prompt, verification checklist, agent-role instruction, or source-to-workflow template.\n"
         "- Prefer concise labels such as '[저장해둘 프롬프트]', '[먼저 확인할 것]', '[참고 논문]', and '[나의 견해]'. Rotate labels so they fit the reply's role.\n"
         "- Derived questions must be practical: diagnostic question, verification question, or next-action question. Avoid philosophical questions.\n"
@@ -974,14 +971,9 @@ def build_prompt(
         "- In Part 4, explicitly distinguish what the source provides from how @arxiv.ai applies it to a research workflow.\n"
         "- Do not invent facts. Use only the candidates below as factual sources.\n"
         "- Do not write the retired phrase 'GitHub stars는 인기 신호일 뿐이고, 연구 품질 증거로 쓰면 안 됩니다.'\n\n"
-        "Format examples:\n"
-        "- workflow_observation: Part 1 judgment -> Part 2 checks -> Part 3 prompt -> Part 4 source/application.\n"
-        "- failed_agent_run: Part 1 failure scene -> Part 2 failure criteria -> Part 3 corrected instruction -> Part 4 source/application.\n"
-        "- better_prompt_pattern: Part 1 bad request -> Part 2 diagnosis -> Part 3 better request -> Part 4 source/application.\n"
-        "- research_checklist: Part 1 problem -> Part 2 checklist -> Part 3 execution prompt -> Part 4 source/application.\n"
-        "- agent_role_split: Part 1 broad-task failure -> Part 2 role criteria -> Part 3 role instruction -> Part 4 source/application.\n"
-        "- tiny_source_case: Part 1 problem -> Part 2 checks -> Part 3 reusable action -> Part 4 source fact vs interpretation.\n"
-        "- weekly_review_advice: Part 1 weekly pattern -> Part 2 advice -> Part 3 next-week prompt -> Part 4 source/quote if used.\n\n"
+        "All format routers keep the same Part 1 card. They only change the emphasis of Parts 2-4: diagnosis, reusable action, and source interpretation.\n\n"
+        "Canonical surface example:\n"
+        f"{CANONICAL_STYLE_EXAMPLE}\n\n"
         "Selected routing:\n"
         f"{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
         "Candidate analysis:\n"

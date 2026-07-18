@@ -39,6 +39,21 @@ SUGGESTION = {
 }
 
 
+CANONICAL_MAIN = """AI에게 논문 작업을 맡길 때 요청이 넓으면 검증 기준이 흐려집니다.
+
+나쁜 요청:
+“이 논문을 정리해줘.”
+
+좋은 요청:
+“핵심 claim을 분리해줘.”
+“각 claim의 evidence 위치를 표시해줘.”
+“limitation과 citation 범위를 나눠줘.”
+“판단 근거를 표로 남겨줘.”
+
+좋은 research agent는 답을 대신 쓰는 도구가 아니라
+검증할 위치와 판단 근거를 남기는 도구입니다."""
+
+
 class QuoteSelectionTests(unittest.TestCase):
     def test_verified_quote_selection_passes(self) -> None:
         thread = (
@@ -137,8 +152,8 @@ class ThreadValidationTests(unittest.TestCase):
 
     def test_fixed_master_template_chain_passes(self) -> None:
         thread = (
-            "논문 초안을 AI에게 맡길 때 자주 생기는 문제가 있습니다.\n\n"
-            "\"이 문장 더 학술적으로 고쳐줘\"라고만 시키면 claim과 evidence 연결은 남지 않을 수 있습니다.\n"
+            CANONICAL_MAIN
+            + "\n"
             "---\n"
             "[먼저 확인할 것]\n"
             "초안 검수는 문장 품질보다 연결 구조를 먼저 봐야 합니다.\n\n"
@@ -165,7 +180,8 @@ class ThreadValidationTests(unittest.TestCase):
 
     def test_repeated_hook_pattern_warns_without_blocking_publish(self) -> None:
         thread = (
-            "AI가 붙인 citation이 claim을 실제로 받치는지 먼저 확인해야 합니다.\n"
+            CANONICAL_MAIN
+            + "\n"
             "---\n"
             "[먼저 확인할 것]\n"
             "검증 체크리스트:\n"
@@ -193,8 +209,8 @@ class ThreadValidationTests(unittest.TestCase):
 
     def test_same_recent_artifact_warns_without_hard_blocking(self) -> None:
         thread = (
-            "방법론 설명과 재현 가능한 절차는 다릅니다.\n\n"
-            "AI가 방법을 잘 요약해도 input, 순서, 설정값이 빠지면 다시 실행할 수 없습니다.\n"
+            CANONICAL_MAIN
+            + "\n"
             "---\n"
             "[먼저 확인할 것]\n"
             "재현 프로토콜은 설명보다 실행 조건을 봅니다.\n\n"
@@ -551,8 +567,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
             )
             playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
             thread_text = (
-                "논문 요약을 AI에게 맡길 때 먼저 봐야 할 기준이 있습니다.\n\n"
-                "문장보다 claim과 evidence 연결이 먼저입니다.\n"
+                CANONICAL_MAIN
+                + "\n"
                 "---\n"
                 "[먼저 확인할 것]\n"
                 "1. claim이 한 문장으로 분리되는가\n"

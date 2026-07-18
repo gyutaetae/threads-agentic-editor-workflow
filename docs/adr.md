@@ -6,11 +6,11 @@
 
 **Intent:** Prevent the editor skill, generator prompt, and quality gate from drifting independently.
 
-## ADR-002: Fix semantic roles, not repeated wording
+## ADR-002: Fix semantic roles and the proven main-post surface
 
-**Decision:** Every chain has exactly four roles: `hook`, `diagnosis`, `action`, `source`. Parts 2-4 use role-specific bracket headings. A bad/good request card and `[핵심 한 줄]` are optional surface patterns, not mandatory structure.
+**Decision:** Every chain has exactly four roles: `hook`, `diagnosis`, `action`, `source`. The `hook` role owns the complete main-post card: a concrete problem hook, `나쁜 요청:` with one quoted line, `좋은 요청:` with three or four quoted lines, and a short judgment closer. Parts 2-4 use role-specific bracket headings. `[핵심 한 줄]` remains optional and should not be repeated.
 
-**Intent:** Keep manual and automatic output recognizable without making the account feel factory-generated.
+**Intent:** Restore the compact manual format that produces clearer posts while keeping manual and automatic output identical at the surface-contract level. Variation comes from the research problem, requested checks, artifact, and closer.
 
 ## ADR-003: One shared validator with phase strictness
 

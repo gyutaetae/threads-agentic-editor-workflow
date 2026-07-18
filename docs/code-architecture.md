@@ -20,6 +20,6 @@
 
 ## Tests
 
-- Unit-test text parsing, role ordering, headings, length, source placement, reusable action, and warnings.
+- Unit-test text parsing, role ordering, the canonical Part 1 request card, headings, length, source placement, reusable action, and warnings.
 - Keep generator routing and editorial scoring tests separate from contract tests.
 - Test both direct script execution imports and package-style test imports.

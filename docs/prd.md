@@ -24,6 +24,7 @@ Make manual Codex drafts and automatic LLM drafts produce the same publishable `
 
 - Both manual and automatic publish paths reject non-four-part chains.
 - Every valid chain follows `hook -> diagnosis -> action -> source`.
+- Both paths render Part 1 as `problem -> 나쁜 요청 1개 -> 좋은 요청 3-4개 -> judgment closer`.
 - Generation emits a `ThreadSpec v1` artifact alongside publishable text.
 - The editor skill delegates channel format decisions to the playbook instead of duplicating them.
 - Existing generation tests pass and shared contract tests cover manual and automatic callers.

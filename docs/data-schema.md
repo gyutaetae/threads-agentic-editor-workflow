@@ -27,6 +27,8 @@ generation:
   prompt_contract_version
 ```
 
+The `hook` role contains the complete main post, not only its opening sentence: problem hook, `나쁜 요청:` with one quoted request, `좋은 요청:` with three or four quoted requests, and a short judgment closer.
+
 ## Ownership
 
 - Threads API owns published IDs, timestamps, and final platform text.

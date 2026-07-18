@@ -73,27 +73,25 @@ Operational rule: if a recent post shares the same broad hook, Part 1 must start
 
 ## Explainable Reading Template
 
-Use this as the main high-performing pattern, but rotate the surface.
+Use this compact main-post template for every manual and automatic draft. Rotate the topic, failure, example requests, and judgment—not the skeleton.
 
 ```text
-AI에게 논문을 읽혔는데 / LLM 논문을 읽었는데 / "이 논문 요약해줘"의 문제는
-내가 [artifact-specific target]을 설명 못하면,
-그건 [good outcome]이 아니라 [failure judgment]입니다.
+AI에게 [research task]를 시킬 때 [vague instruction]이라고 하면 [concrete failure]가 생깁니다.
 
-나쁜 요청/읽기:
+나쁜 요청:
 "..."
 
-좋은 요청/읽기:
+좋은 요청:
 "..."
 "..."
 "..."
+"..." (optional fourth line)
 
-좋은 논문 읽기는
-AI가 대신 읽는 게 아니라
-내가 [artifact-specific target]을 설명할 수 있게 만드는 과정입니다.
+[Agent/workflow]는 [잘못 기대한 역할]이 아니라
+[실제로 맡길 역할]입니다.
 ```
 
-Use this pattern for about 60-70% of posts. For the rest, rotate into direct problem, failure scene, quote/idea hook, or source-specific case so the account does not feel automated.
+The labels are exactly `나쁜 요청:` and `좋은 요청:`. Use one standalone quoted bad request, three or four standalone quoted good requests, and a short judgment closer. Keep the main post under 500 characters and link-free.
 
 When writing examples, prefer concrete anchors over generic roles:
 
@@ -113,18 +111,18 @@ The anchor can be a venue, role, named person, benchmark, paper type, official r
 
 Exactly 4 parts, each under 500 chars:
 
-1. Problem hook: reader-test, failure scene, or judgment sentence. No source link.
+1. Canonical main post: problem hook -> `나쁜 요청:` 1 quoted line -> `좋은 요청:` 3-4 quoted lines -> short judgment closer. No source link.
 2. Diagnosis: 3 concrete checks or criteria tied to the artifact.
 3. Reusable action: copyable prompt, checklist, protocol, matrix, or role instruction.
 4. Source interpretation: URL + `- 볼 부분:` or `인용 원문:` + source fact vs `[나의 견해]`.
 
-Allowed formats change emphasis, not the skeleton:
+Allowed formats change the emphasis of Parts 2-4, not the main-post skeleton:
 
 | format | emphasis |
 |---|---|
 | `workflow_observation` | Part 1 judgment |
 | `failed_agent_run` | Part 1 failure scene + Part 3 correction |
-| `better_prompt_pattern` | bad request/read vs good request/read |
+| `better_prompt_pattern` | Part 2 diagnosis + Part 3 reusable version of the better request |
 | `research_checklist` | Part 2 checks |
 | `agent_role_split` | Part 3 role instruction |
 | `tiny_source_case` | Part 4 source fact vs interpretation |

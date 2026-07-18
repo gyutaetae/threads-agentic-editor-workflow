@@ -6,7 +6,7 @@
 2. If a post already exists, skip the run. If platform state cannot be verified, fail closed and write a failure record.
 3. Collect and rank a source candidate from a broad search window, then remove every source already present in publication history. If no unused source remains, skip rather than recycle one.
 4. Build routing metadata and recent-history context.
-5. Ask the pinned OpenRouter Gemma model for strict `ThreadCandidate v1` JSON.
+5. Ask the pinned OpenRouter Gemma model for strict `ThreadCandidate v1` JSON, including the canonical bad/good-request main card.
 6. Derive routing/source metadata in code and build `ThreadSpec v1`.
 7. Run the shared contract validator, duplicate checks, editorial scoring, and evaluator review.
 8. If any publish gate fails, retain the review draft and artifacts only.
@@ -16,7 +16,7 @@
 ## Manual Codex
 
 1. Read the playbook and recent history.
-2. Draft the same four semantic parts.
+2. Draft the same four semantic parts, with the canonical bad/good-request card in Part 1.
 3. Attach the same fingerprint and source metadata.
 4. Build and validate `ThreadSpec v1`.
 5. Render `approved-thread-chain.txt` only after approval.

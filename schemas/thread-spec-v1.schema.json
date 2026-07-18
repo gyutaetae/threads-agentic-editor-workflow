@@ -36,6 +36,7 @@
       }
     },
     "hookPart": {
+      "description": "Complete main-post card: problem hook, 나쁜 요청 1개, 좋은 요청 3-4개, and a short judgment closer.",
       "allOf": [
         { "$ref": "#/$defs/partBase" },
         { "properties": { "role": { "const": "hook" } } }
