@@ -1331,9 +1331,10 @@ def call_llm(
                     "content": prompt,
                 },
             ],
-            "max_completion_tokens": output_tokens,
             **request_options(provider, model, response_schema),
         }
+        token_limit_key = "max_tokens" if provider == "openrouter" else "max_completion_tokens"
+        request_body[token_limit_key] = output_tokens
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",

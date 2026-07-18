@@ -435,6 +435,8 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertTrue(response_format["json_schema"]["strict"])
         self.assertEqual(response_format["json_schema"]["schema"], THREAD_CANDIDATE_SCHEMA)
         self.assertEqual(kwargs["json"]["provider"], {"require_parameters": True})
+        self.assertEqual(kwargs["json"]["max_tokens"], 500)
+        self.assertNotIn("max_completion_tokens", kwargs["json"])
         self.assertEqual(kwargs["headers"]["Authorization"], "Bearer key")
         self.assertIn("HTTP-Referer", kwargs["headers"])
         self.assertIn("X-Title", kwargs["headers"])
