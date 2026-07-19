@@ -131,3 +131,14 @@ AI reviewer는 점수 예측기가 아니라
 
 좋은 rebuttal 준비는 성능을 더 크게 말하는 일이 아니라
 reviewer가 반박할 빈칸을 실험표에서 먼저 찾는 일입니다.",1,,https://neurips.cc/public/guides/PaperChecklist,,,,,,false,2026-07-18T19:51:00+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-19,18093824213627574,https://www.threads.net/@arxiv.ai/post/18093824213627574,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,AI Agent가 정리해준 Related Work를 그대로 복사해서 쓰시나요?,"AI Agent가 정리해준 Related Work를 그대로 복사해서 쓰시나요?
+
+나쁜 요청:
+“이 논문들의 핵심 내용을 표로 요약해줘.”
+
+좋은 요청:
+“각 논문의 claim과 이를 뒷받침하는 핵심 실험 수치를 매핑한 matrix를 만들어줘.”
+“내 claim을 반박할 수 있는 논문의 limitation을 찾아줘.”
+“인용된 citation이 claim의 근거로 적절한지 검증 테이블을 작성해줘.”
+
+AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위한 검증 도구로 써야 합니다.",1,github_repo,https://github.com/SamuelSchmidgall/AgentLaboratory,69,100,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-19T19:38:12+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
