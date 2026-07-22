@@ -141,7 +141,7 @@ reviewer가 반박할 빈칸을 실험표에서 먼저 찾는 일입니다.",1,,
 “내 claim을 반박할 수 있는 논문의 limitation을 찾아줘.”
 “인용된 citation이 claim의 근거로 적절한지 검증 테이블을 작성해줘.”
 
-AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위한 검증 도구로 써야 합니다.",1,github_repo,https://github.com/SamuelSchmidgall/AgentLaboratory,69,100,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-19T19:38:12+09:00,1035,11,3,3,0,0,3,0,,,0,auto-recorded after publish | metrics collected: 24h
+AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위한 검증 도구로 써야 합니다.",1,github_repo,https://github.com/SamuelSchmidgall/AgentLaboratory,69,100,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-19T19:38:12+09:00,1083,11,3,3,0,0,3,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-07-22,18086187797166609,https://www.threads.net/@arxiv.ai/post/18086187797166609,agent_role_split,agent_role_split,workflow_mode,save,literature_overload,"관련 연구(Related Work)를 쓸 때 논문 목록만 쭉 나열하고 계신가요? 내가 논문 간의 차이를 같은 비교 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.","관련 연구(Related Work)를 쓸 때 논문 목록만 쭉 나열하고 계신가요? 내가 논문 간의 차이를 같은 비교 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
 
 나쁜 요청:
