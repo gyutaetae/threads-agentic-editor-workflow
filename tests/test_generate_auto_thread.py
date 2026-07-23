@@ -41,6 +41,8 @@ SUGGESTION = {
 
 CANONICAL_MAIN = """AI에게 논문 작업을 맡길 때 요청이 넓으면 검증 기준이 흐려집니다.
 
+내가 claim과 evidence의 연결을 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.
+
 나쁜 요청:
 “이 논문을 정리해줘.”
 
@@ -166,8 +168,7 @@ class ThreadValidationTests(unittest.TestCase):
             "[참고 논문]\n"
             "https://github.com/example/research-skills\n"
             "- 볼 부분: source fact를 workflow로 바꾸는 단서\n\n"
-            "[나의 견해]\n"
-            "source가 실제로 제공한 것과 내가 적용하려는 해석을 나눠보세요."
+            "- 적용: source가 실제로 제공한 것과 내가 적용하려는 해석을 나눠보세요."
         )
         validate_thread(thread)
 
@@ -196,8 +197,7 @@ class ThreadValidationTests(unittest.TestCase):
             "[참고 논문]\n"
             "https://github.com/example/research-skills\n"
             "- 볼 부분: source fact를 citation 검증 기준으로 바꾸는 단서\n\n"
-            "[나의 견해]\n"
-            "source가 실제로 제공한 것과 우리 해석을 분리하세요."
+            "- 적용: source가 실제로 제공한 것과 우리 해석을 분리하세요."
         )
         gate = quality_gate(
             thread,
@@ -225,8 +225,7 @@ class ThreadValidationTests(unittest.TestCase):
             "[참고 논문]\n"
             "https://github.com/example/research-skills\n"
             "- 볼 부분: source fact를 재현 절차로 바꾸는 단서\n\n"
-            "[나의 견해]\n"
-            "source가 실제로 제공한 절차와 우리 해석을 분리하세요."
+            "- 적용: source가 실제로 제공한 절차와 우리 해석을 분리하세요."
         )
         routing = {
             "format_type": "better_prompt_pattern",
@@ -299,7 +298,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
             "hook": "문제를 확인해야 합니다.",
             "diagnosis": "[먼저 확인할 것]\n1. claim\n2. evidence\n3. limitation",
             "action": "[저장해둘 프롬프트]\nclaim과 evidence를 연결해줘.",
-            "source": "[참고 자료]\nhttps://example.com\n- 볼 부분: 근거 구조\n[나의 견해] 검증표로 바꿉니다.",
+            "source": "[참고 자료]\nhttps://example.com\n- 볼 부분: 근거 구조\n- 적용: 검증표로 바꿉니다.",
             "quote_used": False,
             "quote_id": "",
         }
@@ -579,9 +578,9 @@ class SelfImprovementLoopTests(unittest.TestCase):
                 "AI agent에게 이렇게 시켜보세요.\n\n"
                 "\"이 요약을 claim, evidence, limitation으로 나누고 각 claim의 근거 위치를 표시해줘.\"\n"
                 "---\n"
-                "[나의 견해]\n"
+                "[참고 자료]\n"
                 "source fact: claim과 evidence를 분리해 보는 workflow 자료입니다.\n"
-                "우리 해석: 초안 전에 검증표를 먼저 만들면 citation 오류를 줄일 수 있습니다.\n"
+                "- 적용: 초안 전에 검증표를 먼저 만들면 citation 오류를 줄일 수 있습니다.\n"
                 "https://github.com/example/claim-evidence-workflow"
             )
 

@@ -23,10 +23,10 @@ Create one useful Threads chain for `@arxiv.ai`: Korean posts that turn papers i
 
 - Start from a real paper-work failure, not AI news or generic prompt advice.
 - Make the reader able to produce one artifact: prompt, checklist, table, protocol, matrix, role instruction, or revision rule.
-- Part 1 is the canonical compact card: concrete problem hook, `나쁜 요청:` with one standalone quote, `좋은 요청:` with three or four standalone quotes, then a short judgment closer. It has no bracket heading or source link.
-- Parts 2-4 use role-specific labels such as `[먼저 확인할 것]`, `[저장해둘 프롬프트]`, `[참고 논문]`, and `[나의 견해]`.
-- Put source links only in the final reply, with `- 볼 부분:` or a verified quote source labeled `인용 원문:`.
-- Separate source fact from @arxiv.ai interpretation.
+- Part 1 is the canonical compact card: a recognizable paper-work scene, a sharp self-diagnosis, `나쁜 요청:` with one standalone quote, `좋은 요청:` with three or four copy-ready quotes, then a memorable working principle. It has no bracket heading or source link.
+- Route all good requests toward exactly one named artifact: matrix, table, checklist, protocol, role instruction, or revision rule.
+- Parts 2-4 use role-specific labels such as `[먼저 확인할 것]`, `[저장해둘 프롬프트]`, and `[참고 논문]`.
+- Put source links only in the final reply. Use `- 볼 부분:` for source fact and `- 적용:` for @arxiv.ai's workflow interpretation; do not use a personal-opinion heading.
 - Avoid `Main:`, `Reply 1:`, `[한 줄 원칙]`, `[초안 작성 모드]`, JSON, and fenced code blocks in publishable text.
 - Use English only when precision improves: `claim`, `evidence`, `limitation`, `citation`, `workflow`, `prompt`, `AI agent`.
 - Use `docs/thread-pattern-library.md` for durable patterns. Vary the research failure, concrete requests, artifact, and closer inside the fixed main-post card.

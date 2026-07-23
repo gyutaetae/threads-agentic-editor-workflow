@@ -24,6 +24,7 @@ HYPE_WORDS = ["무조건", "혁명", "논문 끝", "개발자 끝", "역대급",
 FORBIDDEN_TEXT = [
     "[한 줄 원칙",
     "한 줄 원칙:",
+    "[나의 견해]",
     "Reply 1:",
     "Reply 2:",
     "Reply 3:",
@@ -50,7 +51,9 @@ PRACTICAL_MARKERS = [
     "limitation",
 ]
 INTERPRETATION_MARKERS = [
-    "[나의 견해]",
+    "- 적용:",
+    "이 글에 적용하면:",
+    "연구 workflow로 바꾸면:",
     "우리 해석",
     "내가 적용하려는 해석",
     "account interpretation",
@@ -150,6 +153,12 @@ def _validate_main_request_template(hook: str, report: ValidationReport) -> None
     good_quotes = QUOTE_LINE_RE.findall(good_section)
     if not before_bad.strip():
         report.errors.append("Part 1 needs a concrete problem hook before '나쁜 요청:'.")
+    if "내가" not in before_bad or not any(
+        marker in before_bad for marker in ("못하면", "못한다면", "설명할 수 없다면")
+    ):
+        report.errors.append("Part 1 needs a first-person self-diagnosis before '나쁜 요청:'.")
+    if "그건" not in before_bad:
+        report.errors.append("Part 1 self-diagnosis needs a sharp '그건 ...' verdict.")
     if len(bad_quotes) != 1:
         report.errors.append("Part 1 must contain exactly 1 standalone quoted line under '나쁜 요청:'.")
     if not 3 <= len(good_quotes) <= 4:
@@ -240,7 +249,7 @@ def validate_thread_spec(
     if "- 볼 부분:" not in source and "인용 원문:" not in source:
         report.errors.append("Part 4 must explain the source with '- 볼 부분:' or '인용 원문:'.")
     if not any(marker in source for marker in INTERPRETATION_MARKERS):
-        report.errors.append("Part 4 must separate source facts from account interpretation, normally with '[나의 견해]'.")
+        report.errors.append("Part 4 must separate source facts from account interpretation with '- 적용:' or an equivalent workflow-application line.")
 
     for forbidden in FORBIDDEN_TEXT:
         if forbidden in joined:

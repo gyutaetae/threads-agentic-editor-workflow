@@ -15,6 +15,25 @@ AI가 논문을 대신 읽어주는 계정이 아니라,
 
 Good posts start from a real paper-work failure and end with one reusable work artifact: prompt, checklist, table, protocol, matrix, role instruction, or revision rule. This is not an AI news, quote, or generic prompt account.
 
+## Editorial Contract
+
+Every post must complete one compact transformation:
+
+```text
+recognizable paper-work scene
+-> self-diagnosis + sharp verdict
+-> visibly bad request vs copy-ready good requests
+-> one named work artifact
+-> memorable working principle
+```
+
+- Open inside a scene many readers actually face; name the task and consequence, not a generic AI problem.
+- Make the reader judge their own work: `내가 [핵심 관계/근거/절차]를 설명 못하면, 그건 [겉보기 결과]가 아니라 [실패 판정]입니다.` The verdict must stop the reader without hype or humiliation.
+- Make `나쁜 요청:` and `좋은 요청:` visibly different. Good requests must be usable immediately without rewriting.
+- Route every good request toward exactly one concrete artifact such as a matrix, table, checklist, protocol, or role instruction.
+- Close Part 1 with a reusable principle that redefines good research work or the AI's role; do not merely recap the post.
+- In Part 4, remove personal-opinion headings. Keep trust with `- 볼 부분:` for source fact and `- 적용:` for the account's workflow interpretation.
+
 ## Voice
 
 - Korean first. Use English only when precision improves: `AI agent`, `claim`, `evidence`, `limitation`, `citation`, `reviewer critique`, `workflow`, `prompt`.
@@ -76,7 +95,8 @@ Operational rule: if a recent post shares the same broad hook, Part 1 must start
 Use this compact main-post template for every manual and automatic draft. Rotate the topic, failure, example requests, and judgment—not the skeleton.
 
 ```text
-AI에게 [research task]를 시킬 때 [vague instruction]이라고 하면 [concrete failure]가 생깁니다.
+[many readers' recognizable paper-work scene + concrete consequence]
+[self-diagnosis]. 그건 [good outcome]이 아니라 [failure judgment]입니다.
 
 나쁜 요청:
 "..."
@@ -87,8 +107,7 @@ AI에게 [research task]를 시킬 때 [vague instruction]이라고 하면 [conc
 "..."
 "..." (optional fourth line)
 
-[Agent/workflow]는 [잘못 기대한 역할]이 아니라
-[실제로 맡길 역할]입니다.
+[memorable working principle that redefines the work or AI's role]
 ```
 
 The labels are exactly `나쁜 요청:` and `좋은 요청:`. Use one standalone quoted bad request, three or four standalone quoted good requests, and a short judgment closer. Keep the main post under 500 characters and link-free.
@@ -111,10 +130,10 @@ The anchor can be a venue, role, named person, benchmark, paper type, official r
 
 Exactly 4 parts, each under 500 chars:
 
-1. Canonical main post: problem hook -> `나쁜 요청:` 1 quoted line -> `좋은 요청:` 3-4 quoted lines -> short judgment closer. No source link.
+1. Canonical main post: recognizable scene + self-diagnosis -> `나쁜 요청:` 1 quoted line -> `좋은 요청:` 3-4 copy-ready lines -> working principle. No source link.
 2. Diagnosis: 3 concrete checks or criteria tied to the artifact.
 3. Reusable action: copyable prompt, checklist, protocol, matrix, or role instruction.
-4. Source interpretation: URL + `- 볼 부분:` or `인용 원문:` + source fact vs `[나의 견해]`.
+4. Source interpretation: URL + `- 볼 부분:` or `인용 원문:` for source fact + `- 적용:` for the account's workflow interpretation. Do not use a personal-opinion heading.
 
 Allowed formats change the emphasis of Parts 2-4, not the main-post skeleton:
 
@@ -189,7 +208,7 @@ Promote only durable preferences. Do not promote one-off wording unless it revea
 
 ## Success Criteria
 
-- Post feels like a research-work judgment, not a template lesson.
+- The Editorial Contract is visible without making the post feel like a template lesson.
 - Reader can explain one paper-work artifact after reading.
 - Source fact and account interpretation stay separate.
 - Recent hook, artifact, structure, and closer do not dominate a week.

@@ -13,6 +13,8 @@ from scripts.thread_spec import (
 
 VALID_THREAD = """AI에게 논문 요약을 맡길 때 “정리해줘”라고 하면 근거 위치가 흐려집니다.
 
+내가 claim과 evidence의 연결을 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.
+
 나쁜 요청:
 “이 논문을 요약해줘.”
 
@@ -41,8 +43,7 @@ VALID_THREAD = """AI에게 논문 요약을 맡길 때 “정리해줘”라고 
 https://example.com/research-workflow
 - 볼 부분: source fact가 claim과 evidence를 연결하는 방식
 
-[나의 견해]
-이 구조를 연구 노트의 검증 표로 적용할 수 있습니다."""
+- 적용: 이 구조를 연구 노트의 검증 표로 적용할 수 있습니다."""
 
 
 def metadata() -> dict:
@@ -108,6 +109,15 @@ class ThreadSpecTests(unittest.TestCase):
         )
         report = validate_thread_text(shortened)
         self.assertIn("judgment closer", " ".join(report.errors))
+
+    def test_main_post_requires_self_diagnosis(self) -> None:
+        diagnosis = "내가 claim과 evidence의 연결을 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.\n\n"
+        report = validate_thread_text(VALID_THREAD.replace(diagnosis, ""))
+        self.assertIn("self-diagnosis", " ".join(report.errors))
+
+    def test_personal_opinion_heading_is_rejected(self) -> None:
+        report = validate_thread_text(VALID_THREAD.replace("- 적용:", "[나의 견해]"))
+        self.assertIn("[나의 견해]", " ".join(report.errors))
 
 
 class EvaluatorGateTests(unittest.TestCase):
