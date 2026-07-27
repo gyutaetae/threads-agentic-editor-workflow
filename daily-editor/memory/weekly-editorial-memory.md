@@ -1,45 +1,41 @@
 # Weekly Editorial Memory
 
-Updated: 2026-07-20T04:33:11+00:00
-Window: last 7 days; analyzed posts: 7
+Updated: 2026-07-27T04:34:31+00:00
+Window: last 7 days; analyzed posts: 3
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 6
+- Posts with collected metrics: 3
 
 ## Winning Slots
 
-- unknown: 38
-- evening: 20
+- evening: 36
 
 ## Winning Experiments
 
-- unknown: 38
-- daily_1800_kst: 20
+- daily_1800_kst: 28
+- manual_evening: 8
 
 ## Winning Formats
 
-- unknown: 38
-- tiny_source_case: 19
-- weekly_review_advice: 1
-- agent_role_split: 0
+- agent_role_split: 28
+- tiny_source_case: 5
+- research_checklist: 3
 
 ## Winning Content Axes
 
-- unknown: 38
-- official_update: 20
-- workflow_mode: 0
+- workflow_mode: 28
+- paper_to_workflow: 5
+- official_update: 3
 
 ## Top Posts
 
-- score 26 | unknown | A | research ai workflow | AI에게 method paper 초안을 검토시킬 때 “리뷰어처럼 봐줘”라고 하면 답이 너무 흐립니다.
-- score 12 | unknown | research_checklist | ablation_rebuttal | ICML·NeurIPS·ICLR rebuttal 직전에 ablation 표만 훑으면, reviewer가 물을 “무엇을 통제했나?”가 비어 버립니다.
-- score 8 | evening | tiny_source_case | summary_verification_grid | 내가 claim, method, evidence, limitation을 설명 못하면, 그건 요약이 아니라 대리 독서입니다.
-- score 7 | evening | tiny_source_case | problem_gap_contribution_outline | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
-- score 4 | evening | tiny_source_case | Agent role 분리와 작업 흐름 설계 | 논문 작업을 AI에게 한 번에 맡기면 자주 생기는 문제가 있습니다.
+- score 28 | evening | agent_role_split | literature_overload | 관련 연구(Related Work)를 쓸 때 논문 목록만 쭉 나열하고 계신가요? 내가 논문 간의 차이를 같은 비교 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
+- score 5 | evening | tiny_source_case | premise constraint audit | AI에게 논문 결론이 맞는지 검토시킬 때 “단계별로 생각해”만 붙이면, 이미 고른 답을 그럴듯하게 합리화할 수 있습니다.
+- score 3 | evening | research_checklist | multi-turn research session drift | AI와 논문 초안을 열 번 넘게 고치다 보면, 마지막 답변은 멀쩡한데 처음 합의한 연구 질문·비교 조건·근거 범위가 사라질 때가 있습니다.
 
 ## Editorial Decisions
 
