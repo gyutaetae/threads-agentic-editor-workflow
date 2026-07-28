@@ -181,3 +181,17 @@ AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위�
 
 긴 대화는 맥락이 쌓이는 게 아닙니다.
 검증하지 않으면 오류가 쌓입니다.",1,official_feed,https://arxiv.org/abs/2607.19361,48,100,evening,manual_evening,gpt-5,false,2026-07-23T19:09:27+09:00,1717,14,3,3,0,0,2,1,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
+2026-07-28,18144239047542288,https://www.threads.net/@arxiv.ai/post/18144239047542288,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,AI가 생성한 citation 목록을 그대로 논문에 붙여 넣고 계신가요?,"AI가 생성한 citation 목록을 그대로 논문에 붙여 넣고 계신가요?
+
+내가 citation이 특정 claim을 정확히 지지하는지 설명 못하면, 그건 검증이 아니라 참고문헌 장식입니다.
+
+나쁜 요청:
+""이 논문의 주요 주장들을 citation과 함께 정리해줘.""
+
+좋은 요청:
+""각 claim과 이를 뒷받침하는 evidence를 분리해줘.""
+""citation의 원문 위치와 지지 범위를 표로 만들어줘.""
+""claim과 citation 사이의 논리적 간극이 있는지 검증해줘.""
+
+AI는 citation을 찾아주는 도구가 아니라,
+내가 검증해야 할 대상을 식별해주는 도구입니다.",1,github_repo,https://github.com/aipoch/medical-research-skills,67,92,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-28T20:26:21+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
