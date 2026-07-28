@@ -38,6 +38,18 @@
 
 ## ADR-007: Fail closed and preserve evidence
 
-**Decision:** If the daily platform check cannot establish that publishing is safe, do not publish. Record token/API failures under `daily-editor/failures/`. If generation, contract validation, or quality review fails, retain draft/spec/run artifacts without publishing.
+**Decision:** If the daily platform check cannot establish that publishing is safe, do not publish. Record token/API failures under `daily-editor/failures/`. Invalid generated candidates remain draft/spec/run artifacts and never bypass the shared contract. A strictly validated, unused reserve may replace a failed generated candidate.
 
 **Intent:** Missing credentials or uncertain platform state must not cause an accidental second post, while repairable drafts and diagnostics remain available.
+
+## ADR-008: One verified top-level chain per KST day
+
+**Decision:** A manual or automatic top-level Threads chain satisfies the daily objective. Run the primary pipeline at 18:17 KST and watchdogs at 19:17-23:17 KST. Soft editorial failures trigger one pinned-writer revision and then a prevalidated reserve. Success requires a final Threads API verification. Replies and reposts do not satisfy the objective by themselves.
+
+**Intent:** Make daily publishing reliable without weakening the contract, publishing an unreviewed alternate-model replacement, or creating duplicate top-level posts.
+
+## ADR-009: Reserve posts are immutable and consumed once
+
+**Decision:** Keep seven source-backed `manual_codex` ThreadSpecs under `daily-editor/reserve/available/`. Each item must pass strict validation and use a source URL absent from publication history. After successful publication, move both metadata and text to `daily-editor/reserve/used/`. Warn when the usable count reaches three.
+
+**Intent:** Decouple daily continuity from live source collection and LLM availability while preserving provenance and preventing reserve reuse.

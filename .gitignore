@@ -17,6 +17,12 @@ daily-editor/*
 !daily-editor/proposals/dashboard-learning-candidates.jsonl
 !daily-editor/curation/
 !daily-editor/curation/*.jsonl
+!daily-editor/reserve/
+!daily-editor/reserve/available/
+!daily-editor/reserve/available/*.json
+!daily-editor/reserve/available/*.txt
+!daily-editor/reserve/used/
+!daily-editor/reserve/used/.gitkeep
 threads-hosted-assets.json
 threads-post-metrics.csv
 !threads-post-metrics.csv

@@ -1,0 +1,24 @@
+{
+  "id": "stard-ai-threshold-audit",
+  "thread_path": "06-stard-ai-threshold-audit.txt",
+  "metadata": {
+    "topic": "diagnostic AI accuracy reporting",
+    "format": "research_checklist",
+    "content_axis": "evidence_mapping",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "diagnostic_evaluation",
+    "failure_mode": "threshold_reference_standard_missing",
+    "artifact_type": "diagnostic_threshold_audit",
+    "reusable_unit_type": "diagnostic_evidence_prompt",
+    "hook_pattern": "diagnostic_metric_scene",
+    "source_name": "STARD-AI Reporting Guideline",
+    "source_urls": [
+      "https://www.nature.com/articles/s41591-025-03953-8"
+    ],
+    "source_type": "reporting_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "diagnostic_threshold_confusion",
+    "research_problem": "diagnostic AI 논문에서 accuracy만 보면 threshold, reference standard, subgroup별 오류 조건을 놓치기 쉽다."
+  }
+}

@@ -1,0 +1,33 @@
+artifact 제출 직전에 repository 링크만 확인하면, reviewer가 실제로 어떤 command를 실행해야 하는지는 비어 있을 수 있습니다.
+
+내가 새 환경에서 결과를 재현하는 순서를 설명 못하면, 그건 artifact가 아니라 파일 묶음입니다.
+
+나쁜 요청:
+“코드와 dataset이 있으니 재현 가능한지 봐줘.”
+
+좋은 요청:
+“필요한 environment와 dependency를 고정해줘.”
+“대표 결과를 만드는 command를 순서대로 써줘.”
+“각 command의 expected output을 붙여줘.”
+“실패할 때 확인할 log와 제한 조건을 남겨줘.”
+
+좋은 artifact 문서는 파일 목록이 아니라
+다른 사람이 결과까지 도달하는 runbook입니다.
+---
+[먼저 확인할 것]
+artifact를 실행 경로로 검토합니다.
+
+1. 설치 가능한 environment가 있는가
+2. input과 실행 command가 연결되는가
+3. expected output과 논문 claim이 대응하는가
+---
+[저장해둘 프롬프트]
+artifact README에 붙여 넣을 문장:
+
+“repository를 environment, input, command, expected output, supported claim, failure check로 나눈 실행 runbook을 만들어줘.”
+---
+[참고 자료]
+https://www.acm.org/publications/policies/artifact-review-badging-current
+- 볼 부분: ACM artifact 평가와 재현·복제 결과를 구분하는 badging 기준
+
+- 적용: 공개 여부만 보지 않고 artifact가 실제 claim 검증까지 이어지는지 확인합니다.

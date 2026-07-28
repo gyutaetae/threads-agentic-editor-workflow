@@ -106,6 +106,41 @@ class DailyPublishGuardTests(unittest.TestCase):
         self.assertEqual(code, ALLOW)
         self.assertEqual(result["decision"], "allow_auto_publish")
 
+    def test_verify_succeeds_when_top_level_post_exists(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            response = FakeResponse(200, {"data": [{"id": "published-1", "is_reply": False}]})
+            code, result = run_guard(
+                "verify",
+                root / "history.jsonl",
+                root / "state.json",
+                root / "failures",
+                "secret-token",
+                datetime(2026, 7, 18, 9, 0, tzinfo=timezone.utc),
+                FakeSession(response),
+                expect_post=True,
+            )
+
+        self.assertEqual(code, ALLOW)
+        self.assertEqual(result["decision"], "post_verified")
+
+    def test_verify_fails_when_no_top_level_post_exists(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            code, result = run_guard(
+                "verify",
+                root / "history.jsonl",
+                root / "state.json",
+                root / "failures",
+                "secret-token",
+                datetime(2026, 7, 18, 9, 0, tzinfo=timezone.utc),
+                FakeSession(FakeResponse(200, {"data": []})),
+                expect_post=True,
+            )
+
+        self.assertEqual(code, GUARD_ERROR)
+        self.assertEqual(result["decision"], "post_missing")
+
     def test_expired_token_fails_closed_and_redacts_secret(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)

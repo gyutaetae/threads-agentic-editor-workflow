@@ -6,6 +6,7 @@
 - `scripts/prepublish_quality_gate.py`: CLI presentation for the shared validation report.
 - `scripts/generate_auto_thread.py`: candidate generation, editorial routing, scoring, and evaluator logic; no independent structural contract.
 - `scripts/daily_publish_guard.py`: KST-day Threads reconciliation, manual-post blocking, and fail-closed error recording.
+- `scripts/reserve_thread.py`: strict reserve selection, history-aware source deduplication, publish metadata rendering, and one-time consumption.
 - `scripts/threads_auto_upload.py`: API publishing and logging; validates with the shared contract before creating containers.
 - `schemas/thread-spec-v1.schema.json`: portable persisted contract.
 - `schemas/thread-candidate-v1.schema.json`: strict, minimal model-output contract.

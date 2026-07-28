@@ -162,6 +162,7 @@ def run_guard(
     access_token: str,
     now: datetime | None = None,
     session=requests,
+    expect_post: bool = False,
 ) -> tuple[int, dict]:
     current = (now or account_now()).astimezone(ACCOUNT_TIMEZONE)
     base = {
@@ -180,12 +181,22 @@ def run_guard(
         synced = sync_external_posts(history_path, posts, current)
         result = {
             **base,
-            "decision": "skip_manual_post" if posts else "allow_auto_publish",
+            "decision": (
+                "post_verified"
+                if posts and expect_post
+                else "post_missing"
+                if expect_post
+                else "skip_manual_post"
+                if posts
+                else "allow_auto_publish"
+            ),
             "top_level_post_count": len(posts),
             "synced_history_count": synced,
             "post_ids": [str(item.get("id")) for item in posts],
         }
         write_json(state_path, result)
+        if expect_post:
+            return (ALLOW if posts else GUARD_ERROR), result
         return (SKIP_TODAY if posts else ALLOW), result
     except (requests.RequestException, RuntimeError, ValueError) as exc:
         message = sanitize_error(str(exc), access_token)
@@ -203,7 +214,8 @@ def run_guard(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fail-closed daily Threads auto-publish guard.")
-    parser.add_argument("--stage", choices=["preflight", "prepublish"], required=True)
+    parser.add_argument("--stage", choices=["preflight", "prepublish", "verify"], required=True)
+    parser.add_argument("--expect-post", action="store_true")
     parser.add_argument("--history-path", default="content-history.jsonl")
     parser.add_argument("--state-path", default="daily-editor/state/daily-publish-guard.json")
     parser.add_argument("--failure-dir", default="daily-editor/failures")
@@ -216,6 +228,7 @@ def main() -> int:
         state_path=Path(args.state_path),
         failure_dir=Path(args.failure_dir),
         access_token=args.access_token,
+        expect_post=args.expect_post,
     )
     print(json.dumps(result, ensure_ascii=False))
     return exit_code

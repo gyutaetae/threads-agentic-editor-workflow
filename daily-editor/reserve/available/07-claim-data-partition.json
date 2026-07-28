@@ -1,0 +1,24 @@
+{
+  "id": "claim-data-partition",
+  "thread_path": "07-claim-data-partition.txt",
+  "metadata": {
+    "topic": "medical imaging AI reporting",
+    "format": "research_checklist",
+    "content_axis": "paper_to_workflow",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "dataset_validation",
+    "failure_mode": "data_partition_leakage_unchecked",
+    "artifact_type": "data_partition_leakage_map",
+    "reusable_unit_type": "dataset_audit_prompt",
+    "hook_pattern": "dataset_split_scene",
+    "source_name": "CLAIM 2024 Update",
+    "source_urls": [
+      "https://pubs.rsna.org/doi/10.1148/ryai.240300"
+    ],
+    "source_type": "reporting_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "dataset_leakage_risk",
+    "research_problem": "medical imaging AI 논문에서 train, validation, test 분할 단위를 확인하지 않으면 같은 환자 정보가 여러 split에 섞인 위험을 놓칠 수 있다."
+  }
+}
