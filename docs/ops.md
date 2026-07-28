@@ -30,6 +30,15 @@ Publish:
 .\scripts\publish-approved-chain.ps1
 ```
 
+Scheduled guarantee:
+
+- Primary generation runs at 18:17 KST.
+- Watchdogs run hourly from 19:17 through 23:17 KST.
+- Any authored top-level post, including a manual post, satisfies the day.
+- A score of 70-84 triggers one revision. A remaining soft failure uses a prevalidated reserve.
+- A missing post after an attempted publish fails the run and leaves the next watchdog eligible.
+- Token/API uncertainty remains fail-closed; never risk a duplicate when the platform ledger cannot be read.
+
 GitHub Actions manual publish:
 
 1. Open `Actions`.
@@ -42,12 +51,29 @@ GitHub Actions manual publish:
 Pause scheduled auto-publish when:
 
 - Sources are weak or repeatedly generic.
-- Evaluator scores are repeatedly below 85.
+- Evaluator scores are repeatedly below 85 and reserve usage is accelerating.
 - Posts repeat the same hook or structure for several days.
 - Threads API errors produce partial or confusing logs.
 - The account starts drifting toward news, quotes, or generic prompt content.
 
 To pause quickly, disable the schedule in `.github/workflows/auto-publish-daily-thread.yml` or run only manual workflow dispatch.
+
+## Reserve Operations
+
+Available and consumed reserve chains live at:
+
+```text
+daily-editor/reserve/available/
+daily-editor/reserve/used/
+```
+
+Validate the usable count:
+
+```powershell
+python .\scripts\reserve_thread.py remaining
+```
+
+Every reserve has separate metadata JSON and publishable text. Do not move an item manually after a failed publish; the publisher moves it only after Threads returns success. Refill with new source URLs before the available count reaches zero.
 
 ## Learning Promotion
 

@@ -1,0 +1,24 @@
+{
+  "id": "acm-artifact-runbook",
+  "thread_path": "04-acm-artifact-runbook.txt",
+  "metadata": {
+    "topic": "research artifact reproducibility",
+    "format": "research_checklist",
+    "content_axis": "paper_to_workflow",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "artifact_review",
+    "failure_mode": "artifact_execution_path_missing",
+    "artifact_type": "artifact_execution_runbook",
+    "reusable_unit_type": "artifact_review_prompt",
+    "hook_pattern": "artifact_deadline_scene",
+    "source_name": "ACM Artifact Review and Badging",
+    "source_urls": [
+      "https://www.acm.org/publications/policies/artifact-review-badging-current"
+    ],
+    "source_type": "official_policy",
+    "human_signal_source": "inferred",
+    "human_signal_type": "artifact_reproduction_risk",
+    "research_problem": "code와 dataset 링크가 있어도 실행 환경, command, expected output이 없으면 논문의 결과를 재현하기 어렵다."
+  }
+}

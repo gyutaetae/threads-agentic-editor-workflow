@@ -25,8 +25,11 @@ on:
           - "morning"
           - "evening"
   schedule:
-    # Start at 18:00 KST. GitHub may queue scheduled jobs briefly under load.
-    - cron: "0 18 * * *"
+    # Avoid the top of the hour, when GitHub scheduled jobs are most likely to queue.
+    - cron: "17 18 * * *"
+      timezone: "Asia/Seoul"
+    # Hourly watchdogs keep trying through 23:17 KST. The platform ledger prevents duplicates.
+    - cron: "17 19-23 * * *"
       timezone: "Asia/Seoul"
 
 concurrency:
@@ -104,21 +107,29 @@ jobs:
           "The Threads daily guard failed closed. See daily-editor/failures artifacts." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           exit $guardExit
 
-      - name: Resolve schedule experiment
+      - name: Resolve daily guarantee schedule
+        id: schedule_plan
         shell: pwsh
         run: |
           $schedule = "${{ github.event.schedule }}"
-          if ($schedule -eq "0 18 * * *") {
+          if ($schedule -eq "17 18 * * *") {
+            "run_mode=primary" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             "POST_SLOT=evening" | Out-File -FilePath $env:GITHUB_ENV -Append
             "POSTS_PER_DAY=1" | Out-File -FilePath $env:GITHUB_ENV -Append
-            "EXPERIMENT_GROUP=daily_1800_kst" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "EXPERIMENT_GROUP=daily_guarantee_primary" | Out-File -FilePath $env:GITHUB_ENV -Append
+          } elseif ($schedule -eq "17 19-23 * * *") {
+            "run_mode=watchdog" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+            "POST_SLOT=evening" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "POSTS_PER_DAY=1" | Out-File -FilePath $env:GITHUB_ENV -Append
+            "EXPERIMENT_GROUP=daily_guarantee_watchdog" | Out-File -FilePath $env:GITHUB_ENV -Append
           } else {
+            "run_mode=primary" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
             "EXPERIMENT_GROUP=manual_$env:POST_SLOT" | Out-File -FilePath $env:GITHUB_ENV -Append
           }
 
       - name: Collect candidates
         id: collect
-        if: steps.daily_guard.outputs.should_generate == 'true'
+        if: steps.daily_guard.outputs.should_generate == 'true' && steps.schedule_plan.outputs.run_mode != 'watchdog'
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
@@ -149,7 +160,8 @@ jobs:
             --metrics-path ".\threads-post-metrics.csv" `
             --posts-per-day ([int]$env:POSTS_PER_DAY) `
             --post-slot $env:POST_SLOT `
-            --experiment-group $env:EXPERIMENT_GROUP
+            --experiment-group $env:EXPERIMENT_GROUP `
+            --guarantee-daily
           $exitCode = $LASTEXITCODE
           if ($exitCode -eq 0) {
             "auto_publish_status=publish" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
@@ -209,14 +221,52 @@ jobs:
             approved-thread-spec.json
           if-no-files-found: ignore
 
+      - name: Select prevalidated reserve chain
+        id: reserve
+        if: >-
+          ${{
+            always() &&
+            steps.daily_guard.outputs.should_generate == 'true' &&
+            (
+              steps.schedule_plan.outputs.run_mode == 'watchdog' ||
+              steps.collect.outputs.skip_auto_publish == 'true' ||
+              steps.generate.outputs.should_publish != 'true'
+            )
+          }}
+        shell: pwsh
+        run: |
+          python .\scripts\reserve_thread.py select `
+            --output-spec ".\approved-thread-spec.json" `
+            --output-metadata ".\daily-editor\auto-thread-metadata.json" `
+            --selection-path ".\daily-editor\state\reserve-selection.json"
+          if ($LASTEXITCODE -ne 0) {
+            throw "No prevalidated reserve chain is available."
+          }
+          "selected=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
       - name: Validate generated chain
-        if: ${{ steps.daily_guard.outputs.should_generate == 'true' && steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish == 'true' }}
+        if: >-
+          ${{
+            steps.daily_guard.outputs.should_generate == 'true' &&
+            (
+              steps.generate.outputs.should_publish == 'true' ||
+              steps.reserve.outputs.selected == 'true'
+            )
+          }}
         shell: pwsh
         run: .\scripts\publish-approved-chain.ps1 -SpecPath ".\approved-thread-spec.json" -Topic "auto generated" -SourceCount 0 -DryRun
 
       - name: Recheck for a manual post before publishing
         id: prepublish_guard
-        if: ${{ steps.daily_guard.outputs.should_generate == 'true' && steps.collect.outputs.skip_auto_publish != 'true' && steps.generate.outputs.should_publish == 'true' && (github.event_name == 'schedule' || inputs.publish == true) }}
+        if: >-
+          ${{
+            steps.daily_guard.outputs.should_generate == 'true' &&
+            (
+              steps.generate.outputs.should_publish == 'true' ||
+              steps.reserve.outputs.selected == 'true'
+            ) &&
+            (github.event_name == 'schedule' || inputs.publish == true)
+          }}
         shell: pwsh
         run: |
           python .\scripts\daily_publish_guard.py --stage prepublish
@@ -240,11 +290,13 @@ jobs:
           exit $guardExit
 
       - name: Publish generated chain
+        id: publish
         if: ${{ steps.prepublish_guard.outputs.should_publish == 'true' }}
         shell: pwsh
         run: |
           try {
             $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw | ConvertFrom-Json
+            $origin = if ($metadata.publish_mode -eq "reserve") { "reserve_codex" } else { "auto_$($metadata.provider)" }
             .\scripts\publish-approved-chain.ps1 `
               -SpecPath ".\approved-thread-spec.json" `
               -Topic $metadata.topic `
@@ -281,8 +333,15 @@ jobs:
               -StructurePattern $metadata.structure_pattern `
               -CloserPattern $metadata.closer_pattern `
               -ReusableUnitType $metadata.reusable_unit_type `
-              -Origin "auto_openrouter" `
+              -Origin $origin `
               -CardUsed:([bool]$env:THREADS_IMAGE_URL)
+            if ("${{ steps.reserve.outputs.selected }}" -eq "true") {
+              python .\scripts\reserve_thread.py consume `
+                --selection-path ".\daily-editor\state\reserve-selection.json"
+              if ($LASTEXITCODE -ne 0) {
+                throw "The reserve post was published but its queue item could not be consumed."
+              }
+            }
           } catch {
             $now = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId([DateTimeOffset]::UtcNow, "Korea Standard Time")
             $message = [string]$_
@@ -302,6 +361,17 @@ jobs:
             throw
           }
 
+      - name: Verify daily publication objective
+        id: verify
+        if: >-
+          ${{
+            always() &&
+            (github.event_name == 'schedule' || inputs.publish == true) &&
+            steps.daily_guard.outputs.decision != 'skip_manual_post'
+          }}
+        shell: pwsh
+        run: python .\scripts\daily_publish_guard.py --stage verify --expect-post
+
       - name: Commit operational records
         if: always()
         shell: pwsh
@@ -316,6 +386,9 @@ jobs:
           }
           if (Test-Path ".\daily-editor\failures") {
             git add -f daily-editor/failures/*.json
+          }
+          if (Test-Path ".\daily-editor\reserve") {
+            git add -f daily-editor/reserve/available daily-editor/reserve/used
           }
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {
@@ -335,3 +408,44 @@ jobs:
             threads-post-metrics.csv
             daily-editor/**
           if-no-files-found: ignore
+
+      - name: Report daily guarantee outcome
+        if: always()
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch" -and "${{ inputs.publish }}" -ne "true") {
+            "## DRY_RUN" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "Generation and strict validation completed without a live publish request." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            exit 0
+          }
+
+          if ("${{ steps.daily_guard.outputs.decision }}" -eq "skip_manual_post") {
+            "## ALREADY_POSTED" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "A top-level Threads chain already satisfies today's KST objective." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            exit 0
+          }
+
+          if ("${{ steps.verify.outcome }}" -ne "success") {
+            "## FAILED_NO_POST" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            "No top-level Threads chain could be verified for today (KST)." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+            throw "Daily publication objective was not verified."
+          }
+
+          $mode = "primary"
+          if (Test-Path ".\daily-editor\auto-thread-metadata.json") {
+            $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw | ConvertFrom-Json
+            $mode = [string]$metadata.publish_mode
+          }
+          $status = switch ($mode) {
+            "revised" { "PUBLISHED_REVISED" }
+            "reserve" { "PUBLISHED_RESERVE" }
+            default { "PUBLISHED_PRIMARY" }
+          }
+          "## $status" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "The Threads API verified today's top-level chain." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+          $remainingJson = python .\scripts\reserve_thread.py remaining | ConvertFrom-Json
+          if ([int]$remainingJson.remaining -le 3) {
+            "::warning::Only $($remainingJson.remaining) unused reserve Threads chains remain."
+            "Reserve warning: $($remainingJson.remaining) unused chains remain." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }

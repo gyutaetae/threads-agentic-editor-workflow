@@ -1,0 +1,34 @@
+prediction model 논문에서 AUROC만 비교하면, 그 model이 누구에게 어떤 결정을 위해 쓰이는지 놓치기 쉽습니다.
+
+내가 intended use와 evaluation population의 연결을 설명 못하면, 그건 model 검토가 아니라 점수 비교입니다.
+
+나쁜 요청:
+“가장 성능 좋은 prediction model을 골라줘.”
+
+좋은 요청:
+“예측 대상과 실제 사용 결정을 분리해줘.”
+“개발·검증 dataset의 population 차이를 표시해줘.”
+“평가 metric이 intended use를 받치는지 검토해줘.”
+“적용하면 안 되는 population을 따로 남겨줘.”
+
+좋은 model 비교는 최고 점수를 찾는 일이 아니라
+점수가 유효한 사용 범위를 고정하는 일입니다.
+---
+[먼저 확인할 것]
+prediction model을 네 축으로 읽습니다.
+
+1. intended user와 decision
+2. target population과 outcome
+3. development·evaluation data
+4. metric과 적용 제한
+---
+[저장해둘 프롬프트]
+prediction model 논문에 붙여 넣을 문장:
+
+“intended use, target population, dataset, evaluation metric, unsupported use 열로 scope-evidence matrix를 만들어줘.”
+---
+[참고 논문]
+https://www.bmj.com/content/385/bmj-2023-078378
+- 볼 부분: regression 또는 machine learning prediction model의 투명한 보고를 위한 TRIPOD+AI 권고
+
+- 적용: model score와 실제 사용 범위가 같은 조건을 가리키는지 점검하는 데 사용합니다.

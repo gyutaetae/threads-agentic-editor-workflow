@@ -10,7 +10,9 @@ Make manual Codex drafts and automatic LLM drafts produce the same publishable `
 - One structural validator shared by generation, manual quality checks, and publishing.
 - Provider/model identity recorded for every generated spec.
 - Duplicate prevention that escalates from exact checks to structured and semantic checks.
-- One unattended run near 18:00 KST, skipped when an authored top-level post already exists that KST day.
+- One verified top-level chain per KST day: a primary run at 18:17 and watchdog recovery at 19:17-23:17, skipped when an authored top-level post already exists.
+- A 70-84 soft quality result receives one pinned-writer revision; unresolved generation uses an unused, strictly validated reserve.
+- The 18:00-20:00 window is the target. A delayed watchdog may recover later that KST day rather than leave the day empty.
 - Platform posts from both Codex/manual and automatic paths reconciled into local history.
 
 ## Non-goals

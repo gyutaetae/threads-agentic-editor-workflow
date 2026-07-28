@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.generate_auto_thread import apply_evaluator_gate
+from scripts.generate_auto_thread import apply_daily_guarantee_gate, apply_evaluator_gate
 from scripts.thread_spec import (
     PART_ROLES,
     build_thread_spec,
@@ -131,6 +131,35 @@ class EvaluatorGateTests(unittest.TestCase):
         gate = {"quality_score": 92, "decision": "publish", "reasons": [], "revision_suggestions": []}
         combined = apply_evaluator_gate(gate, {"score": 90, "decision": "publish"})
         self.assertEqual(combined["decision"], "publish")
+
+    def test_daily_guarantee_promotes_revised_soft_failure(self) -> None:
+        gate = {
+            "quality_score": 82,
+            "decision": "draft",
+            "reasons": ["Main is too dense for an easy hook."],
+            "revision_suggestions": [],
+        }
+        combined = apply_daily_guarantee_gate(
+            gate,
+            {"score": 92, "decision": "publish"},
+            revision_attempted=True,
+        )
+        self.assertEqual(combined["decision"], "publish")
+        self.assertIn("Daily guarantee", " ".join(combined["reasons"]))
+
+    def test_daily_guarantee_never_promotes_contract_warning(self) -> None:
+        gate = {
+            "quality_score": 82,
+            "decision": "draft",
+            "reasons": ["Contract warning: reply headings feel templated."],
+            "revision_suggestions": [],
+        }
+        combined = apply_daily_guarantee_gate(
+            gate,
+            {"score": 95, "decision": "publish"},
+            revision_attempted=True,
+        )
+        self.assertEqual(combined["decision"], "draft")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,24 @@
+{
+  "id": "spirit-ai-protocol",
+  "thread_path": "05-spirit-ai-protocol.txt",
+  "metadata": {
+    "topic": "AI trial protocol planning",
+    "format": "research_checklist",
+    "content_axis": "workflow_mode",
+    "format_type": "agent_role_split",
+    "post_goal": "save",
+    "workflow_stage": "study_protocol_design",
+    "failure_mode": "ai_intervention_protocol_missing",
+    "artifact_type": "ai_intervention_protocol_table",
+    "reusable_unit_type": "protocol_design_prompt",
+    "hook_pattern": "protocol_before_results_scene",
+    "source_name": "SPIRIT-AI Extension",
+    "source_urls": [
+      "https://www.bmj.com/content/370/bmj.m3210"
+    ],
+    "source_type": "reporting_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "protocol_ambiguity",
+    "research_problem": "AI intervention의 version, input, output, 사용자 절차를 결과가 나온 뒤 정리하면 연구 설계와 사후 설명을 구분하기 어렵다."
+  }
+}

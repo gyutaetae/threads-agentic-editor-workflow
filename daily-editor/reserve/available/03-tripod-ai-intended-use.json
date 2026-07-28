@@ -1,0 +1,24 @@
+{
+  "id": "tripod-ai-intended-use",
+  "thread_path": "03-tripod-ai-intended-use.txt",
+  "metadata": {
+    "topic": "prediction model reporting",
+    "format": "research_checklist",
+    "content_axis": "evidence_mapping",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "prediction_model_review",
+    "failure_mode": "intended_use_evaluation_mismatch",
+    "artifact_type": "intended_use_evaluation_matrix",
+    "reusable_unit_type": "model_scope_audit_prompt",
+    "hook_pattern": "prediction_model_scope_scene",
+    "source_name": "TRIPOD+AI Statement",
+    "source_urls": [
+      "https://www.bmj.com/content/385/bmj-2023-078378"
+    ],
+    "source_type": "reporting_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "model_scope_confusion",
+    "research_problem": "prediction model의 intended use와 평가 데이터가 연결되지 않으면 결과를 실제 적용 범위보다 넓게 해석하기 쉽다."
+  }
+}

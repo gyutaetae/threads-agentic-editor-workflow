@@ -737,6 +737,163 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertIn("openrouter generation failed", metadata["quality_reasons"][0])
         self.assertEqual(metadata["quality_decision"], "draft")
 
+    def test_daily_guarantee_revises_one_soft_failure(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            candidates_path = root / "candidates.json"
+            output_path = root / "approved-thread-chain.txt"
+            metadata_path = root / "metadata.json"
+            history_path = root / "history.jsonl"
+            playbook_path = root / "playbook.md"
+            source_url = "https://example.com/new-citation-guideline"
+            candidates_path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "title": "citation verification workflow",
+                            "description": "Check whether references support claims.",
+                            "url": source_url,
+                            "source_type": "official_guideline",
+                            "content_axis": "checklist",
+                            "format_type": "research_checklist",
+                            "post_goal": "save",
+                            "score": {"total": 67},
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+            history_path.write_text(
+                json.dumps(
+                    {
+                        "failure_mode": "claim_reference_mismatch",
+                        "artifact_type": "citation_support_table",
+                        "workflow_stage": "citation_verification",
+                        "hook_pattern": "direct_claim",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            playbook_path.write_text("Write practical Korean Threads posts.", encoding="utf-8")
+
+            diagnosis = (
+                "[먼저 확인할 것]\n"
+                "1. claim을 분리합니다.\n"
+                "2. citation 위치를 확인합니다.\n"
+                "3. evidence 범위를 기록합니다."
+            )
+            action = (
+                "[저장해둘 프롬프트]\n"
+                "“claim, citation, evidence, support status 열로 검증표를 만들어줘.”"
+            )
+            source = (
+                "[참고 논문]\n"
+                f"{source_url}\n"
+                "- 볼 부분: citation 검증 절차\n\n"
+                "- 적용: claim과 evidence를 표로 연결합니다."
+            )
+            dense_main = CANONICAL_MAIN.replace(
+                "\n\n나쁜 요청:",
+                "\n\n초안의 문장, 표, appendix를 한꺼번에 확인하려 하면 어떤 citation부터 다시 봐야 하는지도 흐려집니다."
+                " reviewer 대응 전에 근거 위치를 되짚을 수 있도록 검증 순서를 먼저 남겨야 합니다.\n\n나쁜 요청:",
+            )
+            revised_main = CANONICAL_MAIN
+
+            def candidate_payload(main_text: str) -> dict:
+                return {
+                    "choices": [
+                        {
+                            "message": {
+                                "content": json.dumps(
+                                    {
+                                        "hook": main_text,
+                                        "diagnosis": diagnosis,
+                                        "action": action,
+                                        "source": source,
+                                        "quote_used": False,
+                                        "quote_id": "",
+                                    },
+                                    ensure_ascii=False,
+                                )
+                            }
+                        }
+                    ]
+                }
+
+            evaluation_payload = {
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(
+                                {
+                                    "score": 95,
+                                    "decision": "publish",
+                                    "strengths": ["Practical citation audit."],
+                                    "risks": [],
+                                    "revision_suggestions": ["Shorten the main post."],
+                                }
+                            )
+                        }
+                    }
+                ]
+            }
+            responses = [
+                candidate_payload(dense_main),
+                evaluation_payload,
+                candidate_payload(revised_main),
+                evaluation_payload,
+            ]
+            argv = [
+                "generate_auto_thread.py",
+                "--date",
+                "2026-07-27",
+                "--candidates-path",
+                str(candidates_path),
+                "--playbook-path",
+                str(playbook_path),
+                "--output-path",
+                str(output_path),
+                "--metadata-path",
+                str(metadata_path),
+                "--metrics-path",
+                str(root / "metrics.csv"),
+                "--history-path",
+                str(history_path),
+                "--quote-bank-path",
+                str(root / "missing-quotes.json"),
+                "--weekly-memory-path",
+                str(root / "missing-memory.md"),
+                "--learnings-path",
+                str(root / "missing-learnings.md"),
+                "--skills-library-dir",
+                str(root / "missing-skills"),
+                "--curation-log-path",
+                str(root / "missing-curation.jsonl"),
+                "--review-dir",
+                str(root / "review"),
+                "--run-log-dir",
+                str(root / "runs"),
+                "--evaluation-dir",
+                str(root / "evaluations"),
+                "--guarantee-daily",
+            ]
+
+            with patch.dict(os.environ, {"OPENROUTER_API_KEY": "test-key"}), patch.object(
+                sys, "argv", argv
+            ), patch("scripts.generate_auto_thread.call_llm", side_effect=responses):
+                exit_code = main()
+
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            published_thread = output_path.read_text(encoding="utf-8")
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(metadata["publish_mode"], "revised")
+        self.assertTrue(metadata["revision_attempted"])
+        self.assertEqual(metadata["revision_outcome"], "publish")
+        self.assertEqual(metadata["quality_decision"], "publish")
+        self.assertNotIn("reviewer 대응", published_thread)
+
 
 if __name__ == "__main__":
     unittest.main()

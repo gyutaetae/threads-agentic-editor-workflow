@@ -1,0 +1,33 @@
+medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.
+
+내가 dataset을 patient 단위로 나눴는지 설명 못하면, 그건 validation이 아니라 leakage 가능성이 남은 점수표입니다.
+
+나쁜 요청:
+“dataset split이 적절한지 확인해줘.”
+
+좋은 요청:
+“split 단위가 image인지 patient인지 표시해줘.”
+“전처리가 split 전후 어느 시점에 적용됐는지 써줘.”
+“내부 test와 외부 validation을 분리해줘.”
+“기관·장비·기간별 distribution 차이를 남겨줘.”
+
+좋은 dataset 검토는 비율을 확인하는 일이 아니라
+정보가 경계를 넘어간 경로를 찾는 일입니다.
+---
+[먼저 확인할 것]
+data partition을 leakage 관점에서 봅니다.
+
+1. 분할 단위가 patient 기준인가
+2. preprocessing이 test 정보에 접근했는가
+3. 외부 validation의 기관과 장비가 다른가
+---
+[저장해둘 프롬프트]
+medical imaging AI 논문에 붙여 넣을 문장:
+
+“dataset을 patient ID, institution, acquisition time, preprocessing, train-validation-test membership 열로 나눈 leakage map을 만들어줘.”
+---
+[참고 논문]
+https://pubs.rsna.org/doi/10.1148/ryai.240300
+- 볼 부분: medical imaging AI 연구의 투명성과 재현성을 위한 CLAIM 2024 checklist
+
+- 적용: dataset split과 validation 경계에서 누락된 정보를 찾는 데 사용합니다.

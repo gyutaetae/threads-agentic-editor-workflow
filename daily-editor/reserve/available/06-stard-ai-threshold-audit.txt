@@ -1,0 +1,34 @@
+diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.
+
+내가 양성 판정 기준과 정답 기준을 설명 못하면, 그건 진단 성능 검토가 아니라 숫자 복사입니다.
+
+나쁜 요청:
+“이 diagnostic AI가 얼마나 정확한지 알려줘.”
+
+좋은 요청:
+“양성·음성을 나눈 threshold를 표시해줘.”
+“reference standard와 판정 절차를 분리해줘.”
+“sensitivity·specificity의 평가 population을 붙여줘.”
+“subgroup별 오류와 제외 사례를 남겨줘.”
+
+좋은 진단 성능 검토는 최고 accuracy를 찾는 일이 아니라
+숫자가 만들어진 판정 조건을 복원하는 일입니다.
+---
+[먼저 확인할 것]
+diagnostic evidence를 네 칸으로 나눕니다.
+
+1. index test와 threshold
+2. reference standard
+3. evaluation population
+4. error·indeterminate case 처리
+---
+[저장해둘 프롬프트]
+diagnostic AI 논문에 붙여 넣을 문장:
+
+“각 metric을 threshold, reference standard, population, error case와 연결한 diagnostic evidence table로 만들어줘.”
+---
+[참고 논문]
+https://www.nature.com/articles/s41591-025-03953-8
+- 볼 부분: AI 기반 diagnostic accuracy 연구를 위한 STARD-AI 보고 지침
+
+- 적용: metric을 판정 기준과 평가 population에 다시 연결하는 audit에 활용합니다.

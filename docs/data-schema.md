@@ -39,6 +39,8 @@ The `hook` role contains the complete main post, not only its opening sentence: 
 
 Legacy `approved-thread-chain.txt` remains accepted as input. It is parsed into the four canonical roles before validation. New automatic runs also emit `approved-thread-spec.json`.
 
+Prevalidated daily-guarantee reserves use the same `ThreadSpec v1` contract. Each available item has a metadata JSON plus a companion text file under `daily-editor/reserve/available/`; successful publication moves both files to `daily-editor/reserve/used/`.
+
 ## ThreadCandidate v1
 
 The model-facing schema is `schemas/thread-candidate-v1.schema.json`. It is intentionally smaller than `ThreadSpec`: the model returns exactly `hook`, `diagnosis`, `action`, `source`, `quote_used`, and `quote_id`. Topic, format, source URL, workflow fingerprint, provider, and model identity are derived from trusted routing data in code.

@@ -1167,6 +1167,30 @@ def build_evaluator_prompt(
     )
 
 
+def build_revision_prompt(
+    thread_text: str,
+    candidate: dict,
+    routing: dict,
+    analysis: dict,
+    quality_reasons: list[str],
+    revision_suggestions: list[str],
+    evaluator_result: dict,
+) -> str:
+    return (
+        "You are revising one Korean Threads chain for @arxiv.ai.\n"
+        "Return strict ThreadCandidate v1 JSON only. Keep the same verified source URL and do not invent facts.\n"
+        "Preserve the four semantic roles: hook, diagnosis, action, source.\n"
+        "Fix the concrete issues below while keeping every part under 500 characters.\n\n"
+        f"Quality reasons:\n{json.dumps(quality_reasons, ensure_ascii=False, indent=2)}\n\n"
+        f"Revision suggestions:\n{json.dumps(revision_suggestions, ensure_ascii=False, indent=2)}\n\n"
+        f"Evaluator feedback:\n{json.dumps(evaluator_result, ensure_ascii=False, indent=2)}\n\n"
+        f"Routing:\n{json.dumps(routing, ensure_ascii=False, indent=2)}\n\n"
+        f"Candidate analysis:\n{json.dumps(analysis, ensure_ascii=False, indent=2)}\n\n"
+        f"Verified candidate:\n{json.dumps(candidate, ensure_ascii=False, indent=2)}\n\n"
+        f"Current thread:\n{thread_text}"
+    )
+
+
 def fallback_evaluation(reason: str) -> dict:
     return {
         "score": 0,
@@ -1205,6 +1229,40 @@ def apply_evaluator_gate(gate: dict, evaluator_result: dict, minimum_score: int 
             f"Evaluator veto: decision={evaluator_decision}, score={evaluator_score}, required={minimum_score}."
         )
         combined["revision_suggestions"].extend(evaluator_result.get("revision_suggestions", []))
+    return combined
+
+
+def apply_daily_guarantee_gate(
+    gate: dict,
+    evaluator_result: dict,
+    revision_attempted: bool,
+    minimum_quality: int = DRAFT_QUALITY_SCORE,
+    minimum_evaluator_score: int = EVALUATOR_PUBLISH_SCORE,
+) -> dict:
+    combined = {
+        "quality_score": gate.get("quality_score", 0),
+        "decision": gate.get("decision", "discard"),
+        "reasons": list(gate.get("reasons", [])),
+        "revision_suggestions": list(gate.get("revision_suggestions", [])),
+    }
+    if combined["decision"] == "publish" or combined["decision"] == "discard" or not revision_attempted:
+        return combined
+    if any(str(reason).startswith("Contract warning:") for reason in combined["reasons"]):
+        return combined
+    try:
+        evaluator_score = int(evaluator_result.get("score") or 0)
+    except (TypeError, ValueError):
+        evaluator_score = 0
+    evaluator_decision = str(evaluator_result.get("decision") or "revise").lower()
+    if (
+        int(combined["quality_score"] or 0) >= minimum_quality
+        and evaluator_decision == "publish"
+        and evaluator_score >= minimum_evaluator_score
+    ):
+        combined["decision"] = "publish"
+        combined["reasons"].append(
+            "Daily guarantee soft promotion: revised candidate passed strict contract and evaluator approval."
+        )
     return combined
 
 
@@ -1391,6 +1449,7 @@ def main() -> int:
     parser.add_argument("--run-log-dir", default="daily-editor/runs")
     parser.add_argument("--evaluation-dir", default="daily-editor/evaluations")
     parser.add_argument("--skip-evaluator", action="store_true")
+    parser.add_argument("--guarantee-daily", action="store_true")
     parser.add_argument("--evaluator-provider", choices=["groq", "openrouter"], default=os.environ.get("EVALUATOR_PROVIDER"))
     parser.add_argument("--evaluator-model", default=os.environ.get("EVALUATOR_MODEL"))
     parser.add_argument("--post-slot", choices=["morning", "evening"], default=os.environ.get("POST_SLOT", "morning"))
@@ -1681,6 +1740,90 @@ def main() -> int:
     if not args.skip_evaluator:
         gate = apply_evaluator_gate(gate, evaluator_result)
 
+    publish_mode = "primary"
+    revision_attempted = False
+    revision_outcome = "not_needed"
+    if (
+        args.guarantee_daily
+        and gate["decision"] == "draft"
+        and int(gate.get("quality_score") or 0) >= DRAFT_QUALITY_SCORE
+        and selected_provider == args.provider
+        and not args.skip_evaluator
+    ):
+        revision_attempted = True
+        revision_outcome = "failed"
+        revision_prompt = build_revision_prompt(
+            thread_text=thread_text,
+            candidate=selected_candidate,
+            routing=routing,
+            analysis=analysis,
+            quality_reasons=gate["reasons"],
+            revision_suggestions=[
+                *gate["revision_suggestions"],
+                *list(evaluator_result.get("revision_suggestions") or []),
+            ],
+            evaluator_result=evaluator_result,
+        )
+        try:
+            revision_payload = call_llm(
+                selected_provider,
+                api_key_for_provider(selected_provider),
+                selected_model,
+                revision_prompt,
+                args.max_output_tokens,
+                response_schema=THREAD_CANDIDATE_SCHEMA,
+            )
+            revision_text = extract_text(revision_payload)
+            revised_data = normalize_thread_candidate(
+                extract_json(revision_text),
+                selected_candidate,
+                routing,
+            )
+            revised_thread = normalize_thread_text(str(revised_data.get("thread_text", "")).strip())
+            validate_thread(revised_thread)
+            revised_gate = quality_gate(revised_thread, routing, recent_hooks, recent_history)
+            revised_evaluator_prompt = build_evaluator_prompt(
+                thread_text=revised_thread,
+                routing=routing,
+                analysis=analysis,
+                recent_history=recent_history,
+                persistent_learnings=persistent_learnings,
+                skill_library=skill_library,
+            )
+            revised_evaluator_payload = call_llm(
+                evaluator_provider,
+                api_key_for_provider(evaluator_provider),
+                evaluator_model,
+                revised_evaluator_prompt,
+                min(args.max_output_tokens, 800),
+            )
+            revised_evaluator_text = extract_text(revised_evaluator_payload)
+            revised_evaluator_result = extract_json(revised_evaluator_text)
+            revised_evaluator_result["model_output_raw"] = revised_evaluator_text
+            revised_gate = apply_evaluator_gate(revised_gate, revised_evaluator_result)
+            revised_gate = apply_daily_guarantee_gate(
+                revised_gate,
+                revised_evaluator_result,
+                revision_attempted=True,
+            )
+            if revised_gate["decision"] == "publish":
+                data = revised_data
+                thread_text = revised_thread
+                gate = revised_gate
+                evaluator_prompt = revised_evaluator_prompt
+                evaluator_result = revised_evaluator_result
+                quote_used = data.get("quote_used") is True
+                quote_id = str(data.get("quote_id") or "").strip()
+                quote_suggestion = validate_quote_selection(thread_text, data, source_item)
+                publish_mode = "revised"
+                revision_outcome = "publish"
+            else:
+                revision_outcome = revised_gate["decision"]
+        except SystemExit as exc:
+            revision_outcome = f"error: {exc}"
+        except Exception as exc:
+            revision_outcome = f"error: {exc}"
+
     metadata = {
         "date": args.date,
         "provider": selected_provider,
@@ -1693,6 +1836,9 @@ def main() -> int:
         "experiment_group": args.experiment_group,
         "generation_candidates": len(selected_candidates),
         "selected_option": best["option"],
+        "publish_mode": publish_mode,
+        "revision_attempted": revision_attempted,
+        "revision_outcome": revision_outcome,
         "topic": data.get("topic", "research workflow"),
         "source_count": int(data.get("source_count", 0) or 0),
         "format": data.get("format") or routing["format_type"],
