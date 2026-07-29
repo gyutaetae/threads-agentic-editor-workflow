@@ -194,4 +194,4 @@ AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위�
 ""claim과 citation 사이의 논리적 간극이 있는지 검증해줘.""
 
 AI는 citation을 찾아주는 도구가 아니라,
-내가 검증해야 할 대상을 식별해주는 도구입니다.",1,github_repo,https://github.com/aipoch/medical-research-skills,67,92,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-28T20:26:21+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+내가 검증해야 할 대상을 식별해주는 도구입니다.",1,github_repo,https://github.com/aipoch/medical-research-skills,67,92,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-28T20:26:21+09:00,0,0,0,3,0,0,0,0,,,0,"auto-recorded after publish | metrics skipped: 24h: 400 Client Error for url: https://graph.threads.net/v1.0/18144239047542288/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
