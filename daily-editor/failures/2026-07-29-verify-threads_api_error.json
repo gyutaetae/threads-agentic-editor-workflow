@@ -1,6 +1,6 @@
 {
   "date": "2026-07-29",
-  "checked_at": "2026-07-29T20:33:29+09:00",
+  "checked_at": "2026-07-29T21:22:30+09:00",
   "stage": "verify",
   "decision": "block_on_guard_error",
   "error_type": "threads_api_error",
