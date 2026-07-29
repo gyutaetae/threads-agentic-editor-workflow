@@ -1,6 +1,6 @@
 {
   "date": "2026-07-29",
-  "checked_at": "2026-07-29T01:16:42+09:00",
+  "checked_at": "2026-07-29T20:33:28+09:00",
   "stage": "preflight",
   "decision": "block_on_guard_error",
   "error_type": "threads_api_error",
