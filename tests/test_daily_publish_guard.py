@@ -3,12 +3,16 @@ import unittest
 from datetime import datetime, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from scripts.daily_publish_guard import (
     ALLOW,
+    GRAPH_BASE,
     GUARD_ERROR,
     SKIP_TODAY,
+    THREAD_FIELDS,
     day_bounds,
+    fetch_threads_for_today,
     is_authored_top_level,
     run_guard,
 )
@@ -26,13 +30,13 @@ class FakeResponse:
 
 
 class FakeSession:
-    def __init__(self, response: FakeResponse) -> None:
-        self.response = response
+    def __init__(self, response: FakeResponse | list[FakeResponse]) -> None:
+        self.responses = response if isinstance(response, list) else [response]
         self.calls = []
 
     def get(self, *args, **kwargs) -> FakeResponse:
         self.calls.append((args, kwargs))
-        return self.response
+        return self.responses[min(len(self.calls) - 1, len(self.responses) - 1)]
 
 
 class DailyPublishGuardTests(unittest.TestCase):
@@ -48,6 +52,111 @@ class DailyPublishGuardTests(unittest.TestCase):
         self.assertFalse(is_authored_top_level({"id": "reply", "is_reply": True}))
         self.assertFalse(is_authored_top_level({"id": "reply2", "root_post": {"id": "main"}}))
         self.assertFalse(is_authored_top_level({"id": "repost", "reposted_post": {"id": "other"}}))
+
+    def test_fetch_uses_current_threads_list_contract_and_kst_bounds(self) -> None:
+        now = datetime(2026, 7, 18, 9, 30, tzinfo=timezone.utc)
+        session = FakeSession(FakeResponse(200, {"data": []}))
+
+        fetch_threads_for_today("secret-token", now, session)
+
+        args, kwargs = session.calls[0]
+        self.assertEqual(args[0], f"{GRAPH_BASE}/v1.0/me/threads")
+        self.assertEqual(GRAPH_BASE, "https://graph.threads.com")
+        self.assertEqual(
+            set(THREAD_FIELDS.split(",")),
+            {"text", "timestamp", "permalink", "username"},
+        )
+        self.assertTrue(
+            {"root_post", "replied_to", "reposted_post"}.isdisjoint(
+                kwargs["params"]["fields"].split(",")
+            )
+        )
+        self.assertEqual(
+            kwargs["params"]["since"],
+            int(datetime(2026, 7, 18, 0, 0, tzinfo=timezone.utc).timestamp())
+            - (9 * 60 * 60),
+        )
+        self.assertEqual(kwargs["params"]["until"], int(now.timestamp()))
+        self.assertEqual(kwargs["params"]["limit"], 100)
+        self.assertEqual(kwargs["timeout"], 30)
+
+    def test_fetch_retries_transient_threads_api_failures(self) -> None:
+        session = FakeSession(
+            [
+                FakeResponse(500, {"error": {"code": 1, "message": "unknown"}}),
+                FakeResponse(502, {"error": {"code": 2, "message": "temporary"}}),
+                FakeResponse(200, {"data": [{"id": "post-1"}]}),
+            ]
+        )
+
+        with patch("scripts.daily_publish_guard.time.sleep") as sleep:
+            posts = fetch_threads_for_today(
+                "secret-token",
+                datetime(2026, 7, 18, 9, 0, tzinfo=timezone.utc),
+                session,
+            )
+
+        self.assertEqual(posts, [{"id": "post-1"}])
+        self.assertEqual(len(session.calls), 3)
+        self.assertEqual([call.args[0] for call in sleep.call_args_list], [1, 2])
+
+    def test_repeated_threads_api_500_fails_closed_after_retries(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            session = FakeSession(
+                FakeResponse(500, {"error": {"code": 1, "message": "unknown"}})
+            )
+            with patch("scripts.daily_publish_guard.time.sleep"):
+                code, result = run_guard(
+                    "preflight",
+                    root / "history.jsonl",
+                    root / "state.json",
+                    root / "failures",
+                    "secret-token",
+                    datetime(2026, 7, 18, 9, 0, tzinfo=timezone.utc),
+                    session,
+                )
+
+        self.assertEqual(code, GUARD_ERROR)
+        self.assertEqual(result["decision"], "block_on_guard_error")
+        self.assertEqual(result["error_type"], "threads_api_error")
+        self.assertEqual(len(session.calls), 4)
+
+    def test_hidden_expired_token_is_classified_after_threads_api_500(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            session = FakeSession(
+                [
+                    FakeResponse(500, {"error": {"code": 1, "message": "unknown"}}),
+                    FakeResponse(500, {"error": {"code": 1, "message": "unknown"}}),
+                    FakeResponse(500, {"error": {"code": 1, "message": "unknown"}}),
+                    FakeResponse(
+                        400,
+                        {
+                            "error": {
+                                "code": 190,
+                                "message": "Error validating access token: Session has expired.",
+                            }
+                        },
+                    ),
+                ]
+            )
+            with patch("scripts.daily_publish_guard.time.sleep"):
+                code, result = run_guard(
+                    "preflight",
+                    root / "history.jsonl",
+                    root / "state.json",
+                    root / "failures",
+                    "expired-token",
+                    datetime(2026, 7, 18, 9, 0, tzinfo=timezone.utc),
+                    session,
+                )
+
+        self.assertEqual(code, GUARD_ERROR)
+        self.assertEqual(result["decision"], "block_on_guard_error")
+        self.assertEqual(result["error_type"], "threads_token_expired_or_invalid")
+        self.assertEqual(len(session.calls), 4)
+        self.assertEqual(session.calls[-1][0][0], f"{GRAPH_BASE}/debug_token")
 
     def test_manual_post_blocks_and_is_synced_once(self) -> None:
         with TemporaryDirectory() as tmp:

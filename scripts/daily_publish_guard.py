@@ -2,18 +2,19 @@ import argparse
 import json
 import os
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
 
 
-GRAPH_BASE = "https://graph.threads.net"
+GRAPH_BASE = "https://graph.threads.com"
 API_VERSION = "v1.0"
 ACCOUNT_TIMEZONE = timezone(timedelta(hours=9), "KST")
-THREAD_FIELDS = (
-    "id,text,timestamp,permalink,is_quote_post,is_reply,root_post,replied_to,reposted_post"
-)
+THREAD_FIELDS = "text,timestamp,permalink,username"
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+MAX_API_ATTEMPTS = 3
 ALLOW = 0
 SKIP_TODAY = 10
 GUARD_ERROR = 20
@@ -46,30 +47,68 @@ def classify_api_error(response: requests.Response) -> str:
     return "threads_api_error"
 
 
+def diagnose_access_token(access_token: str, session=requests) -> str | None:
+    try:
+        response = session.get(
+            f"{GRAPH_BASE}/debug_token",
+            params={
+                "input_token": access_token,
+                "access_token": access_token,
+            },
+            timeout=30,
+        )
+        payload = response.json()
+    except (requests.RequestException, ValueError):
+        return None
+
+    error = payload.get("error", {}) if isinstance(payload, dict) else {}
+    data = payload.get("data", {}) if isinstance(payload, dict) else {}
+    if (
+        response.status_code in {401, 403}
+        or error.get("code") == 190
+        or data.get("is_valid") is False
+    ):
+        return "threads_token_expired_or_invalid"
+    return None
+
+
 def fetch_threads_for_today(
     access_token: str,
     now: datetime | None = None,
     session=requests,
 ) -> list[dict]:
     start, end = day_bounds(now)
-    response = session.get(
-        f"{GRAPH_BASE}/{API_VERSION}/me/threads",
-        params={
+    request_args = {
+        "params": {
             "fields": THREAD_FIELDS,
             "since": int(start.timestamp()),
             "until": int(end.timestamp()),
             "limit": 100,
             "access_token": access_token,
         },
-        timeout=30,
-    )
-    if not response.ok:
-        error_type = classify_api_error(response)
-        body = sanitize_error(response.text, access_token)
-        raise RuntimeError(f"{error_type}: HTTP {response.status_code}: {body}")
-    payload = response.json()
-    data = payload.get("data", [])
-    return data if isinstance(data, list) else []
+        "timeout": 30,
+    }
+    for attempt in range(MAX_API_ATTEMPTS):
+        response = session.get(
+            f"{GRAPH_BASE}/{API_VERSION}/me/threads",
+            **request_args,
+        )
+        if response.ok:
+            payload = response.json()
+            data = payload.get("data", [])
+            return data if isinstance(data, list) else []
+        if (
+            response.status_code not in RETRYABLE_STATUS_CODES
+            or attempt == MAX_API_ATTEMPTS - 1
+        ):
+            error_type = classify_api_error(response)
+            if error_type == "threads_api_error":
+                error_type = diagnose_access_token(access_token, session) or error_type
+            body = sanitize_error(response.text, access_token)
+            raise RuntimeError(f"{error_type}: HTTP {response.status_code}: {body}")
+        time.sleep(2**attempt)
+
+    raise RuntimeError("threads_api_error: request attempts exhausted")
 
 
 def is_authored_top_level(item: dict) -> bool:

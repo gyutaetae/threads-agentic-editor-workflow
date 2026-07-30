@@ -195,3 +195,28 @@ AI Agent는 논문 요약기가 아니라, 연구의 신뢰도를 높이기 위�
 
 AI는 citation을 찾아주는 도구가 아니라,
 내가 검증해야 할 대상을 식별해주는 도구입니다.",1,github_repo,https://github.com/aipoch/medical-research-skills,67,92,evening,daily_1800_kst,google/gemma-4-26b-a4b-it:free,false,2026-07-28T20:26:21+09:00,0,0,0,3,0,0,0,0,,,0,"auto-recorded after publish | metrics skipped: 24h: 400 Client Error for url: https://graph.threads.net/v1.0/18144239047542288/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
+,18170227123451937,https://www.threads.net/@arxiv.ai/post/18170227123451937,manual,research_checklist,checklist,save,LLM evaluation reading,LLM 평가 논문에서 평균 점수만 보면 놓치는 게 있습니다.,"LLM 평가 논문에서 평균 점수만 보면 놓치는 게 있습니다.
+
+평가자가 서로 독립적이면 다양한 판단을 얻지만 노이즈가 커질 수 있고,
+평가자를 강하게 묶으면 안정적이지만 같은 방향으로 틀릴 수 있습니다.
+
+좋은 평가는 높은 점수표가 아니라
+bias와 reliability를 같이 읽는 표입니다.",1,arxiv_paper,https://arxiv.org/abs/2607.00304,88,90,evening,manual_evening,manual,false,2026-07-04T21:56:40+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-30,18087080363540493,https://www.threads.net/@arxiv.ai/post/18087080363540493,research_checklist,research_checklist,checklist,save,intra-paper claim verification,논문의 novelty를 검토할 때,"논문의 novelty를 검토할 때
+related work부터 찾고 있나요?
+
+내가 claim과 Methods 근거를
+한 줄로 연결하지 못한다면,
+그건 novelty 검토가 아니라
+새로워 보이는 문장을 믿는 일입니다.
+
+나쁜 요청:
+“이 논문의 novelty를 평가해줘.”
+
+좋은 요청:
+“novelty claim을 문장별로 추출해줘.”
+“각 claim의 Methods 근거를 연결해줘.”
+“근거가 없는 claim을 표시해줘.”
+
+좋은 reviewer는 새로움을 찾기 전에
+논문 안의 약속과 구현부터 연결합니다.",1,official_feed,https://arxiv.org/abs/2607.26066,59,strict-pass,evening,manual_revision,codex,false,2026-07-30T23:44:36+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
