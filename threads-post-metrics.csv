@@ -220,3 +220,16 @@ related work부터 찾고 있나요?
 
 좋은 reviewer는 새로움을 찾기 전에
 논문 안의 약속과 구현부터 연결합니다.",1,official_feed,https://arxiv.org/abs/2607.26066,59,strict-pass,evening,manual_revision,codex,false,2026-07-30T23:44:36+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-07-31,18150242941519535,https://www.threads.net/@arxiv.ai/post/18150242941519535,weekly_review_advice,weekly_review_advice,workflow_mode,save,citation_doubt,AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?,"AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?
+
+내가 AI가 붙인 citation이 실제 claim을 지지하는지 설명 못하면, 그건 리서치가 아니라 점수 예측입니다.
+
+나쁜 요청:
+“이 주제에 대해 상세한 리서치 리포트를 작성해줘.”
+
+좋은 요청:
+“모든 claim마다 인용된 논문의 핵심 문장과 위치를 정리해줘.”
+“제시된 evidence가 claim을 직접 지지하는지, 아니면 단순 관련성인지 구분해줘.”
+“데이터 소스의 신뢰도를 기반으로 각 섹션의 근거 강도를 평가해줘.”
+
+AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 빠르게 찾아주는 도구입니다.",1,github_repo,https://github.com/assafelovic/gpt-researcher,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-07-31T20:40:25+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
