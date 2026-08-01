@@ -232,7 +232,7 @@ related work부터 찾고 있나요?
 “제시된 evidence가 claim을 직접 지지하는지, 아니면 단순 관련성인지 구분해줘.”
 “데이터 소스의 신뢰도를 기반으로 각 섹션의 근거 강도를 평가해줘.”
 
-AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 빠르게 찾아주는 도구입니다.",1,github_repo,https://github.com/assafelovic/gpt-researcher,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-07-31T20:40:25+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 빠르게 찾아주는 도구입니다.",1,github_repo,https://github.com/assafelovic/gpt-researcher,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-07-31T20:40:25+09:00,569,5,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-01,18019975235871473,https://www.threads.net/@arxiv.ai/post/18019975235871473,agent_role_split,agent_role_split,workflow_mode,save,literature_overload,새로운 논문을 읽을 때마다 관련 논문(Related Work)을 단순히 리스트로 나열하고 계신가요?,"새로운 논문을 읽을 때마다 관련 논문(Related Work)을 단순히 리스트로 나열하고 계신가요?
 
 내가 논문 간의 방법론적 차이와 증거(evidence)를 하나의 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
