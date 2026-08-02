@@ -246,3 +246,18 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 “비교 대상 논문들이 공통적으로 사용하는 evaluation metric의 차이점을 명시해줘.”
 
 비교는 나열이 아니라, 차이를 증명하는 과정입니다.",1,github_repo,https://github.com/dair-ai/ML-Papers-Explained,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-01T19:58:59+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-02,17937549456089547,https://www.threads.net/@arxiv.ai/post/17937549456089547,research_checklist,research_checklist,paper_to_workflow,save,systematic review search audit,"AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.","AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.
+
+내가 검색식과 제외 이유를 설명 못하면, 그건 screening이 아니라 결과 목록 수용입니다.
+
+나쁜 요청:
+“이 주제의 핵심 논문만 골라줘.”
+
+좋은 요청:
+“database별 검색식과 검색일을 남겨줘.”
+“중복 제거 전후 문헌 수를 기록해줘.”
+“제외한 논문마다 사유를 한 줄로 붙여줘.”
+“최종 포함 기준과 원문 위치를 연결해줘.”
+
+좋은 문헌 검토는 논문 수가 많은 목록이 아니라
+선택 과정을 다시 추적할 수 있는 기록입니다.",1,official_guideline,https://www.prisma-statement.org/prisma-2020,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-02T19:54:46+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
