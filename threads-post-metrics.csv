@@ -219,7 +219,7 @@ related work부터 찾고 있나요?
 “근거가 없는 claim을 표시해줘.”
 
 좋은 reviewer는 새로움을 찾기 전에
-논문 안의 약속과 구현부터 연결합니다.",1,official_feed,https://arxiv.org/abs/2607.26066,59,strict-pass,evening,manual_revision,codex,false,2026-07-30T23:44:36+09:00,5189,44,3,3,0,0,16,0,,,0,auto-recorded after publish | metrics collected: 24h
+논문 안의 약속과 구현부터 연결합니다.",1,official_feed,https://arxiv.org/abs/2607.26066,59,strict-pass,evening,manual_revision,codex,false,2026-07-30T23:44:36+09:00,5295,44,3,3,0,0,16,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-07-31,18150242941519535,https://www.threads.net/@arxiv.ai/post/18150242941519535,weekly_review_advice,weekly_review_advice,workflow_mode,save,citation_doubt,AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?,"AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?
 
 내가 AI가 붙인 citation이 실제 claim을 지지하는지 설명 못하면, 그건 리서치가 아니라 점수 예측입니다.
@@ -245,7 +245,7 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 “각 논문이 해결하려는 problem setting을 동일한 기준(data, metric, architecture)으로 정렬해줘.”
 “비교 대상 논문들이 공통적으로 사용하는 evaluation metric의 차이점을 명시해줘.”
 
-비교는 나열이 아니라, 차이를 증명하는 과정입니다.",1,github_repo,https://github.com/dair-ai/ML-Papers-Explained,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-01T19:58:59+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+비교는 나열이 아니라, 차이를 증명하는 과정입니다.",1,github_repo,https://github.com/dair-ai/ML-Papers-Explained,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-01T19:58:59+09:00,1591,19,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-02,17937549456089547,https://www.threads.net/@arxiv.ai/post/17937549456089547,research_checklist,research_checklist,paper_to_workflow,save,systematic review search audit,"AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.","AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.
 
 내가 검색식과 제외 이유를 설명 못하면, 그건 screening이 아니라 결과 목록 수용입니다.
