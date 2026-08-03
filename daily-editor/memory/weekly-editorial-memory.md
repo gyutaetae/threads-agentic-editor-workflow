@@ -1,41 +1,45 @@
 # Weekly Editorial Memory
 
-Updated: 2026-07-27T04:34:31+00:00
-Window: last 7 days; analyzed posts: 3
+Updated: 2026-08-03T04:27:48+00:00
+Window: last 7 days; analyzed posts: 5
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 3
+- Posts with collected metrics: 4
 
 ## Winning Slots
 
-- evening: 36
+- evening: 27
 
 ## Winning Experiments
 
-- daily_1800_kst: 28
-- manual_evening: 8
+- manual_revision: 16
+- daily_guarantee_primary: 10
+- daily_1800_kst: 1
+- daily_guarantee_reserve: 0
 
 ## Winning Formats
 
-- agent_role_split: 28
-- tiny_source_case: 5
-- research_checklist: 3
+- research_checklist: 16
+- agent_role_split: 6
+- weekly_review_advice: 5
 
 ## Winning Content Axes
 
-- workflow_mode: 28
-- paper_to_workflow: 5
-- official_update: 3
+- checklist: 16
+- workflow_mode: 11
+- paper_to_workflow: 0
 
 ## Top Posts
 
-- score 28 | evening | agent_role_split | literature_overload | 관련 연구(Related Work)를 쓸 때 논문 목록만 쭉 나열하고 계신가요? 내가 논문 간의 차이를 같은 비교 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
-- score 5 | evening | tiny_source_case | premise constraint audit | AI에게 논문 결론이 맞는지 검토시킬 때 “단계별로 생각해”만 붙이면, 이미 고른 답을 그럴듯하게 합리화할 수 있습니다.
-- score 3 | evening | research_checklist | multi-turn research session drift | AI와 논문 초안을 열 번 넘게 고치다 보면, 마지막 답변은 멀쩡한데 처음 합의한 연구 질문·비교 조건·근거 범위가 사라질 때가 있습니다.
+- score 16 | evening | research_checklist | intra-paper claim verification | 논문의 novelty를 검토할 때
+- score 5 | evening | weekly_review_advice | citation_doubt | AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?
+- score 5 | evening | agent_role_split | literature_overload | 새로운 논문을 읽을 때마다 관련 논문(Related Work)을 단순히 리스트로 나열하고 계신가요?
+- score 1 | evening | agent_role_split | citation_doubt | AI가 생성한 citation 목록을 그대로 논문에 붙여 넣고 계신가요?
+- score 0 | evening | research_checklist | systematic review search audit | AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.
 
 ## Editorial Decisions
 
