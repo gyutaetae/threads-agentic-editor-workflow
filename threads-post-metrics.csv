@@ -245,7 +245,7 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 “각 논문이 해결하려는 problem setting을 동일한 기준(data, metric, architecture)으로 정렬해줘.”
 “비교 대상 논문들이 공통적으로 사용하는 evaluation metric의 차이점을 명시해줘.”
 
-비교는 나열이 아니라, 차이를 증명하는 과정입니다.",1,github_repo,https://github.com/dair-ai/ML-Papers-Explained,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-01T19:58:59+09:00,1591,19,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h
+비교는 나열이 아니라, 차이를 증명하는 과정입니다.",1,github_repo,https://github.com/dair-ai/ML-Papers-Explained,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-01T19:58:59+09:00,1627,19,3,3,0,0,5,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-02,17937549456089547,https://www.threads.net/@arxiv.ai/post/17937549456089547,research_checklist,research_checklist,paper_to_workflow,save,systematic review search audit,"AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.","AI에게 systematic review 후보를 추리게 한 뒤 논문 목록만 받으면, 왜 포함됐고 제외됐는지 다시 확인하기 어렵습니다.
 
 내가 검색식과 제외 이유를 설명 못하면, 그건 screening이 아니라 결과 목록 수용입니다.
@@ -273,7 +273,7 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 ""각 논문의 핵심 방법론이 내 연구의 한계점을 어떻게 해결하는지 대조해줘.""
 ""이 리스트에서 내 연구의 차별점을 강조할 수 있는 논문만 골라줘.""
 
-AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리를 검증하는 도구여야 합니다.",1,github_repo,https://github.com/filipecalegario/awesome-generative-ai,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-03T21:43:06+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리를 검증하는 도구여야 합니다.",1,github_repo,https://github.com/filipecalegario/awesome-generative-ai,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-03T21:43:06+09:00,1475,12,3,3,0,0,7,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-04,17904378429309732,https://www.threads.net/@arxiv.ai/post/17904378429309732,tiny_source_case,tiny_source_case,official_update,share,draft_without_argument,논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?,"논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
 
 내가 논문의 핵심 Claim과 그 근거가 되는 Evidence를 스스로 연결해 설명 못하면, 그건 초안 작성이 아니라 단순한 문장 생산입니다.
