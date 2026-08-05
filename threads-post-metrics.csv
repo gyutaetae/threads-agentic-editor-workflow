@@ -260,7 +260,7 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 “최종 포함 기준과 원문 위치를 연결해줘.”
 
 좋은 문헌 검토는 논문 수가 많은 목록이 아니라
-선택 과정을 다시 추적할 수 있는 기록입니다.",1,official_guideline,https://www.prisma-statement.org/prisma-2020,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-02T19:54:46+09:00,318,2,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+선택 과정을 다시 추적할 수 있는 기록입니다.",1,official_guideline,https://www.prisma-statement.org/prisma-2020,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-02T19:54:46+09:00,369,2,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-03,17972388617924421,https://www.threads.net/@arxiv.ai/post/17972388617924421,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?,"AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?
 
 내가 각 논문이 내 claim을 어떻게 지지하는지 설명 못하면, 그건 리서치가 아니라 단순 논문 나열입니다.
@@ -286,7 +286,7 @@ AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리
 “ICML 기준에 맞춰 Soundness를 흔들 수 있는 반례 질문을 써줘.”
 “AC가 볼 때 치명적일 수 있는 구조적 약점을 우선순위별로 나열해줘.”
 
-AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검증 도구여야 합니다.",1,official_feed,https://arxiv.org/abs/2608.00005,56,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-04T20:38:39+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검증 도구여야 합니다.",1,official_feed,https://arxiv.org/abs/2608.00005,56,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-04T20:38:39+09:00,8231,61,5,3,0,2,21,1,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-05,18109557532822262,https://www.threads.net/@arxiv.ai/post/18109557532822262,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,AI가 생성한 초안을 검토할 때 단순히 “문장이 자연스러운가?”만 확인하고 있다면 위험합니다.,"AI가 생성한 초안을 검토할 때 단순히 “문장이 자연스러운가?”만 확인하고 있다면 위험합니다.
 
 내가 각 claim이 어떤 evidence에 의해 지지되는지 설명 못하면, 그건 검토가 아니라 점수 예측입니다.
