@@ -300,3 +300,18 @@ AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검�
 “evidence가 claim의 주장을 충분히 뒷받침하는지 검증해줘.”
 
 AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 찾는 검증 도구여야 합니다.",1,github_repo,https://github.com/wuyoscar/GPT-Image2-Skill,66,86,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-05T20:35:19+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-06,18580756732067560,https://www.threads.net/@arxiv.ai/post/18580756732067560,research_checklist,research_checklist,paper_to_workflow,save,AI intervention reporting,"AI intervention 논문에서 model accuracy만 정리하면, 실제 사용자가 무엇을 입력하고 출력을 어떻게 행동으로 바꿨는지 놓치기 쉽습니다.","AI intervention 논문에서 model accuracy만 정리하면, 실제 사용자가 무엇을 입력하고 출력을 어떻게 행동으로 바꿨는지 놓치기 쉽습니다.
+
+내가 model 오류와 사용자 절차 오류를 구분 못하면, 그건 intervention 검토가 아니라 성능표 요약입니다.
+
+나쁜 요청:
+“이 AI 임상시험의 성능을 요약해줘.”
+
+좋은 요청:
+“AI가 받는 input과 내보내는 output을 분리해줘.”
+“사용자가 받은 training과 지침을 표시해줘.”
+“output이 실제 decision으로 바뀌는 단계를 써줘.”
+“performance error 분석과 대응을 연결해줘.”
+
+좋은 AI intervention 검토는 accuracy 숫자가 아니라
+사람과 model 사이의 실행 경로를 설명하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3164,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-06T20:37:20+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
