@@ -273,7 +273,7 @@ AI Agent는 연구를 대신 해주는 존재가 아니라, 검증할 대상을 
 ""각 논문의 핵심 방법론이 내 연구의 한계점을 어떻게 해결하는지 대조해줘.""
 ""이 리스트에서 내 연구의 차별점을 강조할 수 있는 논문만 골라줘.""
 
-AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리를 검증하는 도구여야 합니다.",1,github_repo,https://github.com/filipecalegario/awesome-generative-ai,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-03T21:43:06+09:00,1475,12,3,3,0,0,7,0,,,0,auto-recorded after publish | metrics collected: 24h
+AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리를 검증하는 도구여야 합니다.",1,github_repo,https://github.com/filipecalegario/awesome-generative-ai,64,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-03T21:43:06+09:00,1529,12,3,3,0,0,7,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-04,17904378429309732,https://www.threads.net/@arxiv.ai/post/17904378429309732,tiny_source_case,tiny_source_case,official_update,share,draft_without_argument,논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?,"논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
 
 내가 논문의 핵심 Claim과 그 근거가 되는 Evidence를 스스로 연결해 설명 못하면, 그건 초안 작성이 아니라 단순한 문장 생산입니다.
@@ -299,7 +299,7 @@ AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검�
 “citation이 claim의 scope를 벗어나지 않는지 대조표를 만들어줘.”
 “evidence가 claim의 주장을 충분히 뒷받침하는지 검증해줘.”
 
-AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 찾는 검증 도구여야 합니다.",1,github_repo,https://github.com/wuyoscar/GPT-Image2-Skill,66,86,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-05T20:35:19+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 찾는 검증 도구여야 합니다.",1,github_repo,https://github.com/wuyoscar/GPT-Image2-Skill,66,86,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-05T20:35:19+09:00,674,3,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-06,18580756732067560,https://www.threads.net/@arxiv.ai/post/18580756732067560,research_checklist,research_checklist,paper_to_workflow,save,AI intervention reporting,"AI intervention 논문에서 model accuracy만 정리하면, 실제 사용자가 무엇을 입력하고 출력을 어떻게 행동으로 바꿨는지 놓치기 쉽습니다.","AI intervention 논문에서 model accuracy만 정리하면, 실제 사용자가 무엇을 입력하고 출력을 어떻게 행동으로 바꿨는지 놓치기 쉽습니다.
 
 내가 model 오류와 사용자 절차 오류를 구분 못하면, 그건 intervention 검토가 아니라 성능표 요약입니다.
