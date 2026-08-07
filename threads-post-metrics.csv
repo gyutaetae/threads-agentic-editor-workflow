@@ -286,7 +286,7 @@ AI는 논문 목록을 뽑아주는 도구가 아니라, 근거의 연결 고리
 “ICML 기준에 맞춰 Soundness를 흔들 수 있는 반례 질문을 써줘.”
 “AC가 볼 때 치명적일 수 있는 구조적 약점을 우선순위별로 나열해줘.”
 
-AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검증 도구여야 합니다.",1,official_feed,https://arxiv.org/abs/2608.00005,56,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-04T20:38:39+09:00,8231,61,5,3,0,2,21,1,,,0,auto-recorded after publish | metrics collected: 24h
+AI는 점수 예측기가 아니라, 제출 전 논리의 구멍을 찾는 검증 도구여야 합니다.",1,official_feed,https://arxiv.org/abs/2608.00005,56,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-04T20:38:39+09:00,8328,61,5,3,0,2,21,1,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-05,18109557532822262,https://www.threads.net/@arxiv.ai/post/18109557532822262,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,AI가 생성한 초안을 검토할 때 단순히 “문장이 자연스러운가?”만 확인하고 있다면 위험합니다.,"AI가 생성한 초안을 검토할 때 단순히 “문장이 자연스러운가?”만 확인하고 있다면 위험합니다.
 
 내가 각 claim이 어떤 evidence에 의해 지지되는지 설명 못하면, 그건 검토가 아니라 점수 예측입니다.
@@ -314,7 +314,7 @@ AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 �
 “performance error 분석과 대응을 연결해줘.”
 
 좋은 AI intervention 검토는 accuracy 숫자가 아니라
-사람과 model 사이의 실행 경로를 설명하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3164,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-06T20:37:20+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+사람과 model 사이의 실행 경로를 설명하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3164,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-06T20:37:20+09:00,94,1,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-07,17902400835518054,https://www.threads.net/@arxiv.ai/post/17902400835518054,research_checklist,research_checklist,evidence_mapping,save,prediction model reporting,"prediction model 논문에서 AUROC만 비교하면, 그 model이 누구에게 어떤 결정을 위해 쓰이는지 놓치기 쉽습니다.","prediction model 논문에서 AUROC만 비교하면, 그 model이 누구에게 어떤 결정을 위해 쓰이는지 놓치기 쉽습니다.
 
 내가 intended use와 evaluation population의 연결을 설명 못하면, 그건 model 검토가 아니라 점수 비교입니다.
