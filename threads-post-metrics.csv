@@ -315,3 +315,18 @@ AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 �
 
 좋은 AI intervention 검토는 accuracy 숫자가 아니라
 사람과 model 사이의 실행 경로를 설명하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3164,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-06T20:37:20+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-07,17902400835518054,https://www.threads.net/@arxiv.ai/post/17902400835518054,research_checklist,research_checklist,evidence_mapping,save,prediction model reporting,"prediction model 논문에서 AUROC만 비교하면, 그 model이 누구에게 어떤 결정을 위해 쓰이는지 놓치기 쉽습니다.","prediction model 논문에서 AUROC만 비교하면, 그 model이 누구에게 어떤 결정을 위해 쓰이는지 놓치기 쉽습니다.
+
+내가 intended use와 evaluation population의 연결을 설명 못하면, 그건 model 검토가 아니라 점수 비교입니다.
+
+나쁜 요청:
+“가장 성능 좋은 prediction model을 골라줘.”
+
+좋은 요청:
+“예측 대상과 실제 사용 결정을 분리해줘.”
+“개발·검증 dataset의 population 차이를 표시해줘.”
+“평가 metric이 intended use를 받치는지 검토해줘.”
+“적용하면 안 되는 population을 따로 남겨줘.”
+
+좋은 model 비교는 최고 점수를 찾는 일이 아니라
+점수가 유효한 사용 범위를 고정하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/385/bmj-2023-078378,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-07T19:15:21+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
