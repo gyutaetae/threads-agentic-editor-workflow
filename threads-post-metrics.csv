@@ -343,3 +343,18 @@ AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 �
 “비교 대상 논문들과 방법론(Methodology)의 차이점을 3가지 축으로 요약해줘.”
 
 Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 재구성하는 과정입니다.",1,github_repo,https://github.com/HKUDS/AI-Researcher,57,100,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-08T18:59:34+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-09,18437136088124807,https://www.threads.net/@arxiv.ai/post/18437136088124807,research_checklist,research_checklist,paper_to_workflow,save,research artifact reproducibility,"artifact 제출 직전에 repository 링크만 확인하면, reviewer가 실제로 어떤 command를 실행해야 하는지는 비어 있을 수 있습니다.","artifact 제출 직전에 repository 링크만 확인하면, reviewer가 실제로 어떤 command를 실행해야 하는지는 비어 있을 수 있습니다.
+
+내가 새 환경에서 결과를 재현하는 순서를 설명 못하면, 그건 artifact가 아니라 파일 묶음입니다.
+
+나쁜 요청:
+“코드와 dataset이 있으니 재현 가능한지 봐줘.”
+
+좋은 요청:
+“필요한 environment와 dependency를 고정해줘.”
+“대표 결과를 만드는 command를 순서대로 써줘.”
+“각 command의 expected output을 붙여줘.”
+“실패할 때 확인할 log와 제한 조건을 남겨줘.”
+
+좋은 artifact 문서는 파일 목록이 아니라
+다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
