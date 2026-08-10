@@ -358,3 +358,18 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 
 좋은 artifact 문서는 파일 목록이 아니라
 다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-10,18092365796183769,https://www.threads.net/@arxiv.ai/post/18092365796183769,research_checklist,agent_role_split,workflow_mode,save,AI trial protocol planning,"AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.","AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.
+
+내가 trial 전에 고정한 AI version과 사용 절차를 설명 못하면, 그건 protocol이 아니라 결과 해설입니다.
+
+나쁜 요청:
+“결과에 맞춰 AI intervention method를 정리해줘.”
+
+좋은 요청:
+“사용할 model version과 변경 규칙을 먼저 고정해줘.”
+“input·output과 사용자 역할을 protocol 표로 만들어줘.”
+“오류 발생 시 대응과 중단 기준을 써줘.”
+“계획 변경은 시점과 이유를 별도로 기록해줘.”
+
+좋은 protocol은 결과를 예쁘게 설명하는 문서가 아니라
+결과 전에 결정한 조건을 보존하는 장치입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3210,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-10T19:42:47+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
