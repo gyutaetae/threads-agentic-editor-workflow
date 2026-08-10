@@ -329,7 +329,7 @@ AI는 논리를 대신 만들어주는 게 아니라, 내 주장의 빈틈을 �
 “적용하면 안 되는 population을 따로 남겨줘.”
 
 좋은 model 비교는 최고 점수를 찾는 일이 아니라
-점수가 유효한 사용 범위를 고정하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/385/bmj-2023-078378,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-07T19:15:21+09:00,141,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+점수가 유효한 사용 범위를 고정하는 일입니다.",1,reporting_guideline,https://www.bmj.com/content/385/bmj-2023-078378,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-07T19:15:21+09:00,150,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-08,18177548794423903,https://www.threads.net/@arxiv.ai/post/18177548794423903,agent_role_split,agent_role_split,workflow_mode,save,literature_overload,관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?,"관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?
 
 내가 논문 간의 핵심 차이점과 공통된 증거를 비교 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
@@ -357,7 +357,7 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 “실패할 때 확인할 log와 제한 조건을 남겨줘.”
 
 좋은 artifact 문서는 파일 목록이 아니라
-다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,241,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-10,18092365796183769,https://www.threads.net/@arxiv.ai/post/18092365796183769,research_checklist,agent_role_split,workflow_mode,save,AI trial protocol planning,"AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.","AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.
 
 내가 trial 전에 고정한 AI version과 사용 절차를 설명 못하면, 그건 protocol이 아니라 결과 해설입니다.
