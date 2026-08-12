@@ -357,7 +357,7 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 “실패할 때 확인할 log와 제한 조건을 남겨줘.”
 
 좋은 artifact 문서는 파일 목록이 아니라
-다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,241,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+다른 사람이 결과까지 도달하는 runbook입니다.",1,official_policy,https://www.acm.org/publications/policies/artifact-review-badging-current,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-09T19:01:39+09:00,248,0,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-10,18092365796183769,https://www.threads.net/@arxiv.ai/post/18092365796183769,research_checklist,agent_role_split,workflow_mode,save,AI trial protocol planning,"AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.","AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.
 
 내가 trial 전에 고정한 AI version과 사용 절차를 설명 못하면, 그건 protocol이 아니라 결과 해설입니다.
@@ -385,7 +385,7 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 “실험 결과(Table)가 저자의 주장과 일치하는지 검증해줘.”
 “논문에서 데이터(Table)와 결론(Conclusion) 사이의 논리적 간극이 있는지 찾아줘.”
 
-AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입니다.",1,official_feed,https://arxiv.org/abs/2608.07527,56,100,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-11T19:15:54+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입니다.",1,official_feed,https://arxiv.org/abs/2608.07527,56,100,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-11T19:15:54+09:00,882,3,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-12,18030558617836995,https://www.threads.net/@arxiv.ai/post/18030558617836995,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?,"Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?
 
 내가 특정 claim을 뒷받침하는 citation이 원문의 어느 문장에서 나왔는지 설명 못하면, 그건 연구가 아니라 논문 장식입니다.
