@@ -372,7 +372,7 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 “계획 변경은 시점과 이유를 별도로 기록해줘.”
 
 좋은 protocol은 결과를 예쁘게 설명하는 문서가 아니라
-결과 전에 결정한 조건을 보존하는 장치입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3210,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-10T19:42:47+09:00,338,3,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h
+결과 전에 결정한 조건을 보존하는 장치입니다.",1,reporting_guideline,https://www.bmj.com/content/370/bmj.m3210,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-10T19:42:47+09:00,352,3,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-11,18122803558890591,https://www.threads.net/@arxiv.ai/post/18122803558890591,tiny_source_case,tiny_source_case,official_update,share,evidence_missing,"새로운 LLM 논문을 읽을 때, 모델이 본문 속 수많은 표와 그림 사이의 관계를 어떻게 찾아내는지 설명할 수 있나요?","새로운 LLM 논문을 읽을 때, 모델이 본문 속 수많은 표와 그림 사이의 관계를 어떻게 찾아내는지 설명할 수 있나요?
 
 내가 논문의 claim이 어떤 실험 데이터나 표로부터 도출되었는지 연결하지 못하면, 그건 이해가 아니라 요약문 신뢰입니다.
@@ -398,7 +398,7 @@ AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입
 “해당 citation이 주장(claim)을 직접 지지하는지, 아니면 단순 배경(background)인지 분류해줘.”
 “citation이 claim의 범위를 벗어나 과도하게 일반화(overgeneralization)되어 있는지 검증해줘.”
 
-AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토자가 되어야 합니다.",1,github_repo,https://github.com/swyxio/ai-notes,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-12T19:33:40+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토자가 되어야 합니다.",1,github_repo,https://github.com/swyxio/ai-notes,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-12T19:33:40+09:00,1129,10,3,3,0,0,4,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-13,18022269086907563,https://www.threads.net/@arxiv.ai/post/18022269086907563,research_checklist,research_checklist,evidence_mapping,save,diagnostic AI accuracy reporting,"diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.","diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.
 
 내가 양성 판정 기준과 정답 기준을 설명 못하면, 그건 진단 성능 검토가 아니라 숫자 복사입니다.
