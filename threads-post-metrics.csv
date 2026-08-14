@@ -414,3 +414,18 @@ AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토�
 
 좋은 진단 성능 검토는 최고 accuracy를 찾는 일이 아니라
 숫자가 만들어진 판정 조건을 복원하는 일입니다.",1,reporting_guideline,https://www.nature.com/articles/s41591-025-03953-8,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-13T19:33:33+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-14,18150792394513850,https://www.threads.net/@arxiv.ai/post/18150792394513850,research_checklist,research_checklist,paper_to_workflow,save,medical imaging AI reporting,"medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.","medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.
+
+내가 dataset을 patient 단위로 나눴는지 설명 못하면, 그건 validation이 아니라 leakage 가능성이 남은 점수표입니다.
+
+나쁜 요청:
+“dataset split이 적절한지 확인해줘.”
+
+좋은 요청:
+“split 단위가 image인지 patient인지 표시해줘.”
+“전처리가 split 전후 어느 시점에 적용됐는지 써줘.”
+“내부 test와 외부 validation을 분리해줘.”
+“기관·장비·기간별 distribution 차이를 남겨줘.”
+
+좋은 dataset 검토는 비율을 확인하는 일이 아니라
+정보가 경계를 넘어간 경로를 찾는 일입니다.",1,reporting_guideline,https://pubs.rsna.org/doi/10.1148/ryai.240300,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-14T19:25:47+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
