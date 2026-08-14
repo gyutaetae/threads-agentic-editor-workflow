@@ -385,7 +385,7 @@ Related Work는 나열하는 것이 아니라, 증거(evidence)를 기준으로 
 “실험 결과(Table)가 저자의 주장과 일치하는지 검증해줘.”
 “논문에서 데이터(Table)와 결론(Conclusion) 사이의 논리적 간극이 있는지 찾아줘.”
 
-AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입니다.",1,official_feed,https://arxiv.org/abs/2608.07527,56,100,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-11T19:15:54+09:00,882,3,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입니다.",1,official_feed,https://arxiv.org/abs/2608.07527,56,100,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-11T19:15:54+09:00,891,3,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-12,18030558617836995,https://www.threads.net/@arxiv.ai/post/18030558617836995,agent_role_split,agent_role_split,workflow_mode,save,citation_doubt,Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?,"Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?
 
 내가 특정 claim을 뒷받침하는 citation이 원문의 어느 문장에서 나왔는지 설명 못하면, 그건 연구가 아니라 논문 장식입니다.
@@ -413,7 +413,7 @@ AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토�
 “subgroup별 오류와 제외 사례를 남겨줘.”
 
 좋은 진단 성능 검토는 최고 accuracy를 찾는 일이 아니라
-숫자가 만들어진 판정 조건을 복원하는 일입니다.",1,reporting_guideline,https://www.nature.com/articles/s41591-025-03953-8,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-13T19:33:33+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+숫자가 만들어진 판정 조건을 복원하는 일입니다.",1,reporting_guideline,https://www.nature.com/articles/s41591-025-03953-8,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-13T19:33:33+09:00,149,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-14,18150792394513850,https://www.threads.net/@arxiv.ai/post/18150792394513850,research_checklist,research_checklist,paper_to_workflow,save,medical imaging AI reporting,"medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.","medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.
 
 내가 dataset을 patient 단위로 나눴는지 설명 못하면, 그건 validation이 아니라 leakage 가능성이 남은 점수표입니다.
