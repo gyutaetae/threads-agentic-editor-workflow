@@ -398,7 +398,7 @@ AI는 요약 도구가 아니라, 논문의 근거 지도를 그리는 도구입
 “해당 citation이 주장(claim)을 직접 지지하는지, 아니면 단순 배경(background)인지 분류해줘.”
 “citation이 claim의 범위를 벗어나 과도하게 일반화(overgeneralization)되어 있는지 검증해줘.”
 
-AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토자가 되어야 합니다.",1,github_repo,https://github.com/swyxio/ai-notes,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-12T19:33:40+09:00,1129,10,3,3,0,0,4,0,,,0,auto-recorded after publish | metrics collected: 24h
+AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토자가 되어야 합니다.",1,github_repo,https://github.com/swyxio/ai-notes,61,92,evening,daily_guarantee_primary,google/gemma-4-26b-a4b-it:free,false,2026-08-12T19:33:40+09:00,1147,10,3,3,0,0,4,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-13,18022269086907563,https://www.threads.net/@arxiv.ai/post/18022269086907563,research_checklist,research_checklist,evidence_mapping,save,diagnostic AI accuracy reporting,"diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.","diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.
 
 내가 양성 판정 기준과 정답 기준을 설명 못하면, 그건 진단 성능 검토가 아니라 숫자 복사입니다.
@@ -428,4 +428,4 @@ AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토�
 “기관·장비·기간별 distribution 차이를 남겨줘.”
 
 좋은 dataset 검토는 비율을 확인하는 일이 아니라
-정보가 경계를 넘어간 경로를 찾는 일입니다.",1,reporting_guideline,https://pubs.rsna.org/doi/10.1148/ryai.240300,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-14T19:25:47+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+정보가 경계를 넘어간 경로를 찾는 일입니다.",1,reporting_guideline,https://pubs.rsna.org/doi/10.1148/ryai.240300,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-14T19:25:47+09:00,111,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
