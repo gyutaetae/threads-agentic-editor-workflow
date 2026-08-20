@@ -1,0 +1,33 @@
+AI와 분석 계획을 만들면서 결과를 본 뒤 문서를 정리하면, 사전 결정과 사후 설명이 자연스럽게 섞일 수 있습니다.
+
+내가 결과를 보기 전에 정한 분석을 설명 못하면, 그건 plan이 아니라 결과 해설입니다.
+
+나쁜 요청:
+“결과에 맞게 분석 계획을 정리해줘.”
+
+좋은 요청:
+“가설과 primary outcome을 먼저 고정해줘.”
+“제외 기준과 중단 기준을 기록해줘.”
+“planned analysis와 exploratory analysis를 나눠줘.”
+“변경 시점과 이유를 별도 항목으로 남겨줘.”
+
+좋은 연구 계획은 결과를 매끄럽게 설명하는 글이 아니라
+판단이 내려진 시점을 보존하는 기록입니다.
+---
+[먼저 확인할 것]
+분석 계획의 시간 경계를 세 가지로 확인합니다.
+
+1. 결과 확인 전 결정이 명시됐는가
+2. primary와 exploratory 분석이 분리됐는가
+3. 변경 내용에 시점과 이유가 붙었는가
+---
+[저장해둘 프롬프트]
+AI agent에게 이렇게 시켜보세요.
+
+“연구 결정을 hypothesis, outcome, exclusion rule, planned analysis, exploratory analysis, changed at, change reason 열로 나눈 preregistration ledger로 만들어줘.”
+---
+[참고 자료]
+https://www.cos.io/initiatives/prereg
+- 볼 부분: Center for Open Science의 preregistration 개요와 사전 연구계획 기록 방식
+
+- 적용: AI가 분석 문서를 다듬더라도 사전 결정, 탐색 분석, 사후 변경을 서로 다른 기록으로 남기는 데 사용합니다.

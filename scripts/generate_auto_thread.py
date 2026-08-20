@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import time
+from datetime import date, timedelta
 from pathlib import Path
 
 import requests
@@ -50,9 +51,11 @@ except ModuleNotFoundError:
 
 GROQ_CHAT_COMPLETIONS_URL = "https://api.groq.com/openai/v1/chat/completions"
 OPENROUTER_CHAT_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions"
+OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions"
 DEFAULT_PROVIDER = "openrouter"
 DEFAULT_MODEL = "google/gemma-4-26b-a4b-it:free"
 DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+DEFAULT_OPENAI_MODEL = "gpt-5.6-terra"
 DEFAULT_FALLBACK_PROVIDER = ""
 MIN_PARTS = len(PART_ROLES)
 MAX_PARTS = len(PART_ROLES)
@@ -61,6 +64,7 @@ DRAFT_QUALITY_SCORE = int(os.environ.get("DRAFT_QUALITY_SCORE", "70"))
 EVALUATOR_PUBLISH_SCORE = int(os.environ.get("EVALUATOR_PUBLISH_SCORE", "85"))
 DEFAULT_GENERATION_CANDIDATES = 1
 DEFAULT_MAX_OUTPUT_TOKENS = 900
+DEFAULT_ATTEMPT_COOLDOWN_DAYS = 7
 PLAYBOOK_PROMPT_CHARS = 1200
 LEARNINGS_PROMPT_CHARS = 800
 SKILL_LIBRARY_PROMPT_CHARS = 600
@@ -880,8 +884,17 @@ def choose_candidates(
     post_slot: str = "morning",
     count: int = DEFAULT_GENERATION_CANDIDATES,
     curation_records: list[dict] | None = None,
+    excluded_urls: set[str] | None = None,
 ) -> list[dict]:
     ranked = sorted(candidates, key=lambda item: rank_candidate(item, post_slot, curation_records), reverse=True)
+    excluded_urls = {str(url).strip().lower() for url in (excluded_urls or set()) if str(url).strip()}
+    fresh_ranked = [
+        item
+        for item in ranked
+        if str(item.get("url") or "").strip().lower() not in excluded_urls
+    ]
+    if fresh_ranked:
+        ranked = fresh_ranked
     selected = []
     seen_urls = set()
     for item in ranked:
@@ -894,6 +907,54 @@ def choose_candidates(
         if len(selected) >= count:
             break
     return selected or ranked[:1]
+
+
+def load_recent_attempted_urls(path: Path, target_date: str, cooldown_days: int = DEFAULT_ATTEMPT_COOLDOWN_DAYS) -> set[str]:
+    if not path.exists():
+        return set()
+    try:
+        target = date.fromisoformat(target_date)
+    except ValueError:
+        return set()
+    cutoff = target - timedelta(days=max(1, cooldown_days) - 1)
+    urls: set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            record = json.loads(line)
+            attempted_on = date.fromisoformat(str(record.get("date") or ""))
+        except (json.JSONDecodeError, TypeError, ValueError):
+            continue
+        url = str(record.get("source_url") or "").strip().lower()
+        if url and cutoff <= attempted_on <= target:
+            urls.add(url)
+    return urls
+
+
+def append_generation_attempts(path: Path, target_date: str, options: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    records = []
+    for option in options:
+        candidate = option.get("candidate") or {}
+        source_url = str(candidate.get("url") or option.get("candidate_url") or "").strip()
+        if not source_url:
+            continue
+        records.append(
+            {
+                "date": target_date,
+                "source_url": source_url,
+                "source_name": candidate.get("title") or candidate.get("name") or option.get("candidate_title") or "",
+                "provider": option.get("provider") or "",
+                "model": option.get("model") or "",
+                "quality_decision": option.get("quality_decision") or "error",
+                "quality_score": int(option.get("quality_score") or 0),
+                "quality_reasons": list(option.get("quality_reasons") or []),
+            }
+        )
+    if not records:
+        return
+    with path.open("a", encoding="utf-8") as handle:
+        for record in records:
+            handle.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 def build_prompt(
@@ -1323,6 +1384,8 @@ def request_options(provider: str, model: str, response_schema: dict | None = No
 def api_key_for_provider(provider: str) -> str:
     if provider == "openrouter":
         return os.environ.get("OPENROUTER_API_KEY", "")
+    if provider == "openai":
+        return os.environ.get("OPENAI_API_KEY", "")
     if provider == "groq":
         return os.environ.get("GROQ_API_KEY", "")
     return ""
@@ -1331,6 +1394,8 @@ def api_key_for_provider(provider: str) -> str:
 def default_model_for_provider(provider: str) -> str:
     if provider == "openrouter":
         return os.environ.get("OPENROUTER_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_MODEL
+    if provider == "openai":
+        return os.environ.get("OPENAI_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_OPENAI_MODEL
     if provider == "groq":
         return os.environ.get("GROQ_MODEL") or os.environ.get("LLM_MODEL") or DEFAULT_GROQ_MODEL
     raise SystemExit(f"Unsupported LLM provider: {provider}")
@@ -1345,9 +1410,20 @@ def fallback_provider_chain(provider: str, model: str) -> list[dict]:
             "api_key": api_key_for_provider(provider),
         }
     ]
-    fallback_provider = os.environ.get("LLM_FALLBACK_PROVIDER", DEFAULT_FALLBACK_PROVIDER).lower().strip()
-    if fallback_provider and fallback_provider != provider and api_key_for_provider(fallback_provider):
-        fallback_model = os.environ.get("LLM_FALLBACK_MODEL") or default_model_for_provider(fallback_provider)
+    configured_fallbacks = os.environ.get("LLM_FALLBACK_PROVIDERS", "").strip()
+    if configured_fallbacks:
+        fallback_providers = [item.strip().lower() for item in configured_fallbacks.split(",") if item.strip()]
+    else:
+        legacy_fallback = os.environ.get("LLM_FALLBACK_PROVIDER", DEFAULT_FALLBACK_PROVIDER).lower().strip()
+        fallback_providers = [legacy_fallback] if legacy_fallback else []
+    seen_providers = {provider}
+    for fallback_provider in fallback_providers:
+        if fallback_provider in seen_providers or not api_key_for_provider(fallback_provider):
+            continue
+        seen_providers.add(fallback_provider)
+        fallback_model = default_model_for_provider(fallback_provider)
+        if len(fallback_providers) == 1:
+            fallback_model = os.environ.get("LLM_FALLBACK_MODEL") or fallback_model
         chain.append(
             {
                 "provider": fallback_provider,
@@ -1370,6 +1446,7 @@ def call_llm(
     endpoint = {
         "groq": GROQ_CHAT_COMPLETIONS_URL,
         "openrouter": OPENROUTER_CHAT_COMPLETIONS_URL,
+        "openai": OPENAI_CHAT_COMPLETIONS_URL,
     }.get(provider)
     if endpoint is None:
         raise SystemExit(f"Unsupported LLM provider: {provider}")
@@ -1445,18 +1522,20 @@ def main() -> int:
     parser.add_argument("--learnings-path", default="docs/learnings.md")
     parser.add_argument("--skills-library-dir", default="docs/thread-pattern-library.md", help="Pattern library path. Accepts the consolidated docs file or a legacy directory.")
     parser.add_argument("--curation-log-path", default="daily-editor/curation/codex-curation-log.jsonl")
+    parser.add_argument("--attempt-history-path")
+    parser.add_argument("--attempt-cooldown-days", type=int, default=DEFAULT_ATTEMPT_COOLDOWN_DAYS)
     parser.add_argument("--review-dir", default="daily-editor/review")
     parser.add_argument("--run-log-dir", default="daily-editor/runs")
     parser.add_argument("--evaluation-dir", default="daily-editor/evaluations")
     parser.add_argument("--skip-evaluator", action="store_true")
     parser.add_argument("--guarantee-daily", action="store_true")
-    parser.add_argument("--evaluator-provider", choices=["groq", "openrouter"], default=os.environ.get("EVALUATOR_PROVIDER"))
+    parser.add_argument("--evaluator-provider", choices=["groq", "openrouter", "openai"], default=os.environ.get("EVALUATOR_PROVIDER"))
     parser.add_argument("--evaluator-model", default=os.environ.get("EVALUATOR_MODEL"))
     parser.add_argument("--post-slot", choices=["morning", "evening"], default=os.environ.get("POST_SLOT", "morning"))
     parser.add_argument("--posts-per-day", type=int, choices=[1, 2], default=int(os.environ.get("POSTS_PER_DAY", "1")))
     parser.add_argument("--experiment-group", default=os.environ.get("EXPERIMENT_GROUP", "manual"))
     parser.add_argument("--generation-candidates", type=int, default=int(os.environ.get("GENERATION_CANDIDATES", str(DEFAULT_GENERATION_CANDIDATES))))
-    parser.add_argument("--provider", choices=["groq", "openrouter"], default=os.environ.get("LLM_PROVIDER", DEFAULT_PROVIDER))
+    parser.add_argument("--provider", choices=["groq", "openrouter", "openai"], default=os.environ.get("LLM_PROVIDER", DEFAULT_PROVIDER))
     parser.add_argument("--model", default=None)
     parser.add_argument(
         "--max-output-tokens",
@@ -1470,7 +1549,11 @@ def main() -> int:
 
     api_key = api_key_for_provider(args.provider)
     if not api_key:
-        env_name = "OPENROUTER_API_KEY" if args.provider == "openrouter" else "GROQ_API_KEY"
+        env_name = {
+            "openrouter": "OPENROUTER_API_KEY",
+            "openai": "OPENAI_API_KEY",
+            "groq": "GROQ_API_KEY",
+        }[args.provider]
         raise SystemExit(f"{env_name} is required.")
 
     candidates = read_json(Path(args.candidates_path))
@@ -1486,8 +1569,19 @@ def main() -> int:
     persistent_learnings = read_optional_text(Path(args.learnings_path), max_chars=LEARNINGS_PROMPT_CHARS)
     skill_library = read_skill_library(Path(args.skills_library_dir))
     curation_records = load_curation_log(Path(args.curation_log_path))
+    attempted_urls = (
+        load_recent_attempted_urls(Path(args.attempt_history_path), args.date, args.attempt_cooldown_days)
+        if args.attempt_history_path
+        else set()
+    )
     review_dir = Path(args.review_dir)
-    selected_candidates = choose_candidates(candidates, args.post_slot, max(1, args.generation_candidates), curation_records)
+    selected_candidates = choose_candidates(
+        candidates,
+        args.post_slot,
+        max(1, args.generation_candidates),
+        curation_records,
+        attempted_urls,
+    )
     candidate_by_url = {item.get("url"): item for item in candidates if item.get("url")}
     generated_options = []
 
@@ -1684,6 +1778,8 @@ def main() -> int:
         metadata_path = Path(args.metadata_path)
         metadata_path.parent.mkdir(parents=True, exist_ok=True)
         metadata_path.write_text(json.dumps({"date": args.date, "model": args.model, "generated_options": generated_options}, ensure_ascii=False, indent=2), encoding="utf-8")
+        if args.attempt_history_path:
+            append_generation_attempts(Path(args.attempt_history_path), args.date, generated_options)
         raise SystemExit("All generated options failed before thread extraction.")
 
     selected_candidate = best["candidate"]
@@ -1747,7 +1843,6 @@ def main() -> int:
         args.guarantee_daily
         and gate["decision"] == "draft"
         and int(gate.get("quality_score") or 0) >= DRAFT_QUALITY_SCORE
-        and selected_provider == args.provider
         and not args.skip_evaluator
     ):
         revision_attempted = True
@@ -1998,6 +2093,8 @@ def main() -> int:
     metadata_path = Path(args.metadata_path)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
     metadata_path.write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.attempt_history_path:
+        append_generation_attempts(Path(args.attempt_history_path), args.date, generated_options)
 
     if gate["decision"] == "publish":
         output_path = Path(args.output_path)

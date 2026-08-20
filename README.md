@@ -115,11 +115,22 @@ OPENROUTER_API_KEY
 THREADS_ACCESS_TOKEN
 ```
 
+Fallback GitHub secrets:
+
+```text
+OPENAI_API_KEY
+GROQ_API_KEY
+```
+
+Generation tries OpenRouter first, OpenAI second, and Groq third. A provider without a configured key is skipped.
+
 Optional GitHub variables:
 
 ```text
 LLM_PROVIDER
 OPENROUTER_MODEL
+OPENAI_MODEL
+GROQ_MODEL
 LLM_MAX_OUTPUT_TOKENS
 THREADS_IMAGE_URL
 THREADS_ALT_TEXT

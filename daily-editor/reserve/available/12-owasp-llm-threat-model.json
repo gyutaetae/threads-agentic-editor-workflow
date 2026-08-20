@@ -1,0 +1,22 @@
+{
+  "id": "owasp-llm-threat-model",
+  "thread_path": "12-owasp-llm-threat-model.txt",
+  "metadata": {
+    "topic": "LLM application security",
+    "format": "research_checklist",
+    "content_axis": "failure_prevention",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "llm_security_review",
+    "failure_mode": "threat_control_test_missing",
+    "artifact_type": "llm_threat_control_matrix",
+    "reusable_unit_type": "llm_security_prompt",
+    "hook_pattern": "llm_security_check_scene",
+    "source_name": "OWASP Top 10 for LLM Applications",
+    "source_urls": ["https://owasp.org/www-project-top-10-for-large-language-model-applications/"],
+    "source_type": "official_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "security_control_gap",
+    "research_problem": "LLM 위협 이름만 나열하면 실제 입력 경로, 통제 수단, 검증 테스트를 연결하기 어렵다."
+  }
+}

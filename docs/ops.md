@@ -36,6 +36,7 @@ Scheduled guarantee:
 - Watchdogs run hourly from 19:17 through 23:17 KST.
 - Any authored top-level post, including a manual post, satisfies the day.
 - A score of 70-84 triggers one revision. A remaining soft failure uses a prevalidated reserve.
+- Model generation falls back in order: OpenRouter, OpenAI, then Groq. Missing provider keys are skipped.
 - A missing post after an attempted publish fails the run and leaves the next watchdog eligible.
 - Token/API uncertainty remains fail-closed; never risk a duplicate when the platform ledger cannot be read.
 

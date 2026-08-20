@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from scripts.generate_auto_thread import (
     THREAD_CANDIDATE_SCHEMA,
+    append_generation_attempts,
     build_evaluator_prompt,
     build_fallback_thread,
     classify_hook_pattern,
@@ -17,6 +18,8 @@ from scripts.generate_auto_thread import (
     curation_bonus,
     extract_json,
     extract_text,
+    fallback_provider_chain,
+    load_recent_attempted_urls,
     load_recent_history,
     load_curation_log,
     main,
@@ -251,6 +254,36 @@ class ThreadValidationTests(unittest.TestCase):
 
 
 class SelfImprovementLoopTests(unittest.TestCase):
+    def test_recent_attempts_cool_down_failed_sources(self) -> None:
+        with TemporaryDirectory() as tmp:
+            attempts_path = Path(tmp) / "attempts.jsonl"
+            append_generation_attempts(
+                attempts_path,
+                "2026-08-20",
+                [
+                    {
+                        "candidate": {"title": "Repeated", "url": "https://example.com/repeated"},
+                        "provider": "openrouter",
+                        "model": "writer",
+                        "quality_decision": "draft",
+                        "quality_score": 92,
+                        "quality_reasons": ["contract failure"],
+                    }
+                ],
+            )
+            excluded = load_recent_attempted_urls(attempts_path, "2026-08-21")
+            selected = choose_candidates(
+                [
+                    {"title": "Repeated", "url": "https://example.com/repeated", "score": {"total": 100}},
+                    {"title": "Fresh", "url": "https://example.com/fresh", "score": {"total": 80}},
+                ],
+                count=1,
+                excluded_urls=excluded,
+            )
+
+        self.assertEqual(excluded, {"https://example.com/repeated"})
+        self.assertEqual(selected[0]["title"], "Fresh")
+
     def test_safe_slug_keeps_korean_and_removes_punctuation(self) -> None:
         self.assertEqual(safe_slug("2026-06-22 citation 검증!!"), "2026-06-22-citation-검증")
 
@@ -365,6 +398,69 @@ class SelfImprovementLoopTests(unittest.TestCase):
         ]
         selected = choose_candidates(candidates, count=1, curation_records=records)
         self.assertEqual(selected[0]["url"], "https://example.com/b")
+
+    def test_fallback_chain_prefers_openai_then_groq(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "router-key",
+                "OPENAI_API_KEY": "openai-key",
+                "OPENAI_MODEL": "gpt-5.6-terra",
+                "GROQ_API_KEY": "groq-key",
+                "GROQ_MODEL": "openai/gpt-oss-120b",
+                "LLM_FALLBACK_PROVIDERS": "openai,groq",
+            },
+            clear=True,
+        ):
+            chain = fallback_provider_chain("openrouter", "google/gemma-4-26b-a4b-it:free")
+
+        self.assertEqual([item["provider"] for item in chain], ["openrouter", "openai", "groq"])
+        self.assertEqual(chain[1]["model"], "gpt-5.6-terra")
+        self.assertEqual(chain[2]["model"], "openai/gpt-oss-120b")
+
+    def test_fallback_chain_skips_openai_when_key_is_missing(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "router-key",
+                "GROQ_API_KEY": "groq-key",
+                "LLM_FALLBACK_PROVIDERS": "openai,groq",
+            },
+            clear=True,
+        ):
+            chain = fallback_provider_chain("openrouter", "google/gemma-4-26b-a4b-it:free")
+
+        self.assertEqual([item["provider"] for item in chain], ["openrouter", "groq"])
+
+    def test_openai_uses_chat_completions_structured_output(self) -> None:
+        class FakeResponse:
+            ok = True
+            status_code = 200
+            text = ""
+
+            def json(self) -> dict:
+                return {"choices": [{"message": {"content": '{"hook":"ok"}'}}]}
+
+        requests_seen = []
+
+        def fake_post(*args, **kwargs):
+            requests_seen.append((args, kwargs))
+            return FakeResponse()
+
+        with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
+            call_llm(
+                "openai",
+                "openai-key",
+                "gpt-5.6-terra",
+                "prompt",
+                max_output_tokens=900,
+                response_schema=THREAD_CANDIDATE_SCHEMA,
+            )
+
+        args, kwargs = requests_seen[0]
+        self.assertEqual(args[0], "https://api.openai.com/v1/chat/completions")
+        self.assertEqual(kwargs["json"]["max_completion_tokens"], 900)
+        self.assertTrue(kwargs["json"]["response_format"]["json_schema"]["strict"])
 
     def test_groq_size_limit_retries_with_smaller_completion_budget(self) -> None:
         class FakeResponse:

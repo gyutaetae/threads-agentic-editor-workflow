@@ -1,0 +1,22 @@
+{
+  "id": "cochrane-bias-judgment",
+  "thread_path": "09-cochrane-bias-judgment.txt",
+  "metadata": {
+    "topic": "risk of bias assessment",
+    "format": "research_checklist",
+    "content_axis": "paper_to_workflow",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "evidence_appraisal",
+    "failure_mode": "bias_judgment_support_missing",
+    "artifact_type": "bias_domain_evidence_table",
+    "reusable_unit_type": "bias_assessment_prompt",
+    "hook_pattern": "bias_label_scene",
+    "source_name": "Cochrane Risk of Bias 2",
+    "source_urls": ["https://methods.cochrane.org/risk-bias-2"],
+    "source_type": "official_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "bias_label_uncertainty",
+    "research_problem": "AI가 bias 등급만 제시하면 어떤 연구 정보가 그 판단을 만들었는지 재검토하기 어렵다."
+  }
+}

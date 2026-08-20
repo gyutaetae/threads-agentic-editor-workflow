@@ -1,0 +1,22 @@
+{
+  "id": "equator-guideline-router",
+  "thread_path": "13-equator-guideline-router.txt",
+  "metadata": {
+    "topic": "reporting guideline selection",
+    "format": "research_checklist",
+    "content_axis": "workflow_mode",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "manuscript_planning",
+    "failure_mode": "reporting_guideline_mismatch",
+    "artifact_type": "reporting_guideline_router",
+    "reusable_unit_type": "guideline_selection_prompt",
+    "hook_pattern": "manuscript_guideline_scene",
+    "source_name": "EQUATOR Network Reporting Guidelines",
+    "source_urls": ["https://www.equator-network.org/reporting-guidelines/"],
+    "source_type": "official_directory",
+    "human_signal_source": "inferred",
+    "human_signal_type": "guideline_selection_confusion",
+    "research_problem": "연구 설계와 맞지 않는 reporting guideline을 고르면 체크리스트를 채워도 핵심 정보가 빠질 수 있다."
+  }
+}

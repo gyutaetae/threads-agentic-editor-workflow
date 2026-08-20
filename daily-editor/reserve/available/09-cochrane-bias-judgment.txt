@@ -1,0 +1,33 @@
+AI에게 논문의 bias를 평가시킨 뒤 low·high 같은 등급만 받으면, 판단 근거가 어디서 나왔는지 확인하기 어렵습니다.
+
+내가 각 bias 판단을 받치는 연구 정보를 설명 못하면, 그건 appraisal이 아니라 label 복사입니다.
+
+나쁜 요청:
+“이 논문의 bias가 높은지 알려줘.”
+
+좋은 요청:
+“평가 domain을 서로 분리해줘.”
+“각 판단을 받치는 원문 위치를 표시해줘.”
+“정보 부족과 실제 문제를 구분해줘.”
+“최종 판단까지의 이유를 한 줄씩 남겨줘.”
+
+좋은 bias 평가는 등급 하나가 아니라
+domain별 근거를 다시 확인할 수 있는 판단 기록입니다.
+---
+[먼저 확인할 것]
+bias 판단 전에 근거 구조부터 확인합니다.
+
+1. 평가 domain이 섞이지 않았는가
+2. signalling question의 근거 위치가 남았는가
+3. 정보 부족과 관찰된 문제가 구분됐는가
+---
+[저장해둘 프롬프트]
+논문 읽을 때 붙여 넣을 문장:
+
+“bias 평가를 domain, signalling question, source location, answer, judgment, rationale 열로 나눈 evidence table로 만들어줘.”
+---
+[참고 자료]
+https://methods.cochrane.org/risk-bias-2
+- 볼 부분: Cochrane RoB 2의 domain 기반 평가 구조와 signalling questions
+
+- 적용: AI가 만든 bias 등급을 그대로 받지 않고 domain별 원문 근거와 판단 이유를 재검토하는 데 사용합니다.

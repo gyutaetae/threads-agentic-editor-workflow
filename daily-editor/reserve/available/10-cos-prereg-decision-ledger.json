@@ -1,0 +1,22 @@
+{
+  "id": "cos-prereg-decision-ledger",
+  "thread_path": "10-cos-prereg-decision-ledger.txt",
+  "metadata": {
+    "topic": "research preregistration",
+    "format": "research_checklist",
+    "content_axis": "workflow_mode",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "study_planning",
+    "failure_mode": "planned_exploratory_boundary_missing",
+    "artifact_type": "preregistration_decision_ledger",
+    "reusable_unit_type": "preregistration_prompt",
+    "hook_pattern": "analysis_before_results_scene",
+    "source_name": "Center for Open Science Preregistration",
+    "source_urls": ["https://www.cos.io/initiatives/prereg"],
+    "source_type": "official_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "analysis_timing_ambiguity",
+    "research_problem": "결과를 본 뒤 세운 분석과 사전에 정한 분석이 섞이면 연구 판단의 시점을 구분하기 어렵다."
+  }
+}

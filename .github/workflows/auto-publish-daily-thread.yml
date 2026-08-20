@@ -47,7 +47,9 @@ jobs:
       LLM_PROVIDER: openrouter
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       OPENROUTER_MODEL: google/gemma-4-26b-a4b-it:free
-      LLM_FALLBACK_PROVIDER: ""
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.6-terra' }}
+      LLM_FALLBACK_PROVIDERS: openai,groq
       LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '900' }}
       AUTO_PUBLISH_QUALITY_SCORE: ${{ vars.AUTO_PUBLISH_QUALITY_SCORE || '85' }}
       DRAFT_QUALITY_SCORE: ${{ vars.DRAFT_QUALITY_SCORE || '70' }}
@@ -129,7 +131,7 @@ jobs:
 
       - name: Collect candidates
         id: collect
-        if: steps.daily_guard.outputs.should_generate == 'true' && steps.schedule_plan.outputs.run_mode != 'watchdog'
+        if: steps.daily_guard.outputs.should_generate == 'true'
         shell: pwsh
         run: |
           $date = Get-Date -Format "yyyy-MM-dd"
@@ -157,6 +159,7 @@ jobs:
             --output-path ".\approved-thread-chain.txt" `
             --spec-output-path ".\approved-thread-spec.json" `
             --metadata-path ".\daily-editor\auto-thread-metadata.json" `
+            --attempt-history-path ".\daily-editor\state\generation-attempts.jsonl" `
             --metrics-path ".\threads-post-metrics.csv" `
             --posts-per-day ([int]$env:POSTS_PER_DAY) `
             --post-slot $env:POST_SLOT `
@@ -387,8 +390,14 @@ jobs:
           if (Test-Path ".\daily-editor\failures") {
             git add -f daily-editor/failures/*.json
           }
-          if (Test-Path ".\daily-editor\reserve") {
-            git add -f daily-editor/reserve/available daily-editor/reserve/used
+          if (Test-Path ".\daily-editor\state\generation-attempts.jsonl") {
+            git add -f daily-editor/state/generation-attempts.jsonl
+          }
+          if (Test-Path ".\daily-editor\reserve\available") {
+            git add -f daily-editor/reserve/available
+          }
+          if (Test-Path ".\daily-editor\reserve\used") {
+            git add -f daily-editor/reserve/used
           }
           git diff --cached --quiet
           if ($LASTEXITCODE -ne 0) {

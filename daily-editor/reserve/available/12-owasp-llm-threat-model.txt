@@ -1,0 +1,33 @@
+LLM 서비스의 보안을 검토하면서 위협 이름만 나열하면, 어떤 입력 경로를 어떻게 시험해야 하는지는 여전히 비어 있습니다.
+
+내가 위협과 control의 검증 방법을 설명 못하면, 그건 threat modeling이 아니라 용어 정리입니다.
+
+나쁜 요청:
+“이 LLM 앱의 보안 위험을 찾아줘.”
+
+좋은 요청:
+“위협이 들어오는 경로를 표시해줘.”
+“보호해야 할 asset과 trust boundary를 나눠줘.”
+“현재 control과 남은 gap을 연결해줘.”
+“실패를 재현할 test case를 남겨줘.”
+
+좋은 보안 검토는 위험을 많이 말하는 일이 아니라
+control이 실제로 작동하는지 시험하는 과정입니다.
+---
+[먼저 확인할 것]
+LLM threat model을 세 가지 연결로 확인합니다.
+
+1. threat와 entry point가 연결됐는가
+2. asset과 trust boundary가 구분됐는가
+3. control마다 검증 test가 존재하는가
+---
+[저장해둘 프롬프트]
+저장해둘 프롬프트:
+
+“LLM 보안 검토를 threat, entry point, asset, trust boundary, control, residual gap, test case 열로 나눈 matrix로 만들어줘.”
+---
+[참고 자료]
+https://owasp.org/www-project-top-10-for-large-language-model-applications/
+- 볼 부분: OWASP의 LLM 애플리케이션 위험 범주와 대응 자료
+
+- 적용: 위험 범주를 그대로 복사하지 않고 서비스의 입력 경로·통제·실패 테스트에 매핑하는 데 사용합니다.

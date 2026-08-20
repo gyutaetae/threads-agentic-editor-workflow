@@ -1,0 +1,22 @@
+{
+  "id": "github-dependency-review",
+  "thread_path": "11-github-dependency-review.txt",
+  "metadata": {
+    "topic": "software dependency review",
+    "format": "research_checklist",
+    "content_axis": "repo_teardown",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "dependency_change_review",
+    "failure_mode": "dependency_delta_impact_missing",
+    "artifact_type": "dependency_change_ledger",
+    "reusable_unit_type": "dependency_review_prompt",
+    "hook_pattern": "pull_request_dependency_scene",
+    "source_name": "GitHub Dependency Review",
+    "source_urls": ["https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review"],
+    "source_type": "official_documentation",
+    "human_signal_source": "inferred",
+    "human_signal_type": "dependency_change_uncertainty",
+    "research_problem": "dependency 변경을 파일 diff만으로 보면 새 패키지의 보안·라이선스 영향을 놓치기 쉽다."
+  }
+}
