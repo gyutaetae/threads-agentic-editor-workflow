@@ -458,7 +458,7 @@ AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토�
 “최종 판단까지의 이유를 한 줄씩 남겨줘.”
 
 좋은 bias 평가는 등급 하나가 아니라
-domain별 근거를 다시 확인할 수 있는 판단 기록입니다.",1,official_guideline,https://methods.cochrane.org/risk-bias-2,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-22T18:45:32+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+domain별 근거를 다시 확인할 수 있는 판단 기록입니다.",1,official_guideline,https://methods.cochrane.org/risk-bias-2,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-22T18:45:32+09:00,71,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-08-23,18094838366543346,https://www.threads.net/@arxiv.ai/post/18094838366543346,research_checklist,research_checklist,workflow_mode,save,research preregistration,"AI와 분석 계획을 만들면서 결과를 본 뒤 문서를 정리하면, 사전 결정과 사후 설명이 자연스럽게 섞일 수 있습니다.","AI와 분석 계획을 만들면서 결과를 본 뒤 문서를 정리하면, 사전 결정과 사후 설명이 자연스럽게 섞일 수 있습니다.
 
 내가 결과를 보기 전에 정한 분석을 설명 못하면, 그건 plan이 아니라 결과 해설입니다.
