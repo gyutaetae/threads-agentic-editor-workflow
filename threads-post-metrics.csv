@@ -489,3 +489,18 @@ domain별 근거를 다시 확인할 수 있는 판단 기록입니다.",1,offic
 
 좋은 dependency 검토는 package 이름을 읽는 일이 아니라
 변경이 공급망에 만든 영향을 확인하는 일입니다.",1,official_documentation,https://docs.github.com/en/code-security/supply-chain-security/understanding-your-software-supply-chain/about-dependency-review,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-24T19:07:04+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-25,18350437285168080,https://www.threads.net/@arxiv.ai/post/18350437285168080,research_checklist,research_checklist,failure_prevention,save,LLM application security,"LLM 서비스의 보안을 검토하면서 위협 이름만 나열하면, 어떤 입력 경로를 어떻게 시험해야 하는지는 여전히 비어 있습니다.","LLM 서비스의 보안을 검토하면서 위협 이름만 나열하면, 어떤 입력 경로를 어떻게 시험해야 하는지는 여전히 비어 있습니다.
+
+내가 위협과 control의 검증 방법을 설명 못하면, 그건 threat modeling이 아니라 용어 정리입니다.
+
+나쁜 요청:
+“이 LLM 앱의 보안 위험을 찾아줘.”
+
+좋은 요청:
+“위협이 들어오는 경로를 표시해줘.”
+“보호해야 할 asset과 trust boundary를 나눠줘.”
+“현재 control과 남은 gap을 연결해줘.”
+“실패를 재현할 test case를 남겨줘.”
+
+좋은 보안 검토는 위험을 많이 말하는 일이 아니라
+control이 실제로 작동하는지 시험하는 과정입니다.",1,official_guideline,https://owasp.org/www-project-top-10-for-large-language-model-applications/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-25T00:03:16+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
