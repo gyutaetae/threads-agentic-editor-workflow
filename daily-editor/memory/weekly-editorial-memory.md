@@ -1,44 +1,38 @@
 # Weekly Editorial Memory
 
-Updated: 2026-08-17T02:17:31+00:00
-Window: last 7 days; analyzed posts: 5
+Updated: 2026-08-24T02:21:06+00:00
+Window: last 7 days; analyzed posts: 3
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 5
+- Posts with collected metrics: 2
 
 ## Winning Slots
 
-- evening: 8
+- evening: 0
 
 ## Winning Experiments
 
-- daily_guarantee_primary: 7
-- daily_guarantee_reserve: 1
+- daily_guarantee_reserve: 0
 
 ## Winning Formats
 
-- agent_role_split: 5
-- tiny_source_case: 3
 - research_checklist: 0
 
 ## Winning Content Axes
 
-- workflow_mode: 5
-- official_update: 3
-- evidence_mapping: 0
+- failure_prevention: 0
 - paper_to_workflow: 0
+- workflow_mode: 0
 
 ## Top Posts
 
-- score 4 | evening | agent_role_split | citation_doubt | Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?
-- score 3 | evening | tiny_source_case | evidence_missing | 새로운 LLM 논문을 읽을 때, 모델이 본문 속 수많은 표와 그림 사이의 관계를 어떻게 찾아내는지 설명할 수 있나요?
-- score 1 | evening | agent_role_split | AI trial protocol planning | AI intervention 연구에서 결과가 나온 뒤 method를 정리하면, 처음 계획한 절차와 사후 설명이 섞일 수 있습니다.
-- score 0 | evening | research_checklist | diagnostic AI accuracy reporting | diagnostic AI 논문에서 accuracy 한 줄만 비교하면, 어떤 threshold와 reference standard에서 나온 결과인지 사라집니다.
-- score 0 | evening | research_checklist | medical imaging AI reporting | medical imaging AI 논문에서 train·test 비율만 보면, 같은 환자의 image가 여러 split에 들어갔는지 놓칠 수 있습니다.
+- score 0 | evening | research_checklist | AI risk management | AI 기능을 검토하면서 위험 목록만 길게 만들면, 어떤 위험부터 누가 처리해야 하는지 다시 흐려집니다.
+- score 0 | evening | research_checklist | risk of bias assessment | AI에게 논문의 bias를 평가시킨 뒤 low·high 같은 등급만 받으면, 판단 근거가 어디서 나왔는지 확인하기 어렵습니다.
+- score 0 | evening | research_checklist | research preregistration | AI와 분석 계획을 만들면서 결과를 본 뒤 문서를 정리하면, 사전 결정과 사후 설명이 자연스럽게 섞일 수 있습니다.
 
 ## Editorial Decisions
 
