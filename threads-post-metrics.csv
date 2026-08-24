@@ -443,7 +443,7 @@ AI는 단순 나열기가 아니라, 근거의 유효성을 검증하는 검토�
 “완료 여부를 다시 볼 날짜를 남겨줘.”
 
 좋은 위험 검토는 목록을 늘리는 일이 아니라
-근거와 책임이 연결된 후속 조치를 만드는 일입니다.",1,official_guideline,https://airc.nist.gov/airmf-resources/playbook/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-21T03:02:37+09:00,60,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+근거와 책임이 연결된 후속 조치를 만드는 일입니다.",1,official_guideline,https://airc.nist.gov/airmf-resources/playbook/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-21T03:02:37+09:00,63,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-08-22,18427540459181458,https://www.threads.net/@arxiv.ai/post/18427540459181458,research_checklist,research_checklist,paper_to_workflow,save,risk of bias assessment,"AI에게 논문의 bias를 평가시킨 뒤 low·high 같은 등급만 받으면, 판단 근거가 어디서 나왔는지 확인하기 어렵습니다.","AI에게 논문의 bias를 평가시킨 뒤 low·high 같은 등급만 받으면, 판단 근거가 어디서 나왔는지 확인하기 어렵습니다.
 
 내가 각 bias 판단을 받치는 연구 정보를 설명 못하면, 그건 appraisal이 아니라 label 복사입니다.
