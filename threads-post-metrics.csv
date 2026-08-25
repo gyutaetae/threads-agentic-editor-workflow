@@ -504,3 +504,18 @@ domain별 근거를 다시 확인할 수 있는 판단 기록입니다.",1,offic
 
 좋은 보안 검토는 위험을 많이 말하는 일이 아니라
 control이 실제로 작동하는지 시험하는 과정입니다.",1,official_guideline,https://owasp.org/www-project-top-10-for-large-language-model-applications/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-25T00:03:16+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-26,18098838008017734,https://www.threads.net/@arxiv.ai/post/18098838008017734,research_checklist,research_checklist,workflow_mode,save,reporting guideline selection,"논문 초안을 AI에게 맡기기 전에 reporting guideline을 하나만 검색하면, 연구 설계와 맞지 않는 checklist를 고를 수 있습니다.","논문 초안을 AI에게 맡기기 전에 reporting guideline을 하나만 검색하면, 연구 설계와 맞지 않는 checklist를 고를 수 있습니다.
+
+내가 왜 그 guideline이 내 연구 설계와 맞는지 설명 못하면, 그건 reporting plan이 아니라 checklist 선택입니다.
+
+나쁜 요청:
+“이 논문에 맞는 reporting guideline을 찾아줘.”
+
+좋은 요청:
+“연구 설계와 주요 산출물을 먼저 분류해줘.”
+“후보 guideline의 적용 범위를 비교해줘.”
+“필수 항목과 현재 evidence 위치를 연결해줘.”
+“적용되지 않는 항목의 이유를 남겨줘.”
+
+좋은 guideline 선택은 유명한 checklist를 고르는 일이 아니라
+연구 설계와 보고 항목의 대응을 증명하는 일입니다.",1,official_directory,https://www.equator-network.org/reporting-guidelines/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-26T00:08:35+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
