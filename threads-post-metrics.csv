@@ -519,3 +519,18 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 
 좋은 guideline 선택은 유명한 checklist를 고르는 일이 아니라
 연구 설계와 보고 항목의 대응을 증명하는 일입니다.",1,official_directory,https://www.equator-network.org/reporting-guidelines/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-26T00:08:35+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-08-27,18126915571759319,https://www.threads.net/@arxiv.ai/post/18126915571759319,research_checklist,research_checklist,paper_to_workflow,save,FAIR research data,"연구 dataset을 AI로 정리한 뒤 파일 링크만 넘기면, 다른 사람이 그 데이터를 찾고 해석하고 재사용하기 어렵습니다.","연구 dataset을 AI로 정리한 뒤 파일 링크만 넘기면, 다른 사람이 그 데이터를 찾고 해석하고 재사용하기 어렵습니다.
+
+내가 dataset의 식별자와 재사용 조건을 설명 못하면, 그건 data sharing이 아니라 파일 전달입니다.
+
+나쁜 요청:
+“이 dataset을 공유하기 좋게 정리해줘.”
+
+좋은 요청:
+“지속 가능한 identifier와 위치를 표시해줘.”
+“변수·단위·생성 과정을 metadata로 남겨줘.”
+“접근 조건과 license를 분리해줘.”
+“재사용에 필요한 software와 provenance를 연결해줘.”
+
+좋은 data handoff는 파일을 올리는 일이 아니라
+다른 사람이 의미와 조건을 복원할 수 있게 만드는 일입니다.",1,official_guideline,https://www.go-fair.org/fair-principles/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-27T00:55:30+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
