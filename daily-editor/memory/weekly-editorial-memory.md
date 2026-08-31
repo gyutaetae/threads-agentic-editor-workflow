@@ -1,38 +1,40 @@
 # Weekly Editorial Memory
 
-Updated: 2026-08-24T02:21:06+00:00
-Window: last 7 days; analyzed posts: 3
+Updated: 2026-08-31T06:35:55+00:00
+Window: last 7 days; analyzed posts: 4
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
 - Current signal: early/weak
-- Posts with collected metrics: 2
+- Posts with collected metrics: 4
 
 ## Winning Slots
 
-- evening: 0
+- evening: 2
 
 ## Winning Experiments
 
-- daily_guarantee_reserve: 0
+- daily_guarantee_reserve: 2
 
 ## Winning Formats
 
-- research_checklist: 0
+- research_checklist: 2
 
 ## Winning Content Axes
 
+- repo_teardown: 1
+- workflow_mode: 1
 - failure_prevention: 0
 - paper_to_workflow: 0
-- workflow_mode: 0
 
 ## Top Posts
 
-- score 0 | evening | research_checklist | AI risk management | AI 기능을 검토하면서 위험 목록만 길게 만들면, 어떤 위험부터 누가 처리해야 하는지 다시 흐려집니다.
-- score 0 | evening | research_checklist | risk of bias assessment | AI에게 논문의 bias를 평가시킨 뒤 low·high 같은 등급만 받으면, 판단 근거가 어디서 나왔는지 확인하기 어렵습니다.
-- score 0 | evening | research_checklist | research preregistration | AI와 분석 계획을 만들면서 결과를 본 뒤 문서를 정리하면, 사전 결정과 사후 설명이 자연스럽게 섞일 수 있습니다.
+- score 1 | evening | research_checklist | software dependency review | AI에게 pull request를 요약시킬 때 manifest diff만 보면, 새 dependency가 가져온 보안·라이선스 영향은 빠질 수 있습니다.
+- score 1 | evening | research_checklist | reporting guideline selection | 논문 초안을 AI에게 맡기기 전에 reporting guideline을 하나만 검색하면, 연구 설계와 맞지 않는 checklist를 고를 수 있습니다.
+- score 0 | evening | research_checklist | LLM application security | LLM 서비스의 보안을 검토하면서 위협 이름만 나열하면, 어떤 입력 경로를 어떻게 시험해야 하는지는 여전히 비어 있습니다.
+- score 0 | evening | research_checklist | FAIR research data | 연구 dataset을 AI로 정리한 뒤 파일 링크만 넘기면, 다른 사람이 그 데이터를 찾고 해석하고 재사용하기 어렵습니다.
 
 ## Editorial Decisions
 
