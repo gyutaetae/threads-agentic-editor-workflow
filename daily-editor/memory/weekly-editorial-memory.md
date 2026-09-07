@@ -1,40 +1,49 @@
 # Weekly Editorial Memory
 
-Updated: 2026-08-31T06:35:55+00:00
-Window: last 7 days; analyzed posts: 4
+Updated: 2026-09-07T05:37:55+00:00
+Window: last 7 days; analyzed posts: 25
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
-- Current signal: early/weak
-- Posts with collected metrics: 4
+- Current signal: usable
+- Posts with collected metrics: 25
 
 ## Winning Slots
 
-- evening: 2
+- evening: 81
 
 ## Winning Experiments
 
-- daily_guarantee_reserve: 2
+- daily_guarantee_primary: 55
+- manual_revision: 16
+- daily_guarantee_reserve: 8
+- daily_1800_kst: 1
+- manual_evening: 1
 
 ## Winning Formats
 
-- research_checklist: 2
+- tiny_source_case: 27
+- agent_role_split: 25
+- research_checklist: 24
+- weekly_review_advice: 5
 
 ## Winning Content Axes
 
+- workflow_mode: 32
+- official_update: 27
+- checklist: 17
+- paper_to_workflow: 4
 - repo_teardown: 1
-- workflow_mode: 1
-- failure_prevention: 0
-- paper_to_workflow: 0
 
 ## Top Posts
 
-- score 1 | evening | research_checklist | software dependency review | AI에게 pull request를 요약시킬 때 manifest diff만 보면, 새 dependency가 가져온 보안·라이선스 영향은 빠질 수 있습니다.
-- score 1 | evening | research_checklist | reporting guideline selection | 논문 초안을 AI에게 맡기기 전에 reporting guideline을 하나만 검색하면, 연구 설계와 맞지 않는 checklist를 고를 수 있습니다.
-- score 0 | evening | research_checklist | LLM application security | LLM 서비스의 보안을 검토하면서 위협 이름만 나열하면, 어떤 입력 경로를 어떻게 시험해야 하는지는 여전히 비어 있습니다.
-- score 0 | evening | research_checklist | FAIR research data | 연구 dataset을 AI로 정리한 뒤 파일 링크만 넘기면, 다른 사람이 그 데이터를 찾고 해석하고 재사용하기 어렵습니다.
+- score 24 | evening | tiny_source_case | draft_without_argument | 논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
+- score 16 | evening | research_checklist | intra-paper claim verification | 논문의 novelty를 검토할 때
+- score 7 | evening | agent_role_split | citation_doubt | AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?
+- score 6 | evening | agent_role_split | literature_overload | 관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?
+- score 5 | evening | weekly_review_advice | citation_doubt | AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?
 
 ## Editorial Decisions
 
