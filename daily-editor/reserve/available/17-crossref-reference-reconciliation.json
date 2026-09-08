@@ -1,0 +1,24 @@
+{
+  "id": "crossref-reference-reconciliation",
+  "thread_path": "17-crossref-reference-reconciliation.txt",
+  "metadata": {
+    "topic": "reference metadata reconciliation",
+    "format": "research_checklist",
+    "content_axis": "failure_prevention",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "bibliography_verification",
+    "failure_mode": "reference_metadata_mismatch",
+    "artifact_type": "reference_reconciliation_table",
+    "reusable_unit_type": "reference_audit_prompt",
+    "hook_pattern": "bibliography_formatting_scene",
+    "source_name": "Crossref REST API",
+    "source_urls": [
+      "https://www.crossref.org/documentation/retrieve-metadata/rest-api/"
+    ],
+    "source_type": "official_documentation",
+    "human_signal_source": "inferred",
+    "human_signal_type": "bibliography_metadata_uncertainty",
+    "research_problem": "참고문헌 형식만 통일하면 DOI와 제목·저자·연도의 불일치나 중복을 놓칠 수 있다."
+  }
+}

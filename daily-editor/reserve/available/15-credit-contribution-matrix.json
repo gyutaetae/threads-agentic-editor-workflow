@@ -1,0 +1,24 @@
+{
+  "id": "credit-contribution-matrix",
+  "thread_path": "15-credit-contribution-matrix.txt",
+  "metadata": {
+    "topic": "authorship contribution recording",
+    "format": "research_checklist",
+    "content_axis": "failure_prevention",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "authorship_discussion",
+    "failure_mode": "contribution_evidence_missing",
+    "artifact_type": "contributor_role_matrix",
+    "reusable_unit_type": "authorship_matrix_prompt",
+    "hook_pattern": "authorship_order_scene",
+    "source_name": "CRediT Contributor Roles Taxonomy",
+    "source_urls": [
+      "https://credit.niso.org/"
+    ],
+    "source_type": "official_standard",
+    "human_signal_source": "inferred",
+    "human_signal_type": "authorship_contribution_ambiguity",
+    "research_problem": "저자 순서를 먼저 정하면 실제 수행 작업과 역할 근거가 뒤늦게 끼워 맞춰질 수 있다."
+  }
+}

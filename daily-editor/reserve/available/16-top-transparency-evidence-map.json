@@ -1,0 +1,24 @@
+{
+  "id": "top-transparency-evidence-map",
+  "thread_path": "16-top-transparency-evidence-map.txt",
+  "metadata": {
+    "topic": "research transparency audit",
+    "format": "research_checklist",
+    "content_axis": "failure_prevention",
+    "format_type": "research_checklist",
+    "post_goal": "save",
+    "workflow_stage": "manuscript_transparency_review",
+    "failure_mode": "claim_disclosure_link_missing",
+    "artifact_type": "transparency_evidence_map",
+    "reusable_unit_type": "transparency_audit_prompt",
+    "hook_pattern": "manuscript_transparency_scene",
+    "source_name": "Transparency and Openness Promotion Guidelines",
+    "source_urls": [
+      "https://www.cos.io/initiatives/top-guidelines"
+    ],
+    "source_type": "official_guideline",
+    "human_signal_source": "inferred",
+    "human_signal_type": "transparency_statement_mismatch",
+    "research_problem": "원고의 투명성 문구와 실제 데이터·코드·분석 계획의 위치 및 접근 조건이 연결되지 않을 수 있다."
+  }
+}

@@ -1,0 +1,33 @@
+논문 초안을 AI로 점검하면서 “투명하게 썼는지 봐줘”라고만 하면, 어떤 주장에 어떤 공개 근거가 필요한지는 남지 않습니다.
+
+내가 claim별 데이터·코드·분석 계획의 공개 상태를 설명 못하면, 그건 transparency 검토가 아니라 인상 평가입니다.
+
+나쁜 요청:
+“이 논문이 투명한지 평가해줘.”
+
+좋은 요청:
+“핵심 claim마다 필요한 공개 근거를 붙여줘.”
+“데이터·코드·분석 계획의 위치와 접근 조건을 나눠줘.”
+“공개할 수 없는 항목에는 이유를 기록해줘.”
+“본문의 statement와 실제 repository 상태를 비교해줘.”
+
+좋은 transparency 점검은 공개 여부를 묻는 일이 아니라
+주장과 확인 경로를 연결하는 일입니다.
+---
+[먼저 확인할 것]
+투명성 점검을 세 가지로 나눕니다.
+
+1. claim과 필요한 데이터·코드·계획이 연결됐는가
+2. 공개 위치, 접근 조건, 예외 이유가 구분됐는가
+3. 원고의 statement와 실제 자료 상태가 일치하는가
+---
+[저장해둘 프롬프트]
+AI agent에게 이렇게 시켜보세요.
+
+“원고의 핵심 claim을 뽑고 claim, 필요한 evidence, data 위치, code 위치, analysis plan, access condition, manuscript statement, 불일치 열로 transparency evidence map을 만들어줘.”
+---
+[참고 자료]
+https://www.cos.io/initiatives/top-guidelines
+- 볼 부분: TOP Guidelines는 citation, data, code, materials, design·analysis transparency와 preregistration 관련 기준을 제시합니다.
+
+- 적용: 모든 것을 공개하라는 구호 대신, 원고의 claim마다 확인 가능한 자료 위치와 예외 이유를 연결하는 점검표로 사용합니다.
