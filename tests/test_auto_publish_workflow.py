@@ -24,6 +24,9 @@ class AutoPublishWorkflowTests(unittest.TestCase):
         self.assertIn('--attempt-history-path ".\\daily-editor\\state\\generation-attempts.jsonl"', self.workflow)
         self.assertIn('git add -f daily-editor/state/generation-attempts.jsonl', self.workflow)
 
+    def test_default_generation_count_preserves_rate_limit_headroom(self) -> None:
+        self.assertIn("GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}", self.workflow)
+
     def test_optional_reserve_directories_are_staged_independently(self) -> None:
         self.assertIn('Test-Path ".\\daily-editor\\reserve\\available"', self.workflow)
         self.assertIn('Test-Path ".\\daily-editor\\reserve\\used"', self.workflow)

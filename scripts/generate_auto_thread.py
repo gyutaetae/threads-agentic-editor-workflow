@@ -1434,6 +1434,18 @@ def fallback_provider_chain(provider: str, model: str) -> list[dict]:
     return chain
 
 
+def select_best_option(options: list[dict]) -> dict:
+    """Prefer an actually publishable option before comparing quality scores."""
+    decision_rank = {"discard": 0, "draft": 1, "publish": 2}
+    return max(
+        options,
+        key=lambda option: (
+            decision_rank.get(str(option.get("quality_decision") or "discard").lower(), 0),
+            int(option.get("quality_score") or 0),
+        ),
+    )
+
+
 def call_llm(
     provider: str,
     api_key: str,
@@ -1452,6 +1464,7 @@ def call_llm(
         raise SystemExit(f"Unsupported LLM provider: {provider}")
 
     output_tokens = max_output_tokens
+    effective_response_schema = response_schema
     for attempt in range(1, 4):
         request_body = {
             "model": model,
@@ -1465,7 +1478,7 @@ def call_llm(
                     "content": prompt,
                 },
             ],
-            **request_options(provider, model, response_schema),
+            **request_options(provider, model, effective_response_schema),
         }
         token_limit_key = "max_tokens" if provider == "openrouter" else "max_completion_tokens"
         request_body[token_limit_key] = output_tokens
@@ -1485,6 +1498,19 @@ def call_llm(
         )
         if response.ok:
             return response.json()
+        if (
+            provider == "openrouter"
+            and effective_response_schema is not None
+            and response.status_code == 404
+            and "requested parameters" in response.text.lower()
+            and attempt < 3
+        ):
+            print(
+                "openrouter endpoint does not support strict json_schema; "
+                "retrying with json_object compatibility mode."
+            )
+            effective_response_schema = None
+            continue
         if is_size_limit(response) and output_tokens > 300 and attempt < 3:
             next_tokens = max(300, int(output_tokens * 0.65))
             print(
@@ -1773,7 +1799,7 @@ def main() -> int:
     if not generated_options:
         raise SystemExit("No thread options were generated.")
 
-    best = max(generated_options, key=lambda option: int(option.get("quality_score") or 0))
+    best = select_best_option(generated_options)
     if "thread_text" not in best:
         metadata_path = Path(args.metadata_path)
         metadata_path.parent.mkdir(parents=True, exist_ok=True)

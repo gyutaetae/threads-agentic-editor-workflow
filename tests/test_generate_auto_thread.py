@@ -27,6 +27,7 @@ from scripts.generate_auto_thread import (
     quality_gate,
     read_skill_library,
     safe_slug,
+    select_best_option,
     select_content_format,
     validate_quote_selection,
     validate_thread,
@@ -551,6 +552,53 @@ class SelfImprovementLoopTests(unittest.TestCase):
         self.assertEqual(kwargs["headers"]["Authorization"], "Bearer key")
         self.assertIn("HTTP-Referer", kwargs["headers"])
         self.assertIn("X-Title", kwargs["headers"])
+
+    def test_openrouter_retries_unsupported_strict_schema_in_json_object_mode(self) -> None:
+        class FakeResponse:
+            def __init__(self, status_code: int, text: str = "", payload: dict | None = None) -> None:
+                self.status_code = status_code
+                self.text = text
+                self._payload = payload or {}
+                self.ok = status_code < 400
+
+            def json(self) -> dict:
+                return self._payload
+
+        request_bodies = []
+
+        def fake_post(*args, **kwargs):
+            request_bodies.append(kwargs["json"])
+            if len(request_bodies) == 1:
+                return FakeResponse(
+                    404,
+                    '{"error":{"message":"No endpoints found that can handle the requested parameters."}}',
+                )
+            return FakeResponse(200, payload={"choices": [{"message": {"content": '{"thread_text":"ok"}'}}]})
+
+        with patch("scripts.generate_auto_thread.requests.post", side_effect=fake_post):
+            payload = call_llm(
+                "openrouter",
+                "key",
+                "google/gemma-4-26b-a4b-it:free",
+                "prompt",
+                max_output_tokens=500,
+                response_schema=THREAD_CANDIDATE_SCHEMA,
+            )
+
+        self.assertEqual(extract_text(payload), '{"thread_text":"ok"}')
+        self.assertEqual(request_bodies[0]["response_format"]["type"], "json_schema")
+        self.assertEqual(request_bodies[0]["provider"], {"require_parameters": True})
+        self.assertEqual(request_bodies[1]["response_format"], {"type": "json_object"})
+        self.assertNotIn("provider", request_bodies[1])
+
+    def test_best_option_prefers_publishable_candidate_over_higher_scoring_draft(self) -> None:
+        options = [
+            {"option": 1, "quality_score": 100, "quality_decision": "draft"},
+            {"option": 2, "quality_score": 92, "quality_decision": "publish"},
+            {"option": 3, "quality_score": 99, "quality_decision": "discard"},
+        ]
+
+        self.assertEqual(select_best_option(options)["option"], 2)
 
     def test_malformed_model_json_uses_fallback_thread(self) -> None:
         with TemporaryDirectory() as tmp:
