@@ -13,6 +13,7 @@ from scripts.generate_auto_thread import (
     build_fallback_thread,
     classify_hook_pattern,
     call_groq,
+    call_json_with_provider_fallback,
     call_llm,
     choose_candidates,
     curation_bonus,
@@ -599,6 +600,37 @@ class SelfImprovementLoopTests(unittest.TestCase):
         ]
 
         self.assertEqual(select_best_option(options)["option"], 2)
+
+    def test_json_request_falls_back_when_first_provider_returns_empty_content(self) -> None:
+        empty_payload = {"choices": [{"message": {"content": ""}}]}
+        valid_payload = {"choices": [{"message": {"content": '{"score":91,"decision":"publish"}'}}]}
+
+        with patch.dict(
+            os.environ,
+            {
+                "OPENAI_API_KEY": "openai-key",
+                "GROQ_API_KEY": "groq-key",
+                "GROQ_MODEL": "openai/gpt-oss-120b",
+                "LLM_FALLBACK_PROVIDERS": "groq",
+            },
+            clear=True,
+        ), patch(
+            "scripts.generate_auto_thread.call_llm",
+            side_effect=[empty_payload, valid_payload],
+        ) as mocked_call:
+            result, raw_text, provider, model = call_json_with_provider_fallback(
+                "openai",
+                "gpt-5.6-terra",
+                "evaluate",
+                800,
+                purpose="evaluation",
+            )
+
+        self.assertEqual(mocked_call.call_count, 2)
+        self.assertEqual(result["decision"], "publish")
+        self.assertIn('"score":91', raw_text)
+        self.assertEqual(provider, "groq")
+        self.assertEqual(model, "openai/gpt-oss-120b")
 
     def test_malformed_model_json_uses_fallback_thread(self) -> None:
         with TemporaryDirectory() as tmp:

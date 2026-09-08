@@ -27,6 +27,12 @@ class AutoPublishWorkflowTests(unittest.TestCase):
     def test_default_generation_count_preserves_rate_limit_headroom(self) -> None:
         self.assertIn("GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}", self.workflow)
 
+    def test_dry_run_does_not_require_a_reserve_thread(self) -> None:
+        reserve_block = self.workflow.split("- name: Select prevalidated reserve chain", 1)[1].split(
+            "- name: Validate generated chain", 1
+        )[0]
+        self.assertIn("(github.event_name == 'schedule' || inputs.publish == true)", reserve_block)
+
     def test_optional_reserve_directories_are_staged_independently(self) -> None:
         self.assertIn('Test-Path ".\\daily-editor\\reserve\\available"', self.workflow)
         self.assertIn('Test-Path ".\\daily-editor\\reserve\\used"', self.workflow)

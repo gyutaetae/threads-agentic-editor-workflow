@@ -231,6 +231,7 @@ jobs:
           ${{
             always() &&
             steps.daily_guard.outputs.should_generate == 'true' &&
+            (github.event_name == 'schedule' || inputs.publish == true) &&
             (
               steps.schedule_plan.outputs.run_mode == 'watchdog' ||
               steps.collect.outputs.skip_auto_publish == 'true' ||

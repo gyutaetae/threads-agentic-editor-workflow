@@ -1529,6 +1529,39 @@ def call_llm(
     raise SystemExit(f"{provider} API did not return a response after retries.")
 
 
+def call_json_with_provider_fallback(
+    provider: str,
+    model: str,
+    prompt: str,
+    max_output_tokens: int,
+    response_schema: dict | None = None,
+    purpose: str = "request",
+) -> tuple[dict, str, str, str]:
+    errors = []
+    for provider_config in fallback_provider_chain(provider, model):
+        active_provider = provider_config["provider"]
+        active_model = provider_config["model"]
+        try:
+            payload = call_llm(
+                active_provider,
+                provider_config["api_key"],
+                active_model,
+                prompt,
+                max_output_tokens,
+                response_schema=response_schema,
+            )
+            raw_text = extract_text(payload)
+            if not raw_text:
+                raise ValueError("empty model response")
+            return extract_json(raw_text), raw_text, active_provider, active_model
+        except (SystemExit, ValueError, json.JSONDecodeError) as exc:
+            message = f"{active_provider} {purpose} failed: {exc}"
+            errors.append(message)
+            print(message)
+
+    raise SystemExit("; ".join(errors) or f"No provider was available for {purpose}.")
+
+
 def call_groq(api_key: str, model: str, prompt: str, max_output_tokens: int = DEFAULT_MAX_OUTPUT_TOKENS) -> dict:
     return call_llm("groq", api_key, model, prompt, max_output_tokens)
 
@@ -1844,15 +1877,13 @@ def main() -> int:
             skill_library=skill_library,
         )
         try:
-            evaluator_payload = call_llm(
+            evaluator_result, evaluator_text, evaluator_provider, evaluator_model = call_json_with_provider_fallback(
                 evaluator_provider,
-                api_key_for_provider(evaluator_provider),
                 evaluator_model,
                 evaluator_prompt,
                 min(args.max_output_tokens, 800),
+                purpose="evaluation",
             )
-            evaluator_text = extract_text(evaluator_payload)
-            evaluator_result = extract_json(evaluator_text)
             evaluator_result["model_output_raw"] = evaluator_text
         except SystemExit as exc:
             evaluator_result = fallback_evaluation(f"Evaluator failed: {exc}")
@@ -1911,15 +1942,18 @@ def main() -> int:
                 persistent_learnings=persistent_learnings,
                 skill_library=skill_library,
             )
-            revised_evaluator_payload = call_llm(
+            (
+                revised_evaluator_result,
+                revised_evaluator_text,
                 evaluator_provider,
-                api_key_for_provider(evaluator_provider),
+                evaluator_model,
+            ) = call_json_with_provider_fallback(
+                evaluator_provider,
                 evaluator_model,
                 revised_evaluator_prompt,
                 min(args.max_output_tokens, 800),
+                purpose="revised evaluation",
             )
-            revised_evaluator_text = extract_text(revised_evaluator_payload)
-            revised_evaluator_result = extract_json(revised_evaluator_text)
             revised_evaluator_result["model_output_raw"] = revised_evaluator_text
             revised_gate = apply_evaluator_gate(revised_gate, revised_evaluator_result)
             revised_gate = apply_daily_guarantee_gate(
