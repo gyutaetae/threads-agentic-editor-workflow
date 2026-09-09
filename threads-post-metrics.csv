@@ -534,3 +534,18 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 
 좋은 data handoff는 파일을 올리는 일이 아니라
 다른 사람이 의미와 조건을 복원할 수 있게 만드는 일입니다.",1,official_guideline,https://www.go-fair.org/fair-principles/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-08-27T00:55:30+09:00,313,0,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
+2026-09-09,18208427929362190,https://www.threads.net/@arxiv.ai/post/18208427929362190,research_checklist,research_checklist,failure_prevention,save,authorship contribution recording,"논문 초안을 다 쓴 뒤 AI에게 저자 순서를 정해달라고 하면, 실제 기여와 이름의 순서가 쉽게 섞입니다.","논문 초안을 다 쓴 뒤 AI에게 저자 순서를 정해달라고 하면, 실제 기여와 이름의 순서가 쉽게 섞입니다.
+
+내가 각 저자의 역할과 근거를 설명 못하면, 그건 authorship 합의가 아니라 순서 추측입니다.
+
+나쁜 요청:
+“기여도를 보고 저자 순서를 정해줘.”
+
+좋은 요청:
+“저자별 수행 작업을 증거와 함께 적어줘.”
+“각 작업을 CRediT 역할에 연결해줘.”
+“기여가 겹치거나 비어 있는 역할을 표시해줘.”
+“저자 순서 판단과 역할 기록을 분리해줘.”
+
+좋은 authorship 기록은 이름을 정렬하는 일이 아니라
+누가 무엇을 했는지 검증 가능하게 남기는 일입니다.",1,official_standard,https://credit.niso.org/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-09T22:48:07+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
