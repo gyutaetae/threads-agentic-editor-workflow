@@ -549,3 +549,18 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 
 좋은 authorship 기록은 이름을 정렬하는 일이 아니라
 누가 무엇을 했는지 검증 가능하게 남기는 일입니다.",1,official_standard,https://credit.niso.org/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-09T22:48:07+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-09-10,18058364201538995,https://www.threads.net/@arxiv.ai/post/18058364201538995,research_checklist,research_checklist,failure_prevention,save,research transparency audit,"논문 초안을 AI로 점검하면서 “투명하게 썼는지 봐줘”라고만 하면, 어떤 주장에 어떤 공개 근거가 필요한지는 남지 않습니다.","논문 초안을 AI로 점검하면서 “투명하게 썼는지 봐줘”라고만 하면, 어떤 주장에 어떤 공개 근거가 필요한지는 남지 않습니다.
+
+내가 claim별 데이터·코드·분석 계획의 공개 상태를 설명 못하면, 그건 transparency 검토가 아니라 인상 평가입니다.
+
+나쁜 요청:
+“이 논문이 투명한지 평가해줘.”
+
+좋은 요청:
+“핵심 claim마다 필요한 공개 근거를 붙여줘.”
+“데이터·코드·분석 계획의 위치와 접근 조건을 나눠줘.”
+“공개할 수 없는 항목에는 이유를 기록해줘.”
+“본문의 statement와 실제 repository 상태를 비교해줘.”
+
+좋은 transparency 점검은 공개 여부를 묻는 일이 아니라
+주장과 확인 경로를 연결하는 일입니다.",1,official_guideline,https://www.cos.io/initiatives/top-guidelines,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-10T22:40:11+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
