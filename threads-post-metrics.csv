@@ -564,3 +564,17 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 
 좋은 transparency 점검은 공개 여부를 묻는 일이 아니라
 주장과 확인 경로를 연결하는 일입니다.",1,official_guideline,https://www.cos.io/initiatives/top-guidelines,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-10T22:40:11+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-09-11,17950569015267634,https://www.threads.net/@arxiv.ai/post/17950569015267634,weekly_review_advice,weekly_review_advice,official_update,share,evidence_missing,"이번 주 논문을 훑고 “결과가 좋다”만 메모했다면, 발표 때 어느 표가 그 주장을 받치는지 막힙니다.","이번 주 논문을 훑고 “결과가 좋다”만 메모했다면, 발표 때 어느 표가 그 주장을 받치는지 막힙니다.
+
+내가 claim을 어떤 실험·표·그림이 받치는지 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.
+
+나쁜 요청:
+“이 논문의 핵심 결과를 요약해줘.”
+
+좋은 요청:
+“논문의 핵심 claim을 3개로 나누고 원문 문장을 붙여줘.”
+“각 claim을 뒷받침하는 표·그림·실험 번호를 연결해줘.”
+“근거가 없는 claim과 저자가 밝힌 limitation을 분리해줘.”
+“내가 발표에서 설명할 수 있도록 claim별 검증 질문을 하나씩 써줘.”
+
+좋은 읽기는 요약을 늘리는 일이 아니라, 근거의 위치를 찾는 일입니다.",1,official_feed,https://arxiv.org/abs/2609.11246,52,100,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-11T22:38:37+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
