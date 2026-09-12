@@ -578,3 +578,18 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 “내가 발표에서 설명할 수 있도록 claim별 검증 질문을 하나씩 써줘.”
 
 좋은 읽기는 요약을 늘리는 일이 아니라, 근거의 위치를 찾는 일입니다.",1,official_feed,https://arxiv.org/abs/2609.11246,52,100,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-11T22:38:37+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-09-12,18111323560864629,https://www.threads.net/@arxiv.ai/post/18111323560864629,research_checklist,research_checklist,failure_prevention,save,reference metadata reconciliation,"AI가 정리한 참고문헌을 형식만 맞춰 붙이면, 같은 논문이 두 번 들어가거나 DOI와 제목이 다른 오류를 놓치기 쉽습니다.","AI가 정리한 참고문헌을 형식만 맞춰 붙이면, 같은 논문이 두 번 들어가거나 DOI와 제목이 다른 오류를 놓치기 쉽습니다.
+
+내가 각 reference의 식별자와 서지정보가 맞는지 설명 못하면, 그건 bibliography 정리가 아니라 형식 정돈입니다.
+
+나쁜 요청:
+“참고문헌 형식을 통일해줘.”
+
+좋은 요청:
+“제목·저자·연도·DOI를 항목별로 분리해줘.”
+“DOI로 조회한 metadata와 초안 값을 비교해줘.”
+“중복 후보와 불일치 필드를 표시해줘.”
+“조회되지 않는 항목은 추정하지 말고 보류해줘.”
+
+좋은 reference 정리는 모양을 맞추는 일이 아니라
+식별자와 서지정보의 일치를 확인하는 일입니다.",1,official_documentation,https://www.crossref.org/documentation/retrieve-metadata/rest-api/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-12T21:55:14+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
