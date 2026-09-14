@@ -1,49 +1,40 @@
 # Weekly Editorial Memory
 
-Updated: 2026-09-07T05:37:55+00:00
-Window: last 7 days; analyzed posts: 25
+Updated: 2026-09-14T05:42:31+00:00
+Window: last 7 days; analyzed posts: 4
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
-- Current signal: usable
-- Posts with collected metrics: 25
+- Current signal: early/weak
+- Posts with collected metrics: 4
 
 ## Winning Slots
 
-- evening: 81
+- evening: 7
 
 ## Winning Experiments
 
-- daily_guarantee_primary: 55
-- manual_revision: 16
-- daily_guarantee_reserve: 8
-- daily_1800_kst: 1
-- manual_evening: 1
+- daily_guarantee_reserve: 4
+- daily_guarantee_primary: 3
 
 ## Winning Formats
 
-- tiny_source_case: 27
-- agent_role_split: 25
-- research_checklist: 24
-- weekly_review_advice: 5
+- research_checklist: 4
+- weekly_review_advice: 3
 
 ## Winning Content Axes
 
-- workflow_mode: 32
-- official_update: 27
-- checklist: 17
-- paper_to_workflow: 4
-- repo_teardown: 1
+- failure_prevention: 4
+- official_update: 3
 
 ## Top Posts
 
-- score 24 | evening | tiny_source_case | draft_without_argument | 논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
-- score 16 | evening | research_checklist | intra-paper claim verification | 논문의 novelty를 검토할 때
-- score 7 | evening | agent_role_split | citation_doubt | AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?
-- score 6 | evening | agent_role_split | literature_overload | 관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?
-- score 5 | evening | weekly_review_advice | citation_doubt | AI Agent가 작성한 리서치 리포트를 그대로 보고서로 제출하고 계신가요?
+- score 3 | evening | weekly_review_advice | evidence_missing | 이번 주 논문을 훑고 “결과가 좋다”만 메모했다면, 발표 때 어느 표가 그 주장을 받치는지 막힙니다.
+- score 2 | evening | research_checklist | reference metadata reconciliation | AI가 정리한 참고문헌을 형식만 맞춰 붙이면, 같은 논문이 두 번 들어가거나 DOI와 제목이 다른 오류를 놓치기 쉽습니다.
+- score 1 | evening | research_checklist | authorship contribution recording | 논문 초안을 다 쓴 뒤 AI에게 저자 순서를 정해달라고 하면, 실제 기여와 이름의 순서가 쉽게 섞입니다.
+- score 1 | evening | research_checklist | research transparency audit | 논문 초안을 AI로 점검하면서 “투명하게 썼는지 봐줘”라고만 하면, 어떤 주장에 어떤 공개 근거가 필요한지는 남지 않습니다.
 
 ## Editorial Decisions
 
