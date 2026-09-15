@@ -592,4 +592,4 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 “조회되지 않는 항목은 추정하지 말고 보류해줘.”
 
 좋은 reference 정리는 모양을 맞추는 일이 아니라
-식별자와 서지정보의 일치를 확인하는 일입니다.",1,official_documentation,https://www.crossref.org/documentation/retrieve-metadata/rest-api/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-12T21:55:14+09:00,404,2,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h
+식별자와 서지정보의 일치를 확인하는 일입니다.",1,official_documentation,https://www.crossref.org/documentation/retrieve-metadata/rest-api/,100,100,evening,daily_guarantee_reserve,prevalidated,false,2026-09-12T21:55:14+09:00,419,2,3,3,0,0,0,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
