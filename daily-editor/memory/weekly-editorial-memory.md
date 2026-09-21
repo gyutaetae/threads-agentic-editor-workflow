@@ -1,40 +1,46 @@
 # Weekly Editorial Memory
 
-Updated: 2026-09-14T05:42:31+00:00
-Window: last 7 days; analyzed posts: 4
+Updated: 2026-09-21T05:49:54+00:00
+Window: last 7 days; analyzed posts: 25
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
-- Current signal: early/weak
-- Posts with collected metrics: 4
+- Current signal: usable
+- Posts with collected metrics: 25
 
 ## Winning Slots
 
-- evening: 7
+- evening: 65
 
 ## Winning Experiments
 
-- daily_guarantee_reserve: 4
-- daily_guarantee_primary: 3
+- daily_guarantee_primary: 53
+- daily_guarantee_reserve: 12
 
 ## Winning Formats
 
-- research_checklist: 4
+- tiny_source_case: 27
+- agent_role_split: 24
+- research_checklist: 11
 - weekly_review_advice: 3
 
 ## Winning Content Axes
 
+- official_update: 30
+- workflow_mode: 26
+- paper_to_workflow: 4
 - failure_prevention: 4
-- official_update: 3
+- repo_teardown: 1
 
 ## Top Posts
 
-- score 3 | evening | weekly_review_advice | evidence_missing | 이번 주 논문을 훑고 “결과가 좋다”만 메모했다면, 발표 때 어느 표가 그 주장을 받치는지 막힙니다.
-- score 2 | evening | research_checklist | reference metadata reconciliation | AI가 정리한 참고문헌을 형식만 맞춰 붙이면, 같은 논문이 두 번 들어가거나 DOI와 제목이 다른 오류를 놓치기 쉽습니다.
-- score 1 | evening | research_checklist | authorship contribution recording | 논문 초안을 다 쓴 뒤 AI에게 저자 순서를 정해달라고 하면, 실제 기여와 이름의 순서가 쉽게 섞입니다.
-- score 1 | evening | research_checklist | research transparency audit | 논문 초안을 AI로 점검하면서 “투명하게 썼는지 봐줘”라고만 하면, 어떤 주장에 어떤 공개 근거가 필요한지는 남지 않습니다.
+- score 24 | evening | tiny_source_case | draft_without_argument | 논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
+- score 7 | evening | agent_role_split | citation_doubt | AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?
+- score 6 | evening | agent_role_split | literature_overload | 관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?
+- score 5 | evening | agent_role_split | literature_overload | 새로운 논문을 읽을 때마다 관련 논문(Related Work)을 단순히 리스트로 나열하고 계신가요?
+- score 4 | evening | agent_role_split | citation_doubt | Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?
 
 ## Editorial Decisions
 
