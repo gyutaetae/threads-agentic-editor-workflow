@@ -44,22 +44,21 @@ jobs:
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
-      LLM_PROVIDER: openrouter
+      LLM_PROVIDER: openai
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       OPENROUTER_MODEL: google/gemma-4-26b-a4b-it:free
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.6-terra' }}
-      LLM_FALLBACK_PROVIDERS: openai,groq
-      LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '900' }}
-      AUTO_PUBLISH_QUALITY_SCORE: ${{ vars.AUTO_PUBLISH_QUALITY_SCORE || '85' }}
+      LLM_FALLBACK_PROVIDERS: groq,openrouter
+      LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '1800' }}
+      AUTO_PUBLISH_QUALITY_SCORE: ${{ vars.AUTO_PUBLISH_QUALITY_SCORE || '80' }}
       DRAFT_QUALITY_SCORE: ${{ vars.DRAFT_QUALITY_SCORE || '70' }}
       EVALUATOR_PUBLISH_SCORE: ${{ vars.EVALUATOR_PUBLISH_SCORE || '85' }}
       EVALUATOR_PROVIDER: ${{ vars.EVALUATOR_PROVIDER || '' }}
       EVALUATOR_MODEL: ${{ vars.EVALUATOR_MODEL || '' }}
       GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
       GROQ_MODEL: ${{ vars.GROQ_MODEL || 'openai/gpt-oss-120b' }}
-      # One candidate leaves headroom for evaluator/revision calls on low-rate-limit providers.
-      GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}
+      GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '2' }}
       POSTS_PER_DAY: ${{ github.event_name == 'schedule' && '1' || inputs.posts_per_day || vars.POSTS_PER_DAY || '1' }}
       POST_SLOT: ${{ inputs.post_slot || 'morning' }}
       THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
@@ -233,8 +232,6 @@ jobs:
             steps.daily_guard.outputs.should_generate == 'true' &&
             (github.event_name == 'schedule' || inputs.publish == true) &&
             (
-              steps.schedule_plan.outputs.run_mode == 'watchdog' ||
-              steps.collect.outputs.skip_auto_publish == 'true' ||
               steps.generate.outputs.should_publish != 'true'
             )
           }}
@@ -449,6 +446,7 @@ jobs:
           }
           $status = switch ($mode) {
             "revised" { "PUBLISHED_REVISED" }
+            "verified_daily" { "PUBLISHED_LOCAL_GATE" }
             "reserve" { "PUBLISHED_RESERVE" }
             default { "PUBLISHED_PRIMARY" }
           }

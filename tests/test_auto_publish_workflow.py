@@ -20,18 +20,21 @@ class AutoPublishWorkflowTests(unittest.TestCase):
     def test_generation_fallback_and_attempt_ledger_are_enabled(self) -> None:
         self.assertIn('OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}', self.workflow)
         self.assertIn("OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.6-terra' }}", self.workflow)
-        self.assertIn('LLM_FALLBACK_PROVIDERS: openai,groq', self.workflow)
+        self.assertIn('LLM_PROVIDER: openai', self.workflow)
+        self.assertIn('LLM_FALLBACK_PROVIDERS: groq,openrouter', self.workflow)
         self.assertIn('--attempt-history-path ".\\daily-editor\\state\\generation-attempts.jsonl"', self.workflow)
         self.assertIn('git add -f daily-editor/state/generation-attempts.jsonl', self.workflow)
 
-    def test_default_generation_count_preserves_rate_limit_headroom(self) -> None:
-        self.assertIn("GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '1' }}", self.workflow)
+    def test_default_generation_count_gives_a_second_fresh_candidate(self) -> None:
+        self.assertIn("GENERATION_CANDIDATES: ${{ vars.GENERATION_CANDIDATES || '2' }}", self.workflow)
 
     def test_dry_run_does_not_require_a_reserve_thread(self) -> None:
         reserve_block = self.workflow.split("- name: Select prevalidated reserve chain", 1)[1].split(
             "- name: Validate generated chain", 1
         )[0]
         self.assertIn("(github.event_name == 'schedule' || inputs.publish == true)", reserve_block)
+        self.assertIn("steps.generate.outputs.should_publish != 'true'", reserve_block)
+        self.assertNotIn("run_mode == 'watchdog'", reserve_block)
 
     def test_optional_reserve_directories_are_staged_independently(self) -> None:
         self.assertIn('Test-Path ".\\daily-editor\\reserve\\available"', self.workflow)

@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from scripts.generate_auto_thread import (
     THREAD_CANDIDATE_SCHEMA,
+    apply_daily_unavailable_evaluator_gate,
     append_generation_attempts,
     build_evaluator_prompt,
     build_fallback_thread,
@@ -600,6 +601,81 @@ class SelfImprovementLoopTests(unittest.TestCase):
         ]
 
         self.assertEqual(select_best_option(options)["option"], 2)
+
+    def test_daily_local_gate_promotes_only_generated_style_drafts_when_evaluator_fails(self) -> None:
+        gate = {
+            "quality_score": 85,
+            "decision": "draft",
+            "reasons": ["Main is too dense for an easy hook.", "Evaluator veto: decision=revise, score=0, required=85."],
+            "revision_suggestions": [],
+        }
+        unavailable = {"available": False}
+        self.assertEqual(
+            apply_daily_unavailable_evaluator_gate(gate, unavailable, writer_generated=True)["decision"],
+            "publish",
+        )
+        self.assertEqual(
+            apply_daily_unavailable_evaluator_gate(gate, unavailable, writer_generated=False)["decision"],
+            "draft",
+        )
+        self.assertEqual(
+            apply_daily_unavailable_evaluator_gate(
+                {**gate, "reasons": ["Near-duplicate risk: same artifact."]},
+                unavailable,
+                writer_generated=True,
+            )["decision"],
+            "draft",
+        )
+        self.assertEqual(
+            apply_daily_unavailable_evaluator_gate(gate, {"score": 80, "decision": "revise"}, writer_generated=True)["decision"],
+            "draft",
+        )
+
+    def test_daily_generation_writes_strict_model_draft_when_evaluator_is_unavailable(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source_url = "https://example.com/citation-guide"
+            candidates = root / "candidates.json"
+            output = root / "approved-thread-chain.txt"
+            metadata_path = root / "metadata.json"
+            candidates.write_text(json.dumps([{
+                "title": "Citation verification guide",
+                "description": "Compare claims with source evidence.",
+                "url": source_url,
+                "source_type": "official_guideline",
+                "content_axis": "checklist",
+                "format_type": "research_checklist",
+                "post_goal": "save",
+                "score": {"total": 70},
+            }]), encoding="utf-8")
+            (root / "playbook.md").write_text("Write practical Korean Threads posts.", encoding="utf-8")
+            writer = {"choices": [{"message": {"content": json.dumps({
+                "hook": CANONICAL_MAIN,
+                "diagnosis": "[먼저 확인할 것]\n1. claim을 분리합니다.\n2. citation 위치를 확인합니다.\n3. evidence 범위를 기록합니다.",
+                "action": "[저장해둘 프롬프트]\n“claim, citation, evidence, support status 열로 검증표를 만들어줘.”",
+                "source": f"[참고 논문]\n{source_url}\n- 볼 부분: citation 검증 절차\n\n- 적용: claim과 evidence를 표로 연결합니다.",
+                "quote_used": False,
+                "quote_id": "",
+            }, ensure_ascii=False)}}]}
+            argv = [
+                "generate_auto_thread.py", "--date", "2026-09-23", "--candidates-path", str(candidates),
+                "--playbook-path", str(root / "playbook.md"), "--output-path", str(output),
+                "--metadata-path", str(metadata_path), "--history-path", str(root / "history.jsonl"),
+                "--metrics-path", str(root / "metrics.csv"), "--quote-bank-path", str(root / "quotes.json"),
+                "--weekly-memory-path", str(root / "memory.md"), "--learnings-path", str(root / "learnings.md"),
+                "--skills-library-dir", str(root / "patterns.md"), "--curation-log-path", str(root / "curation.jsonl"),
+                "--review-dir", str(root / "review"), "--run-log-dir", str(root / "runs"),
+                "--evaluation-dir", str(root / "evaluations"), "--provider", "openai", "--guarantee-daily",
+            ]
+            with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "LLM_FALLBACK_PROVIDERS": ""}, clear=True), \
+                 patch.object(sys, "argv", argv), \
+                 patch("scripts.generate_auto_thread.call_llm", side_effect=[writer, {"choices": [{"message": {"content": ""}}]}, SystemExit("revision unavailable")]), \
+                 patch("scripts.generate_auto_thread.AUTO_PUBLISH_QUALITY_SCORE", 80):
+                self.assertEqual(main(), 0)
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            self.assertTrue(output.exists())
+            self.assertEqual(metadata["publish_mode"], "verified_daily")
+            self.assertEqual(metadata["quality_decision"], "publish")
 
     def test_json_request_falls_back_when_first_provider_returns_empty_content(self) -> None:
         empty_payload = {"choices": [{"message": {"content": ""}}]}

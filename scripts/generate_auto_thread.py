@@ -1254,6 +1254,7 @@ def build_revision_prompt(
 
 def fallback_evaluation(reason: str) -> dict:
     return {
+        "available": False,
         "score": 0,
         "decision": "revise",
         "strengths": [],
@@ -1291,6 +1292,30 @@ def apply_evaluator_gate(gate: dict, evaluator_result: dict, minimum_score: int 
         )
         combined["revision_suggestions"].extend(evaluator_result.get("revision_suggestions", []))
     return combined
+
+
+def apply_daily_unavailable_evaluator_gate(gate: dict, evaluator_result: dict, writer_generated: bool) -> dict:
+    """Use the strict local contract when only the optional evaluator is unavailable."""
+    style_reasons = (
+        "Main is too dense for an easy hook.",
+        "Factory-feel risk:",
+        "Quality gate passed.",
+    )
+    if (
+        writer_generated
+        and evaluator_result.get("available") is False
+        and gate.get("decision") == "draft"
+        and int(gate.get("quality_score") or 0) >= AUTO_PUBLISH_QUALITY_SCORE
+        and all(
+            str(reason).startswith(style_reasons) or str(reason).startswith("Evaluator veto:")
+            for reason in gate.get("reasons", [])
+        )
+    ):
+        promoted = {**gate, "reasons": list(gate.get("reasons", []))}
+        promoted["decision"] = "publish"
+        promoted["reasons"].append("Daily local quality gate passed; the optional evaluator was unavailable.")
+        return promoted
+    return gate
 
 
 def apply_daily_guarantee_gate(
@@ -1753,6 +1778,7 @@ def main() -> int:
                         "thread_text": fallback_thread_text,
                         "quality_score": fallback_gate["quality_score"],
                         "quality_decision": fallback_gate["decision"],
+                        "writer_generated": False,
                         "quality_reasons": [
                             failure_reason,
                             *fallback_gate["reasons"],
@@ -1783,6 +1809,7 @@ def main() -> int:
             continue
 
         thread_text = normalize_thread_text(str(data.get("thread_text", "")).strip())
+        writer_generated = True
         try:
             validate_thread(thread_text)
             gate = quality_gate(thread_text, routing, recent_hooks, recent_history)
@@ -1802,6 +1829,7 @@ def main() -> int:
                 fallback_gate = {"decision": "discard"}
             if fallback_gate.get("decision") != "discard":
                 thread_text = fallback_thread_text
+                writer_generated = False
                 fallback_gate["decision"] = "draft"
                 fallback_gate.setdefault("reasons", []).append(
                     "Fallback content is review-only after the model candidate failed the canonical contract."
@@ -1822,6 +1850,7 @@ def main() -> int:
                 "thread_text": thread_text,
                 "quality_score": gate["quality_score"],
                 "quality_decision": gate["decision"],
+                "writer_generated": writer_generated,
                 "quality_reasons": gate["reasons"],
                 "revision_suggestions": gate["revision_suggestions"],
                 "writer_prompt": prompt,
@@ -1881,7 +1910,7 @@ def main() -> int:
                 evaluator_provider,
                 evaluator_model,
                 evaluator_prompt,
-                min(args.max_output_tokens, 800),
+                min(args.max_output_tokens, 1500),
                 purpose="evaluation",
             )
             evaluator_result["model_output_raw"] = evaluator_text
@@ -1951,7 +1980,7 @@ def main() -> int:
                 evaluator_provider,
                 evaluator_model,
                 revised_evaluator_prompt,
-                min(args.max_output_tokens, 800),
+                min(args.max_output_tokens, 1500),
                 purpose="revised evaluation",
             )
             revised_evaluator_result["model_output_raw"] = revised_evaluator_text
@@ -1978,6 +2007,15 @@ def main() -> int:
             revision_outcome = f"error: {exc}"
         except Exception as exc:
             revision_outcome = f"error: {exc}"
+
+    if args.guarantee_daily and gate["decision"] == "draft":
+        gate = apply_daily_unavailable_evaluator_gate(
+            gate,
+            evaluator_result,
+            writer_generated=best.get("writer_generated") is True,
+        )
+        if gate["decision"] == "publish":
+            publish_mode = "verified_daily"
 
     metadata = {
         "date": args.date,
