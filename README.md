@@ -111,18 +111,18 @@ $metadata = Get-Content ".\daily-editor\auto-thread-metadata.json" -Raw |
 Required GitHub secrets:
 
 ```text
-OPENROUTER_API_KEY
+OPENAI_API_KEY
 THREADS_ACCESS_TOKEN
 ```
 
 Fallback GitHub secrets:
 
 ```text
-OPENAI_API_KEY
 GROQ_API_KEY
+OPENROUTER_API_KEY
 ```
 
-Generation tries OpenRouter first, OpenAI second, and Groq third. A provider without a configured key is skipped.
+Scheduled generation tries OpenAI first, Groq second, and OpenRouter third. A provider without a configured key is skipped. Two new candidates are attempted per day; a publishable new thread goes straight to Threads even when the reserve is empty.
 
 Optional GitHub variables:
 
