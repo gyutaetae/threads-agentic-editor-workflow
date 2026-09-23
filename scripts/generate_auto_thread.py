@@ -1203,6 +1203,9 @@ def build_evaluator_prompt(
         "- It must not invent personal experience in automatic mode.\n"
         "- It should avoid recent hook, structure, and closer repetition.\n"
         "- It must separate source facts from our interpretation.\n\n"
+        "- This is a Korean-first channel. Do not request an English translation or broader-audience rewrite.\n"
+        "- Use revise or discard for unsupported source claims, missing practical steps, incoherent logic, or a broken format.\n"
+        "- A minor style suggestion alone should not veto a usable, source-grounded post.\n\n"
         "Return keys:\n"
         "{\n"
         '  "score": 0-100,\n'
@@ -1946,17 +1949,16 @@ def main() -> int:
             evaluator_result=evaluator_result,
         )
         try:
-            revision_payload = call_llm(
+            revised_data_raw, revision_text, revision_provider, revision_model = call_json_with_provider_fallback(
                 selected_provider,
-                api_key_for_provider(selected_provider),
                 selected_model,
                 revision_prompt,
                 args.max_output_tokens,
                 response_schema=THREAD_CANDIDATE_SCHEMA,
+                purpose="revision",
             )
-            revision_text = extract_text(revision_payload)
             revised_data = normalize_thread_candidate(
-                extract_json(revision_text),
+                revised_data_raw,
                 selected_candidate,
                 routing,
             )
@@ -1994,6 +1996,9 @@ def main() -> int:
                 data = revised_data
                 thread_text = revised_thread
                 gate = revised_gate
+                selected_provider = revision_provider
+                selected_model = revision_model
+                selected_actual_model = revision_model
                 evaluator_prompt = revised_evaluator_prompt
                 evaluator_result = revised_evaluator_result
                 quote_used = data.get("quote_used") is True

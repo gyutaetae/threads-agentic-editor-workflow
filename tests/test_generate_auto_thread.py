@@ -318,6 +318,7 @@ class SelfImprovementLoopTests(unittest.TestCase):
             skill_library="Citation Verification",
         )
         self.assertIn("Return JSON only", prompt)
+        self.assertIn("Do not request an English translation", prompt)
         self.assertIn("citation은 claim 지지 여부를 본다.", prompt)
         self.assertIn("바로 써볼 프롬프트", prompt)
 
