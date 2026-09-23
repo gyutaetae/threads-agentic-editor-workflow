@@ -436,6 +436,43 @@ class SelfImprovementLoopTests(unittest.TestCase):
 
         self.assertEqual([item["provider"] for item in chain], ["openrouter", "groq"])
 
+    def test_missing_primary_key_starts_with_openrouter(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENROUTER_API_KEY": "router-key",
+                "GROQ_API_KEY": "groq-key",
+                "LLM_FALLBACK_PROVIDERS": "openrouter,groq",
+            },
+            clear=True,
+        ):
+            chain = fallback_provider_chain("openai", "gpt-5.6-terra")
+
+        self.assertEqual([item["provider"] for item in chain], ["openrouter", "groq"])
+
+    def test_invalid_openai_key_falls_back_to_openrouter(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "OPENAI_API_KEY": "expired-key",
+                "OPENROUTER_API_KEY": "router-key",
+                "LLM_FALLBACK_PROVIDERS": "openrouter",
+            },
+            clear=True,
+        ), patch(
+            "scripts.generate_auto_thread.call_llm",
+            side_effect=[
+                SystemExit("openai API error 401"),
+                {"choices": [{"message": {"content": '{"score":91,"decision":"publish"}'}}]},
+            ],
+        ):
+            result, _, provider, _ = call_json_with_provider_fallback(
+                "openai", "gpt-5.6-terra", "evaluate", 800
+            )
+
+        self.assertEqual(provider, "openrouter")
+        self.assertEqual(result["decision"], "publish")
+
     def test_openai_uses_chat_completions_structured_output(self) -> None:
         class FakeResponse:
             ok = True

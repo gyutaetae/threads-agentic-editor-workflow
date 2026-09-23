@@ -1431,13 +1431,8 @@ def default_model_for_provider(provider: str) -> str:
 
 def fallback_provider_chain(provider: str, model: str) -> list[dict]:
     provider = provider.lower()
-    chain = [
-        {
-            "provider": provider,
-            "model": model,
-            "api_key": api_key_for_provider(provider),
-        }
-    ]
+    primary_key = api_key_for_provider(provider)
+    chain = [{"provider": provider, "model": model, "api_key": primary_key}] if primary_key else []
     configured_fallbacks = os.environ.get("LLM_FALLBACK_PROVIDERS", "").strip()
     if configured_fallbacks:
         fallback_providers = [item.strip().lower() for item in configured_fallbacks.split(",") if item.strip()]
@@ -1634,14 +1629,8 @@ def main() -> int:
     if args.model is None:
         args.model = default_model_for_provider(args.provider)
 
-    api_key = api_key_for_provider(args.provider)
-    if not api_key:
-        env_name = {
-            "openrouter": "OPENROUTER_API_KEY",
-            "openai": "OPENAI_API_KEY",
-            "groq": "GROQ_API_KEY",
-        }[args.provider]
-        raise SystemExit(f"{env_name} is required.")
+    if not fallback_provider_chain(args.provider, args.model):
+        raise SystemExit("No configured model provider key is available.")
 
     candidates = read_json(Path(args.candidates_path))
     if not isinstance(candidates, list) or not candidates:

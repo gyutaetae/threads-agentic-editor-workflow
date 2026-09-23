@@ -36,7 +36,7 @@ Scheduled guarantee:
 - Watchdogs run hourly from 19:17 through 23:17 KST.
 - Any authored top-level post, including a manual post, satisfies the day.
 - A draft scoring at least 70 triggers one revision. A model-written draft scoring at least 80 may publish after strict local validation if only the optional evaluator is unavailable and the remaining concerns are about hook length or repetition.
-- Two fresh candidates are attempted each day. Generation falls back in order: OpenAI, Groq, then OpenRouter. Missing provider keys are skipped.
+- Two fresh candidates are attempted each day. Generation falls back in order: OpenAI, OpenRouter, then Groq. Missing provider keys are skipped, including the primary key.
 - The reserve is selected only when generation has no publishable result. An empty reserve does not block a publishable fresh draft.
 - A missing post after an attempted publish fails the run and leaves the next watchdog eligible.
 - Token/API uncertainty remains fail-closed; never risk a duplicate when the platform ledger cannot be read.

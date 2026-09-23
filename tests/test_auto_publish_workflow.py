@@ -21,7 +21,7 @@ class AutoPublishWorkflowTests(unittest.TestCase):
         self.assertIn('OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}', self.workflow)
         self.assertIn("OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.6-terra' }}", self.workflow)
         self.assertIn('LLM_PROVIDER: openai', self.workflow)
-        self.assertIn('LLM_FALLBACK_PROVIDERS: groq,openrouter', self.workflow)
+        self.assertIn('LLM_FALLBACK_PROVIDERS: openrouter,groq', self.workflow)
         self.assertIn('--attempt-history-path ".\\daily-editor\\state\\generation-attempts.jsonl"', self.workflow)
         self.assertIn('git add -f daily-editor/state/generation-attempts.jsonl', self.workflow)
 

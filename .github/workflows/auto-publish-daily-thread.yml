@@ -49,7 +49,7 @@ jobs:
       OPENROUTER_MODEL: google/gemma-4-26b-a4b-it:free
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-5.6-terra' }}
-      LLM_FALLBACK_PROVIDERS: groq,openrouter
+      LLM_FALLBACK_PROVIDERS: openrouter,groq
       LLM_MAX_OUTPUT_TOKENS: ${{ vars.LLM_MAX_OUTPUT_TOKENS || '1800' }}
       AUTO_PUBLISH_QUALITY_SCORE: ${{ vars.AUTO_PUBLISH_QUALITY_SCORE || '80' }}
       DRAFT_QUALITY_SCORE: ${{ vars.DRAFT_QUALITY_SCORE || '70' }}

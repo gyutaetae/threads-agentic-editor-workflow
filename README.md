@@ -122,7 +122,7 @@ GROQ_API_KEY
 OPENROUTER_API_KEY
 ```
 
-Scheduled generation tries OpenAI first, Groq second, and OpenRouter third. A provider without a configured key is skipped. Two new candidates are attempted per day; a publishable new thread goes straight to Threads even when the reserve is empty.
+Scheduled generation tries OpenAI first, OpenRouter second, and Groq third. A provider without a configured key is skipped. Two new candidates are attempted per day; a publishable new thread goes straight to Threads even when the reserve is empty.
 
 Optional GitHub variables:
 
