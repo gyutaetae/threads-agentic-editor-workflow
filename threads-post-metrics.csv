@@ -607,3 +607,17 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 “claim, 원문 인용, 지지 범위, limitation을 표로 만들어줘.”
 
 citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 연결선입니다.",1,github_repo,https://github.com/conorbronsdon/avoid-ai-writing,58,84,evening,manual_evening,gpt-5.6-terra,false,2026-09-23T22:35:36+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-09-24,18092571848171987,https://www.threads.net/@arxiv.ai/post/18092571848171987,agent_role_split,agent_role_split,workflow_mode,save,draft_without_argument,서론 문장은 채웠는데 지도교수가 “그래서 기존 연구의 빈틈이 뭔가요?”라고 물으면 답이 끊기는 순간이 있습니다.,"서론 문장은 채웠는데 지도교수가 “그래서 기존 연구의 빈틈이 뭔가요?”라고 물으면 답이 끊기는 순간이 있습니다.
+
+내가 problem-gap-contribution을 설명 못하면, 그건 초안 작성이 아니라 문장 생산입니다.
+
+나쁜 요청:
+“서론을 더 설득력 있게 써줘.”
+
+좋은 요청:
+“내 연구의 problem을 관찰 가능한 현상과 피해로 한 문장에 고정해줘.”
+“선행연구가 해결하지 못한 gap을 범위·조건·측정 기준으로 분리해줘.”
+“contribution마다 직접 뒷받침할 evidence와 아직 없는 evidence를 연결해줘.”
+“problem, gap, contribution, evidence 순서로 서론 개요를 다시 배열해줘.”
+
+좋은 초안은 문장이 아니라, 질문받아도 풀어 설명할 수 있는 논리 구조입니다.",1,github_repo,https://github.com/aishwaryanr/awesome-generative-ai-guide,55,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-24T23:16:16+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
