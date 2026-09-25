@@ -621,3 +621,17 @@ citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 
 “problem, gap, contribution, evidence 순서로 서론 개요를 다시 배열해줘.”
 
 좋은 초안은 문장이 아니라, 질문받아도 풀어 설명할 수 있는 논리 구조입니다.",1,github_repo,https://github.com/aishwaryanr/awesome-generative-ai-guide,55,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-24T23:16:16+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+2026-09-25,18118158982983370,https://www.threads.net/@arxiv.ai/post/18118158982983370,weekly_review_advice,weekly_review_advice,official_update,share,evidence_missing,"실험 결과가 나온 뒤 AI agent 보고서를 읽는데, “성능이 올랐다”는 문장만 있고 어느 표·그림이 받치는지 표시되지 않는 때가 있습니다.","실험 결과가 나온 뒤 AI agent 보고서를 읽는데, “성능이 올랐다”는 문장만 있고 어느 표·그림이 받치는지 표시되지 않는 때가 있습니다.
+
+내가 claim을 어떤 실험, 표, 그림이 받치는지 설명 못하면, 그건 이해가 아니라 요약문 신뢰입니다.
+
+나쁜 요청:
+“이 논문 결과를 요약해줘.”
+
+좋은 요청:
+“핵심 claim마다 근거 표·그림 번호를 연결해줘.”
+“각 근거가 비교 실험인지 절대 성능인지 구분해줘.”
+“claim을 직접 못 받치는 결과는 빈칸으로 남겨줘.”
+“각 claim의 limitation을 실험 조건과 함께 적어줘.”
+
+읽은 논문은 요약이 아니라 근거 지도로 남겨야 합니다.",1,official_feed,https://arxiv.org/abs/2609.28614,56,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-25T23:40:07+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
