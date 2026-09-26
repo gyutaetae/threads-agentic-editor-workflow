@@ -606,7 +606,7 @@ control이 실제로 작동하는지 시험하는 과정입니다.",1,official_g
 “citation이 지지하지 않는 범위는 삭제하거나 조건부 표현으로 고쳐줘.”
 “claim, 원문 인용, 지지 범위, limitation을 표로 만들어줘.”
 
-citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 연결선입니다.",1,github_repo,https://github.com/conorbronsdon/avoid-ai-writing,58,84,evening,manual_evening,gpt-5.6-terra,false,2026-09-23T22:35:36+09:00,974,7,4,3,0,1,2,0,,,0,auto-recorded after publish | metrics collected: 24h
+citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 연결선입니다.",1,github_repo,https://github.com/conorbronsdon/avoid-ai-writing,58,84,evening,manual_evening,gpt-5.6-terra,false,2026-09-23T22:35:36+09:00,1022,7,4,3,0,1,2,0,,,0,auto-recorded after publish | metrics collected: 24h | metrics collected: 72h
 2026-09-24,18092571848171987,https://www.threads.net/@arxiv.ai/post/18092571848171987,agent_role_split,agent_role_split,workflow_mode,save,draft_without_argument,서론 문장은 채웠는데 지도교수가 “그래서 기존 연구의 빈틈이 뭔가요?”라고 물으면 답이 끊기는 순간이 있습니다.,"서론 문장은 채웠는데 지도교수가 “그래서 기존 연구의 빈틈이 뭔가요?”라고 물으면 답이 끊기는 순간이 있습니다.
 
 내가 problem-gap-contribution을 설명 못하면, 그건 초안 작성이 아니라 문장 생산입니다.
@@ -634,7 +634,7 @@ citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 
 “claim을 직접 못 받치는 결과는 빈칸으로 남겨줘.”
 “각 claim의 limitation을 실험 조건과 함께 적어줘.”
 
-읽은 논문은 요약이 아니라 근거 지도로 남겨야 합니다.",1,official_feed,https://arxiv.org/abs/2609.28614,56,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-25T23:40:07+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+읽은 논문은 요약이 아니라 근거 지도로 남겨야 합니다.",1,official_feed,https://arxiv.org/abs/2609.28614,56,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-25T23:40:07+09:00,663,11,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h
 2026-09-26,17989233054100177,https://www.threads.net/@arxiv.ai/post/17989233054100177,agent_role_split,agent_role_split,workflow_mode,save,literature_overload,"agent 논문 탭은 열두 개인데, 발표 슬라이드에서 서로 무엇이 다른지 한 줄로 못 묶는 순간이 있습니다.","agent 논문 탭은 열두 개인데, 발표 슬라이드에서 서로 무엇이 다른지 한 줄로 못 묶는 순간이 있습니다.
 
 내가 논문 간 차이를 같은 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
