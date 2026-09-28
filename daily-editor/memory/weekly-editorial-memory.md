@@ -1,46 +1,42 @@
 # Weekly Editorial Memory
 
-Updated: 2026-09-21T05:49:54+00:00
-Window: last 7 days; analyzed posts: 25
+Updated: 2026-09-28T06:16:27+00:00
+Window: last 7 days; analyzed posts: 5
 
 Use this file as weak guidance until at least 20 posts have 24h/72h metrics.
 
 ## Signal Strength
 
-- Current signal: usable
-- Posts with collected metrics: 25
+- Current signal: early/weak
+- Posts with collected metrics: 4
 
 ## Winning Slots
 
-- evening: 65
+- evening: 17
 
 ## Winning Experiments
 
-- daily_guarantee_primary: 53
-- daily_guarantee_reserve: 12
+- daily_guarantee_primary: 14
+- manual_evening: 3
+- daily_guarantee_watchdog: 0
 
 ## Winning Formats
 
-- tiny_source_case: 27
-- agent_role_split: 24
-- research_checklist: 11
-- weekly_review_advice: 3
+- agent_role_split: 16
+- weekly_review_advice: 1
 
 ## Winning Content Axes
 
-- official_update: 30
-- workflow_mode: 26
-- paper_to_workflow: 4
-- failure_prevention: 4
-- repo_teardown: 1
+- workflow_mode: 16
+- official_update: 1
 
 ## Top Posts
 
-- score 24 | evening | tiny_source_case | draft_without_argument | 논문 초안을 작성한 뒤 AI에게 “리뷰어처럼 검토해줘”라고 던지고 있나요?
-- score 7 | evening | agent_role_split | citation_doubt | AI가 추천해준 관련 논문(Related Work) 리스트를 그대로 복사해서 논문에 붙이고 계신가요?
-- score 6 | evening | agent_role_split | literature_overload | 관련 논문(Related Work)을 정리할 때 단순히 논문 목록을 나열하고 있나요?
-- score 5 | evening | agent_role_split | literature_overload | 새로운 논문을 읽을 때마다 관련 논문(Related Work)을 단순히 리스트로 나열하고 계신가요?
-- score 4 | evening | agent_role_split | citation_doubt | Related Work 섹션을 채울 때 AI가 추천해준 논문 리스트를 그대로 복사해서 붙여넣고 있나요?
+- score 11 | evening | agent_role_split | draft_without_argument | 서론 문장은 채웠는데 지도교수가 “그래서 기존 연구의 빈틈이 뭔가요?”라고 물으면 답이 끊기는 순간이 있습니다.
+- score 3 | evening | agent_role_split | citation_doubt | AI가 써준 문장에 citation을 붙인 뒤, 발표 직전 원문을 열어보면 그 논문이 내 claim의 범위까지 받치지 않는 경우가 있습니다.
+- score 2 | evening | agent_role_split | literature_overload | agent 논문 탭은 열두 개인데, 발표 슬라이드에서 서로 무엇이 다른지 한 줄로 못 묶는 순간이 있습니다.
+- score 1 | evening | weekly_review_advice | evidence_missing | 실험 결과가 나온 뒤 AI agent 보고서를 읽는데, “성능이 올랐다”는 문장만 있고 어느 표·그림이 받치는지 표시되지 않는 때가 있습니다.
+- score 0 | evening | agent_role_split | citation_doubt | 초안의 문장마다 AI가 citation을 붙여줬는데, 지도교수가 “이 논문이 바로 이 주장까지 말하나요?”라고 묻는 순간이 있습니다.
 
 ## Editorial Decisions
 
