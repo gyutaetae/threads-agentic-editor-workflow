@@ -634,7 +634,7 @@ citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 
 “claim을 직접 못 받치는 결과는 빈칸으로 남겨줘.”
 “각 claim의 limitation을 실험 조건과 함께 적어줘.”
 
-읽은 논문은 요약이 아니라 근거 지도로 남겨야 합니다.",1,official_feed,https://arxiv.org/abs/2609.28614,56,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-25T23:40:07+09:00,663,11,3,3,0,0,1,0,,,0,auto-recorded after publish | metrics collected: 24h
+읽은 논문은 요약이 아니라 근거 지도로 남겨야 합니다.",1,official_feed,https://arxiv.org/abs/2609.28614,56,92,evening,daily_guarantee_primary,gpt-5.6-terra,false,2026-09-25T23:40:07+09:00,663,11,3,3,0,0,1,0,,,0,"auto-recorded after publish | metrics collected: 24h | metrics skipped: 72h: 400 Client Error for url: https://graph.threads.net/v1.0/18118158982983370/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
 2026-09-26,17989233054100177,https://www.threads.net/@arxiv.ai/post/17989233054100177,agent_role_split,agent_role_split,workflow_mode,save,literature_overload,"agent 논문 탭은 열두 개인데, 발표 슬라이드에서 서로 무엇이 다른지 한 줄로 못 묶는 순간이 있습니다.","agent 논문 탭은 열두 개인데, 발표 슬라이드에서 서로 무엇이 다른지 한 줄로 못 묶는 순간이 있습니다.
 
 내가 논문 간 차이를 같은 축으로 설명 못하면, 그건 literature review가 아니라 논문 목록 정리입니다.
@@ -662,4 +662,4 @@ citation은 장식이 아니라, 내가 근거의 경계를 설명하게 하는 
 “원문이 지지하는 범위와 내가 확장한 범위를 분리해줘.”
 “지지하지 못하는 claim은 삭제·완화·추가 근거 중 무엇이 필요한지 표시해줘.”
 
-citation은 문장 끝 장식이 아니라 주장 범위를 제한하는 근거입니다.",1,github_repo,https://github.com/Orchestra-Research/AI-Research-SKILLs,54,84,evening,daily_guarantee_watchdog,gpt-5.6-terra,false,2026-09-28T00:12:48+09:00,0,0,0,3,0,0,0,0,,,0,auto-recorded after publish
+citation은 문장 끝 장식이 아니라 주장 범위를 제한하는 근거입니다.",1,github_repo,https://github.com/Orchestra-Research/AI-Research-SKILLs,54,84,evening,daily_guarantee_watchdog,gpt-5.6-terra,false,2026-09-28T00:12:48+09:00,0,0,0,3,0,0,0,0,,,0,"auto-recorded after publish | metrics skipped: 24h: 400 Client Error for url: https://graph.threads.net/v1.0/17948538390055664/insights?metric=views%2Clikes%2Creplies%2Creposts%2Cquotes&access_token=<redacted> Response body: {""error"
